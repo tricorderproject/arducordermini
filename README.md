@@ -1,17 +1,28 @@
 Arducorder Mini
 ======
 
+<<<<<<< HEAD
 Arducorder Mini -- an Arduino-compatible Open Source Science Tricorder Project
+=======
+Arducorder Mini -- Open Source Science Tricorder Project
+>>>>>>> 42b92c3940c676ab304eb5fe82905aaa2186f6cd
 http://www.tricorderproject.org
 Copyright (C) 2014  Peter Jansen and the Tricorder project 
 peter@tricorderproject.org
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 42b92c3940c676ab304eb5fe82905aaa2186f6cd
 *This is a work in progress, and has not been released*
 
 # Introduction
 
+<<<<<<< HEAD
 Introduction
+=======
+
+>>>>>>> 42b92c3940c676ab304eb5fe82905aaa2186f6cd
 
 # Open Source
 

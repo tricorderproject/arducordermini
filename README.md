@@ -1,10 +1,10 @@
 Arducorder Mini
 ======
 
-Arducorder Mini -- an Arduino-compatible Open Source Science Tricorder Project
-http://www.tricorderproject.org
-Copyright (C) 2014  Peter Jansen and the Tricorder project 
-peter@tricorderproject.org
+Arducorder Mini -- an Arduino-compatible Open Source Science Tricorder Project  
+http://www.tricorderproject.org  
+Copyright (C) 2014  Peter Jansen and the Tricorder project  
+peter@tricorderproject.org  
 
 *This is a work in progress, and has not been released*
 

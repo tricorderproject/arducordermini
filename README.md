@@ -6,11 +6,22 @@ http://www.tricorderproject.org
 Copyright (C) 2014  Peter Jansen and the Tricorder project  
 peter@tricorderproject.org  
 
-*This is a work in progress, and has not been released*
+*This is a work in progress*
 
 # Introduction
 
-todo
+This is the third iteration of the Open Source Science Tricorder prototypes, a series of science tricorder-like devices.  
+
+Unlike the first two prototypes, this version has been designed from the ground up to be easy to manufacture, and to foster a community of open source developers and users.  The firmware is Arduino-compatible through the ChipKit MAX32 platform, and is being designed to provide advanced functionality for scientific use while being easy enough for beginners to meaningfully modify. 
+
+# Concept
+It is my deep belief that knowledge brings about positive change. 
+
+We could live in a world where the same instrument that can show a child how much chlorophyll is in a leaf could also show how them much pollution is in the air around us, or given off by one's car. As an educator and a researcher, I feel that if people could easily discover things about their worlds that were also important social topics, that they would then make positive social choices, like reducing their emissions, or petitioning for cleaner industry in their communities. 
+
+By having access to general inexpensive sensing tools, people can learn about healthy leaves, clean air, clouds and the water cycle, energy efficient homes — and visualize abstract concepts like spectra or magnetism. 
+
+As a tool for exploration, we can discover things around us that we don't already know. And that's what it's about. Little discoveries, everywhere.
 
 # Open Source
 

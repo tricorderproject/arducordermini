@@ -52,3 +52,85 @@ CC-BY-SA 4.0 International License for more details.
 
 
 ----
+
+Arducorder Mini Open Source Science Tricorder Project
+Software and Firmware
+(http://www.tricorderproject.org/mini)
+Copyright (C) 2014  Peter Jansen and the Tricorder project 
+(peter@tricorderproject.org)
+
+This license applies to software written exclusively by the above 
+author. The software/firmware in this package requires linking to 
+external third-party libraries in order to function.
+
+This software is released under a BSD License, the text of which is
+reproduced below.  
+
+Copyright (c) 2014, Peter Jansen and the Tricorder project.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer. 
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+----
+
+External Libraries
+
+AS3539 Library 
+Written by Raivis Rengelis
+https://github.com/raivisr/AS3935-Arduino-Library
+GNU LGPL V3 License
+
+Adafruit BMP180 Library
+Written by Kevin Townsend for Adafruit Industries.  
+https://github.com/adafruit/Adafruit_BMP085_Unified
+BSD license
+
+Adafruit MPR121 Library
+Written by Limor Fried/Ladyada for Adafruit Industries.  
+https://github.com/adafruit/Adafruit_MPR121_Library
+BSD license
+
+Adafruit Sensor Library
+The Android Open Source Project, Adapted by K. Townsend (Adafruit Industries)
+https://github.com/adafruit/Adafruit_Sensor
+Apache License, Version 2.0
+
+Adafruit SI1145 Library
+Written by Limor Fried/Ladyada for Adafruit Industries.  
+https://github.com/adafruit/Adafruit_SI1145_Library
+BSD license
+
+Adafruit Graphics Library
+Written by Limor Fried/Ladyada for Adafruit Industries.
+https://github.com/adafruit/Adafruit-GFX-Library
+BSD license
+
+I2CDev Library Collection
+Written By Jeff Rowberg
+http://www.i2cdevlib.com/
+MIT License
+
+Sparkfun HTU21D Humidity Sensor Library
+Written by Nathan Seidle/Sparkfun Electronics
+https://github.com/sparkfun/HTU21D_Breakout
+Public Domain/Beerware
+

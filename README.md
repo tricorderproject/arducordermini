@@ -27,8 +27,6 @@ As a tool for exploration, we can discover things around us that we don't alread
 
 This project is open hardware and is released under various open licenses.  Please see LICENSES.TXT for details.
 
-For potential contributors, a list of suggested contributions and next steps can be found in TODO.TXT .
-
 # Warning
 
 

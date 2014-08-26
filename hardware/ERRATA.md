@@ -27,6 +27,7 @@ Known Errata
 *rev0*
 - MiCS-6814 gas sensor needs 3 MOSFETs to drive the 3 heater lines, since the current will be more than the PIC32 lines can supply. 
 - BMP180 sensor uncontacted, but I think the sensors I purchased from China during the BMP180 shortage may be counterfeit. 
+- Analog and digital pins for the MiCS-6814 were swapped on the sensor board header
 
 **Sensor Board: Lightning/UV/Sound board**  
 *rev0*

@@ -37,7 +37,7 @@ Known Errata
 *rev0*
 - Connector to motherboard (CN1) still needs a part number.  The holes may have to be increased slightly, and location may have to shift a little. 
 - R7 part number needs to be specified
-- SJ1 VREF source for audio out needs to be determined (and SJ1 removed in the next revision)
+- SJ1 VREF source for audio out needs to be determined (and SJ1 removed in the next revision) [NOTE: Both V/2 and GND references appear to work, but volume is low for both.  R11 may need to be adjusted upward (~1M), or this may be a property of the micro speaker]
 - Precision pull-up resistors for output signals (OUT, SIG, NS)
 
 **Sensor Board: Spectroscopy / Thermal Camera board**  

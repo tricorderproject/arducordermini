@@ -8,6 +8,7 @@ Known Errata
 - The FT232 lights appear to be on when the USB is connected, but the device (3.3V main bus) is off.  This should leave VCCIO at 0V, which might lead to unpredictable behaviour, or might be plain out of specifications. 
 - Radiation sensor connector (CN3) still needs a part number.  The holes may have to be increased slightly, and location may have to shift a little. 
 - Capacitive touch sensor (CN4) likely needs a bit more mechanically steady mounting, perhaps a different connector near the bottom of the board/USB connector.  If the same connector is used, the pads for the mount point need to be extended out about 0.5mm . 
+- A few pixels on the OLED occasionally stay on when the power switch is off.  Double check that the pull-down on the 13V boost enable line is functioning properly. 
 
 **Capacitive Touch Sensor board**  
 *rev0*
@@ -37,6 +38,7 @@ Known Errata
 - Connector to motherboard (CN1) still needs a part number.  The holes may have to be increased slightly, and location may have to shift a little. 
 - R7 part number needs to be specified
 - SJ1 VREF source for audio out needs to be determined (and SJ1 removed in the next revision)
+- Precision pull-up resistors for output signals (OUT, SIG, NS)
 
 **Sensor Board: Spectroscopy / Thermal Camera board**  
 *rev0*

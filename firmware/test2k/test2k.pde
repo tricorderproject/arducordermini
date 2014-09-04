@@ -24,7 +24,7 @@
 #include "sensor_BMP180.h"
 #include "sensor_AS3935.h"
 
-
+#include "bitmap_earthatnight.h"
 
 
 // Defines
@@ -128,6 +128,18 @@ void setup() {
   touchWheel.initTouchWheel(8, -20);
   touchWheel.takeWheelBaseline();  
   
+  // Bitmap test
+  //displayFlashBitmap4Bit(int16_t x, int16_t y, uint16_t bitmapWidth, uint16_t bitmapHeight, uint16_t bitmapPalette, uint8_t *bitmapData) {
+  while (1) { 
+    for (int x=0; x>-128; x--) {
+      GFX.displayFlashBitmap4Bit(x, 0, earthatnightWidth, earthatnightHeight, earthatnightPalette, earthatnightData);
+      GFX.updateScreen();      
+    }
+    for (int x=-128; x<0; x++) {
+      GFX.displayFlashBitmap4Bit(x, 0, earthatnightWidth, earthatnightHeight, earthatnightPalette, earthatnightData);
+      GFX.updateScreen();      
+    }    
+  }
 }
 
 uint8_t mode = 1;

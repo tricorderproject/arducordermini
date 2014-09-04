@@ -449,6 +449,29 @@ void FramebufferGFX::fillRoundRect(int16_t x0, int16_t y0, int16_t x1, int16_t y
 }
 
 
+/*
+ *  POSTERIZED FLASH BITMAP FUNCTIONS
+ */ 
+// These functions read a bitmap stored in flash as a static array exported into a header file
+void FramebufferGFX::displayFlashBitmap4Bit(int x, int y, uint16_t bitmapWidth, uint16_t bitmapHeight, uint16_t *bitmapPalette, uint8_t *bitmapData) {
+    int idx = 0;
+    for (uint16_t by=0; by<bitmapHeight; by++) {      
+      for (uint16_t bx=0; bx<bitmapWidth; bx+=2) {      
+        uint8_t twoPixels = bitmapData[idx];
+        uint16_t pixel1 = bitmapPalette[(twoPixels & 0xF0) >> 4];
+        uint16_t pixel2 = bitmapPalette[(twoPixels & 0x0F)];
+        
+//        uint32_t pos = display->fbXY(x + col, y + row);      
+//        display->framebuffer[pos] = RGB(r, g, b);
+        if (((x + bx > 0) && (x + bx < display->width)) && ((y + by > 0) && (y + by < display->height))) {          
+          drawPixel(x + bx, y + by, pixel1);
+          drawPixel(x + bx + 1, y + by, pixel2);        
+        }    
+        idx += 1;
+      }
+    }
+}
+
 
 /*
  *  BITMAP FUNCTIONS (adapted from Adafruit Library)

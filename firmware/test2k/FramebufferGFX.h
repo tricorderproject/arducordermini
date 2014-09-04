@@ -53,7 +53,10 @@ class FramebufferGFX {
   void drawRoundRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t r, uint16_t color);
   void fillRoundRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t r, uint16_t color);
 
-  // Bitmap functions
+  // Bitmap functions (flash)
+  void displayFlashBitmap4Bit(int x, int y, uint16_t bitmapWidth, uint16_t bitmapHeight, uint16_t *bitmapPalette, uint8_t *bitmapData);
+  
+  // Bitmap functions (SD card)
   uint16_t read16(File f);
   uint32_t read32(File f);
   int loadImageBMP(const char* fileName, uint16_t x, uint16_t y);

@@ -134,3 +134,7 @@ Written by Nathan Seidle/Sparkfun Electronics
 https://github.com/sparkfun/HTU21D_Breakout
 Public Domain/Beerware
 
+Ubuntu Font Library
+http://font.ubuntu.com/licence/
+Ubuntu Font License Version 1.0
+

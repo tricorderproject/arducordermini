@@ -25,7 +25,7 @@
 #include "sensor_AS3935.h"
 
 #include "bitmap_earthatnight.h"
-
+#include "FontUbuntu.h"
 
 // Defines
 #define SD_CS  84
@@ -73,6 +73,7 @@ MPU6050 accelgyro(0x69); // <-- use for AD0 low
 #define GRAPH_ACCELGYRO 6
 #define GRAPH_MAX 6
 uint16_t showGraph = GRAPH_MAGXYZ;
+
 
 
 // Functions
@@ -128,6 +129,23 @@ void setup() {
   touchWheel.initTouchWheel(8, -20);
   touchWheel.takeWheelBaseline();  
   
+  // Font initialization
+  initFont_Ubuntu_smoothed();
+  while (1) {
+    for (uint8_t i=48; i<58; i++) {
+      GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));
+      GFX.fillRect(0, GFX.height/2, GFX.width, GFX.height, RGB(255, 255, 255));
+      Serial.print ("Drawing Character: "); 
+      Serial.println (i);
+    
+      GFX.drawText("Test Text 0123456789ABCDEFG", 10, 30, &Ubuntu14_smoothed, RGB(255, 255, 255) );
+      GFX.drawChar(i, 50, 100, &Ubuntu14_smoothed, RGB(0, 0, 0) );
+      Serial.println ("Updating Screen");
+      GFX.updateScreen();      
+//      delay(1000);
+    }
+  }
+    
   // Bitmap test
   //displayFlashBitmap4Bit(int16_t x, int16_t y, uint16_t bitmapWidth, uint16_t bitmapHeight, uint16_t bitmapPalette, uint8_t *bitmapData) {
   while (1) { 

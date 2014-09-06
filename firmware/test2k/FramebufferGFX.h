@@ -3,6 +3,7 @@
 
 #include <wprogram.h>
 #include "SSD1351.h"
+#include "FontStructure.h"
 #include <SD.h>
 
 #define swap(a, b) { int16_t t = a; a = b; b = t; }
@@ -61,6 +62,9 @@ class FramebufferGFX {
   uint32_t read32(File f);
   int loadImageBMP(const char* fileName, uint16_t x, uint16_t y);
   
+  // Font renderer functions
+  void drawText(char* text, int16_t xOffset, int16_t yOffset, FONTSTRUCT* font, uint16_t col);
+  uint8_t drawChar(uint8_t c, int16_t x, int16_t y, FONTSTRUCT* font, uint16_t col);
    
 };
 

@@ -26,6 +26,16 @@ uint16_t RGB(uint16_t r, uint16_t g, uint16_t b) {
   c += b >> 3;
   return c;
 }
+// Decompose a packed RGB565 representation into its component colors (scaled to original 255-0, but last 2-3 bits will be 0)
+uint8_t getRed(uint16_t col) {
+  return (col >> 11) << 3;
+}
+uint8_t getGreen(uint16_t col) {
+  return ((col & 0x07E0) >> 5) << 2;
+}
+uint8_t getBlue(uint16_t col) {
+  return (col & 0x001F) << 3;
+}
 
 
 void SSD1351::writeCommand(uint8_t c) {

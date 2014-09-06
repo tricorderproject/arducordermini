@@ -34,11 +34,10 @@
 // All text above must be included in any redistribution.
 // ---------------------------------------------------------------------------
 
-#include "FramebufferGFX.h"
-
 #include <wprogram.h>
 #include <SD.h>
 #include "FramebufferGFX.h"
+#include "FontStructure.h"
 
 // Constructor
 FramebufferGFX::FramebufferGFX(SSD1351* displayPtr) {
@@ -609,3 +608,80 @@ int FramebufferGFX::loadImageBMP(const char * fileName, uint16_t x, uint16_t y) 
   return 0;
 }
 
+
+/*
+ *  FONT RENDERER
+ */ 
+
+void FramebufferGFX::drawText(char* text, int16_t xOffset, int16_t yOffset, FONTSTRUCT* font, uint16_t col) {
+  // Example: GFX.drawText("Test Text", 10, 30, &UbuntuCondensed28_smoothed, RGB(255, 255, 255) );
+  int numCharacters = strlen(text);
+  int x = xOffset;
+  for (int i=0; i<numCharacters; i++) {
+    x += drawChar( text[i], x, yOffset, font, col);    
+  }
+}
+
+uint8_t FramebufferGFX::drawChar(uint8_t c, int16_t xOffset, int16_t yOffset, FONTSTRUCT* font, uint16_t col) {
+  // Step 1: Bound checking
+  
+  // Step 2: Setup
+  uint8_t bpp = font->bpp;
+  uint8_t pixelsPerByte = font->pixelsPerByte;
+  uint8_t sizeX = font->sizesX[c];
+  uint8_t sizeY = font->sizesY[c];
+  
+  // Return if character is not supported in this font
+  if (sizeX == 0) {
+    return 0;
+  }
+  
+  uint16_t dataOffset = font->characterOffsets[c];
+  // Mask
+  uint8_t mask = 0;
+  if (bpp == 1) mask = 0x01;
+  if (bpp == 2) mask = 0x03;
+  // Color
+  uint8_t r = getRed(col);
+  uint8_t g = getGreen(col);
+  uint8_t b = getBlue(col);
+    
+  // Step 3: Draw character  
+  for (uint16_t y=yOffset; y>yOffset - sizeY; y--) {
+    for (uint16_t x=xOffset; x<xOffset + sizeX; x+=pixelsPerByte) {
+      uint8_t data = font->fontData[dataOffset];
+      for (uint8_t pixel=0; pixel<pixelsPerByte; pixel++) {
+        uint8_t colorData = data & mask;
+        if (colorData > 0) {
+          if (((x + pixel) >= 0) && ((x + pixel) < display->width) && (y >= 0) && (y < display->height)) {
+            uint32_t pos = display->fbXY(x + pixel, y);
+            if (bpp == 1) {
+              // Black/white -- just overwrite existing pixel color with font color
+             display->framebuffer[pos] = col;                                    
+            } else if (bpp == 2) {
+              // 4-bit Greyscale -- blend font with existing background
+              if (colorData == 3) {
+                display->framebuffer[pos] = col;         
+              } else {
+                uint16_t existingCol = display->framebuffer[pos];
+                uint8_t div = 4 - colorData;  // (0, 1, 2, 3) = (4, 3, 2, 1)
+                uint8_t rE = getRed(existingCol);
+                uint8_t gE = getGreen(existingCol);
+                uint8_t bE = getBlue(existingCol);
+                int16_t deltaR = (r - rE) / div;    // These three divisions are expensive
+                int16_t deltaG = (g - gE) / div;
+                int16_t deltaB = (b - bE) / div;
+                uint16_t blendedCol = RGB(r+deltaR, g+deltaG, b+deltaB);
+                display->framebuffer[pos] = blendedCol;         
+              }
+            }
+          }
+        }
+        data = data >> bpp;
+      }
+      dataOffset += 1;
+    }
+  }
+  
+  return sizeX;
+}

@@ -1,0 +1,445 @@
+// Font Converter for Arducorder-mini
+// Peter Jansen, Sept 2014
+// This program converts a user-specified font into a header file that can be
+// used on the Arducorder Mini. The font can either be saved as 1-bit (black
+// and white), or 2-bit (greyscale) with alpha blending. 
+//
+// This quick data processing tool was put together in an evening, and is
+// meant to be quick and functional (rather than beautiful) code. Make your mistakes cheaply.   
+// 
+// INSTRUCTIONS FOR USE: 
+//  1) Make sure to point the three setup variables (below) to your image name and output file. Then run.
+//  2) Using the mouse, hover over pixels in the original (left) image.  The color of the pixel
+//     will be displayed below.
+//  3) Select a color by left clicking.
+//  4) As you select additional colors, the posterized (right) image will populate
+//  5) Modify or change colours in the pallete (lower left) using the Z/X keys.
+//  6) Once you're happy with the results, press SPACE to save.  
+//
+
+int maxSize = 50;
+int maxFontDataSize = 32768;
+PFont f[] = new PFont[maxSize];
+int idx = 0;
+f
+// ====================================================================
+// SETUP VARIABLES (These must be set to your desired font and variable
+// name before running) 
+String fontName = "Ubuntu";
+String variableName = "Ubuntu";
+String outputFile = "out.h";
+int sizes[] = {6, 8, 10, 12, 14, 18, 20, 24, 28, 32};    // 10 sizes
+int numSizes = 10-1;    // zero indexed
+int bitDepth = 2;    // 1 (b/w) or 2 (4-bit)
+int pixelsPerByte = 8 / bitDepth; 
+boolean smoothed = true;
+
+// ====================================================================
+
+// Converted font data
+int sizesX[] = new int[256];
+int sizesY[] = new int[256];
+int fontOffsets[] = new int[256];
+int fontData[] = new int[maxFontDataSize];
+int fontDataOffset = 0;
+
+// Valid characters
+int validCharacter[] = new int[256];
+
+// Internal variables
+int curSizeIdx = 0;
+int curSize = sizes[curSizeIdx];
+String outEnableHeader = "";
+String outHeader = "";
+String outData = "";
+String outInit = "";
+
+void setup() {
+  size(640, 360);
+  
+  // List available fonts
+  printArray(PFont.list());  
+  
+  // Create array of font sizes
+  for (int i=1; i<maxSize; i++) {    
+    f[i] = createFont(fontName, i);
+  }
+  textFont(f[20]);
+  
+  // Reset font data array for converted fonts
+  resetFontData();
+  
+  // Smoothed (greyscale) or black/white?
+  if (!smoothed) {
+    noSmooth();
+  }
+    
+  // Setup valid character ranges that we'd like to capture
+  for (int i=0; i<256; i++) {
+    validCharacter[i] = 0;
+  }
+  setValidCharacters(33, 128);   // Alpha-numeric characters and basic punctuation (ASCII "printable characters")
+  setValidCharacters(160, 191);   // ANSI Extended (including a few mathematical symbols)
+  setValidCharacters(215, 216);   // Multiplication sign
+  setValidCharacters(247, 248);   // Division sign
+  
+  
+}
+
+void draw() {
+  background(0);
+  textAlign(LEFT);
+  drawExampleText(width * 0.10);
+  
+  // Setup character size
+  int size = curSize; 
+  
+  // Step 1: Draw character
+  text(idx, 50, 50);
+  drawCharacter( char(idx), size, 100, 100);
+        
+  // Step 2: Convert display window into a set of addressable pixels  
+  loadPixels();  
+  if (validCharacter[idx] == 1) {
+    float[][] data = scanCharacter(100, 100, size+10);
+    convert(data, size+10, idx);
+    drawScannedCharacter(data, size+10, 200, 100);
+    println ("");  
+  }
+  
+  // Step 3: Index to next character
+  idx = idx + 1;
+  if (idx > 255) {    
+    println( writeFontDataToCode() );
+    outEnableHeader += writeEnableHeader();
+    outHeader += writeFontHeaderToCode();
+    outData += writeFontDataToCode();
+    outInit += writeStructInitToCode();    
+    
+    // Increment font size
+    curSizeIdx += 1;       
+    if (curSizeIdx == numSizes) {
+      // Complete -- write the output file and exit.
+      writeCodeToFile(outputFile);  
+      exit();
+    }
+    curSize = sizes[curSizeIdx];
+
+    // Reset font data array for converted fonts
+    resetFontData();
+    // Reset character index to 0  
+    idx = 0;  
+  }
+  //delay(10);
+  
+      
+}
+
+void resetFontData() {
+  sizesX = new int[256];
+  sizesY = new int[256];
+  fontOffsets = new int[256];
+  fontData = new int[maxFontDataSize];
+  fontDataOffset = 0;
+  
+  for (int i=0; i<256; i++) {
+    sizesX[i] = 0;
+    sizesY[i] = 0;
+    fontOffsets[i] = 0;
+  }
+}
+
+void setValidCharacters(int start, int stop) {
+  for (int i=start; i<stop; i++) {
+   validCharacter[i] = 1;
+  } 
+}
+
+
+String getVariableNamePrefix() {
+ String os = variableName + curSize;
+  if (smoothed) {
+    os += "_smoothed";
+  }
+  return os;
+}
+
+String getVariableNamePrefixNoSize() {
+ String os = variableName;
+  if (smoothed) {
+    os += "_smoothed";
+  }
+  return os;
+}
+
+void writeCodeToFile(String filename) {
+  PrintWriter output;
+  output = createWriter(filename);
+
+  // Step 1: Comments
+  output.println ("// This file was automatically generated by the open font conversion tool by Peter Jansen");
+  output.println ("// Font name: " + fontName + "   bitDepth: " + bitDepth + "   smoothed: " + smoothed);
+  output.println ("#include \"FontStructure.h\"");
+  output.println ("#if !defined(" + getVariableNamePrefixNoSize().toUpperCase() + "_H)");
+  output.println ("#define " + getVariableNamePrefixNoSize().toUpperCase() + "_H");
+  output.println ("");
+  output.println ("// Initialization Function (call this to initialize the font data structures)");
+  output.println ("void initFont_" + getVariableNamePrefixNoSize() + "();");
+  output.println ("");
+  
+  // Step 2: Write Enable header
+  output.println ("// ========================================================================");
+  output.println ("//  User: Enable and disable fonts here (based on available flash memory)");
+  output.println ("// ========================================================================");
+  output.println (outEnableHeader);
+  output.println ("// ========================================================================");
+  output.println ("");
+  
+  
+  // Step 3: Write Header
+  output.println ("// ========================================================================");
+  output.println ("//  PART 1: Font structure definitions ");
+  output.println ("// ========================================================================");
+  output.println (outHeader);
+  output.println ("");
+  
+  // Step 4: Write font data
+  output.println ("// ========================================================================");
+  output.println ("//  PART 2: Font data ");
+  output.println ("// ========================================================================");
+
+  output.println (outData);
+  output.println ("");
+  
+  // Step 5: Write initialization structure
+  output.println ("// ========================================================================");
+  output.println ("//  PART 3: Font initialization function ");
+  output.println ("// ========================================================================");
+  output.println ("void initFont_" + getVariableNamePrefixNoSize() + "() {"); 
+  output.println (outInit);
+  output.println ("}");
+  output.println ("");
+ 
+  // Step X: Close
+  output.println ("#endif");
+  output.flush();
+  output.close();
+
+}
+
+// Part 0: Enable header
+String writeEnableHeader() {
+  String os = "";
+  os += "#define " + getVariableNamePrefix() + "_ENABLED ";
+  os += "\t\t\t// Estimated flash usage: " + (fontDataOffset + (256*4)) + " bytes \n";
+  return os;
+}
+
+String writeDefinePrefix() {
+  String os = "";
+  os += "#if defined(" + getVariableNamePrefix() + "_ENABLED)";
+  return os; 
+}
+
+// Part 1: The header
+String writeFontHeaderToCode() {
+  String os = "";
+  String variableNamePrefix = getVariableNamePrefix();
+  os += writeDefinePrefix() + " \n";
+  os += "FONTSTRUCT " + variableNamePrefix + ";\n";
+  os += "#endif \n\n";
+  
+  return os;  
+}
+// Part 3: The initialization function
+String writeStructInitToCode() {
+  String os = "";
+  String variableNamePrefix = getVariableNamePrefix();
+  os += writeDefinePrefix() + " \n";
+  os += "\t" + variableNamePrefix + ".bpp = " + bitDepth + ";\n";
+  os += "\t" + variableNamePrefix + ".pixelsPerByte = " + pixelsPerByte + ";\n";
+  os += "\t" + variableNamePrefix + ".spaceWidth = " + curSize/2 + ";\n";
+  os += "\t" + variableNamePrefix + ".sizesX = " + variableNamePrefix + "_sizesX;\n";
+  os += "\t" + variableNamePrefix + ".sizesY = " + variableNamePrefix + "_sizesY;\n";
+  os += "\t" + variableNamePrefix + ".characterOffsets = " + variableNamePrefix + "_characterOffsets;\n";
+  os += "\t" + variableNamePrefix + ".fontData = " + variableNamePrefix + "_fontData;\n";
+  os += "#endif \n\n";  
+  return os;  
+}
+
+// Part 2: The data
+String writeFontDataToCode() {
+  String os = "";
+  String variableNamePrefix = getVariableNamePrefix();
+
+  os += writeDefinePrefix() + " \n";
+
+  // Step 2: sizesX  
+  os += "uint8_t " + variableNamePrefix + "_sizesX[] = {";
+  for (int i=0; i<255; i++) {
+    os += sizesX[i] + ", ";
+    if (i % 20 == 19) os += "\n        ";
+  }  
+  os += sizesX[255] + " }; \n";
+ 
+  // Step 3: sizesY
+  os += "uint8_t " + variableNamePrefix + "_sizesY[] = {";
+  for (int i=0; i<255; i++) {
+    os += sizesY[i] + ", ";
+    if (i % 20 == 19) os += "\n        ";
+  }  
+  os += sizesY[255] + " }; \n";
+
+  // Step 4: fontOffsets
+  os += "uint16_t " + variableNamePrefix + "_characterOffsets[] = {";
+  for (int i=0; i<255; i++) {
+    os += fontOffsets[i] + ", ";
+    if (i % 20 == 19) os += "\n        ";
+  }  
+  os += fontOffsets[255] + " }; \n";
+  
+  // Step 5: fontData
+  os += "uint8_t " + variableNamePrefix + "_fontData[] = {";
+  for (int i=0; i<fontDataOffset; i++) {
+    os += fontData[i] + ", ";
+    if (i % 20 == 19) os += "\n        ";
+  }  
+  os += fontData[fontDataOffset] + " }; \n";
+  
+  os += "#endif \n\n";
+  return os; 
+}
+  
+
+float[][] scanCharacter(int x0, int y0, int size) {  
+  float[][] data = new float[size][size];
+  float resolution = pow(2, bitDepth) - 1;
+  println ("Resolution: " + (resolution+1) + " levels");
+  
+  for (int y = y0; y > y0 - size; y-- ) {
+    print ("y: " + y + "   ");
+    for (int x = x0; x < x0 + size; x++ ) {
+      int locIn = x + y*width;
+      // The functions red(), green(), and blue() pull out the three color components from a pixel.
+      float r = red(pixels [locIn]); 
+      float g = green(pixels[locIn]);
+      float b = blue(pixels[locIn]);
+      float intensity = (r + g + b) / 3;
+      
+      float intensityLR = ceil((intensity / 255.0f) * resolution);
+      print(intensityLR + " ");
+      
+      int arrayX = x - x0;
+      int arrayY = abs(y - y0);
+      data[arrayX][arrayY] = intensityLR;
+    }
+    println ("");
+  }
+  
+  return data;
+}
+
+void convert(float[][] data, int size, int charIdx) {
+  int sizeX = 0;
+  int sizeY = 0;
+  
+  // Find size
+  for (int y=0; y<size; y++) {
+    int found = 0;
+    for (int x=0; x<size; x++) {
+      if ((data[x][y] > 0) && (x > sizeX)) {
+        sizeX = x;
+      }
+      if (data[x][y] > 0) {
+        found = 1;
+      }
+    }
+    if (found == 1) {
+      sizeY = y;
+    }
+  }
+    
+  // Calculate size parameters  
+  int horizontalBytes = ceil((float)sizeX / (float)pixelsPerByte);
+  int totalSize = horizontalBytes * sizeY;
+  println ("sizeX: " + sizeX + "   sizeY: " + sizeY + "   pixelsPerByte: " + pixelsPerByte);
+  println ("Horizontal Bytes: " + horizontalBytes + "   totalSize = " + totalSize);
+  println ("Storing at fontDataOffset: " + fontDataOffset);
+  // Store
+  sizesX[charIdx] = sizeX;
+  sizesY[charIdx] = sizeY;
+  fontOffsets[charIdx] = fontDataOffset;
+  
+  int mask = 0;
+  if (bitDepth == 1) mask = 0x01;
+  if (bitDepth == 2) mask = 0x03;
+  int shift = 8 - bitDepth;  
+ 
+  int curByte = 0;
+  int numPixelsInByte = 0; 
+  for (int y=0; y<sizeY; y++) {
+    print ("storey: " + y + "   ");   
+    for (int x=0; x<sizeX; x++) {
+      int pixel = pixel = ceil(data[x][y]);
+                    
+      curByte += ((pixel & mask) << shift);
+      numPixelsInByte += 1;
+      if (numPixelsInByte == pixelsPerByte) {
+        // Store
+        print( curByte + " ");
+        fontData[fontDataOffset] = curByte;
+        fontDataOffset += 1;
+        curByte = 0;
+        numPixelsInByte = 0;
+      } else {
+        curByte = curByte >> bitDepth;
+      }
+      
+    }
+    
+    // Store
+    if (numPixelsInByte > 0) {       
+       print( curByte + " ");
+       curByte = curByte >> (bitDepth * (pixelsPerByte - numPixelsInByte - 1));      
+       fontData[fontDataOffset] = curByte;
+       fontDataOffset += 1;             
+    }
+    curByte = 0;
+    numPixelsInByte = 0;
+    println ("");    
+  }
+
+  println ("Finished storing at fontDataOffset: " + fontDataOffset);
+ 
+ 
+}
+
+void drawScannedCharacter(float[][] data, int size, int x0, int y0) {  
+  float resolution = pow(2, bitDepth) - 1;
+  for (int y=0; y<size; y++) {   
+    for (int x=0; x<size; x++) {
+      float intensity = data[x][y] * (255.0f/resolution);
+      stroke(intensity);
+      point(x0+x, y0-y);
+    }
+  }  
+        
+}
+
+void drawExampleText(float x) {
+  line(x, 0, x, 65);
+  line(x, 220, x, height);
+
+  fill(255);
+  text("GRUMPY WIZARDS MAKE TOXIC BREW FOR THE EVIL QUEEN AND JACK. 0123456789", x, 170);
+  fill(255);
+  text("Grumpy wizards make toxic brew for the evil Queen and Jack.", x, 210);  
+}
+
+
+void drawCharacter(char oneCharacter, int size, int x, int y) {
+  textFont(f[size]);
+  fill(255);
+  String textOut = "" + oneCharacter;
+  text(textOut, x, y);    
+}

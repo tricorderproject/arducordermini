@@ -11,6 +11,9 @@
 // Macros for framebuffer location
 
 uint16_t RGB(uint16_t r, uint16_t g, uint16_t b);
+uint8_t getRed(uint16_t col);
+uint8_t getGreen(uint16_t col);
+uint8_t getBlue(uint16_t col);
 
 class SSD1351 {
  public:

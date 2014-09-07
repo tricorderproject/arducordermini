@@ -26,6 +26,7 @@
 
 #include "bitmap_earthatnight.h"
 #include "FontUbuntu.h"
+#include "FontUbuntuSmoothed.h"
 
 // Defines
 #define SD_CS  84
@@ -131,6 +132,7 @@ void setup() {
   
   // Font initialization
   initFont_Ubuntu();
+  initFont_Ubuntu_smoothed();
   int16_t boxWidth = 50;
   int16_t boxDirection = 1;
   
@@ -148,7 +150,8 @@ void setup() {
 //      Serial.print ("Drawing Character: "); 
 //      Serial.println (i);
     
-      GFX.drawText("Test Text 0123456789ABCDEFG", 10, 30, &Ubuntu14, RGB(255, 255, 255) );
+      GFX.drawText("Test Text 0123456789ABCDEFG", 10, 30, &Ubuntu28, RGB(255, 255, 255) );
+      GFX.drawText("Test Text 0123456789ABCDEFG", 10, 60, &Ubuntu28_smoothed, RGB(255, 255, 255) );      
 //      GFX.drawChar(i, 50, 100, &Ubuntu14, RGB(0, 0, 0) );
       Serial.println ("Updating Screen");
       GFX.updateScreen();      

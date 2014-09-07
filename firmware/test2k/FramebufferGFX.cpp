@@ -742,7 +742,7 @@ uint8_t FramebufferGFX::drawChar(uint8_t c, int16_t xOffset, int16_t yOffset, FO
   uint8_t r = getRed(col);
   uint8_t g = getGreen(col);
   uint8_t b = getBlue(col);
-    
+  
   // Step 3: Draw character  
   for (uint16_t y=yOffset; y>yOffset - sizeY; y--) {
     for (uint16_t x=xOffset; x<xOffset + sizeX; x+=pixelsPerByte) {
@@ -775,10 +775,10 @@ uint8_t FramebufferGFX::drawChar(uint8_t c, int16_t xOffset, int16_t yOffset, FO
           }
         }
         data = data >> bpp;
-      }
+      } 
       dataOffset += 1;
     }
   }
-  
+
   return sizeX;
 }

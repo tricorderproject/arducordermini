@@ -25,14 +25,14 @@ int idx = 0;
 // ====================================================================
 // SETUP VARIABLES (These must be set to your desired font and variable
 // name before running) 
-String fontName = "Ubuntu";
-String variableName = "Ubuntu";
+String fontName = "Ubuntu Condensed";
+String variableName = "UbuntuCondensed";
 String outputFile = "out.h";
 int sizes[] = {6, 8, 10, 12, 14, 18, 20, 24, 28, 32};    // 10 sizes
 int numSizes = 10-1;    // zero indexed
-int bitDepth = 2;    // 1 (b/w) or 2 (4-bit)
+int bitDepth = 1;    // 1 (b/w) or 2 (4-bit).  1 should only be used with smoothed=false, and 2 only with smoothed=true.
 int pixelsPerByte = 8 / bitDepth; 
-boolean smoothed = true;
+boolean smoothed = false;
 
 // ====================================================================
 
@@ -358,6 +358,8 @@ void convert(float[][] data, int size, int charIdx) {
       sizeY = y;
     }
   }
+  sizeX += 1;      // exclusive
+  sizeY += 1;      // exclusive
     
   // Calculate size parameters  
   int horizontalBytes = ceil((float)sizeX / (float)pixelsPerByte);

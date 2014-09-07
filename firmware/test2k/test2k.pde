@@ -130,7 +130,7 @@ void setup() {
   touchWheel.takeWheelBaseline();  
   
   // Font initialization
-  initFont_Ubuntu_smoothed();
+  initFont_Ubuntu();
   while (1) {
     for (uint8_t i=48; i<58; i++) {
       GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));
@@ -138,8 +138,8 @@ void setup() {
       Serial.print ("Drawing Character: "); 
       Serial.println (i);
     
-      GFX.drawText("Test Text 0123456789ABCDEFG", 10, 30, &Ubuntu14_smoothed, RGB(255, 255, 255) );
-      GFX.drawChar(i, 50, 100, &Ubuntu14_smoothed, RGB(0, 0, 0) );
+      GFX.drawText("Test Text 0123456789ABCDEFG", 10, 30, &Ubuntu14, RGB(255, 255, 255) );
+      GFX.drawChar(i, 50, 100, &Ubuntu14, RGB(0, 0, 0) );
       Serial.println ("Updating Screen");
       GFX.updateScreen();      
 //      delay(1000);

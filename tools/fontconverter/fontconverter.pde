@@ -21,7 +21,7 @@ int maxSize = 50;
 int maxFontDataSize = 32768;
 PFont f[] = new PFont[maxSize];
 int idx = 0;
-f
+
 // ====================================================================
 // SETUP VARIABLES (These must be set to your desired font and variable
 // name before running) 

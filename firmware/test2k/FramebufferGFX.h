@@ -54,6 +54,10 @@ class FramebufferGFX {
   void drawRoundRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t r, uint16_t color);
   void fillRoundRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t r, uint16_t color);
 
+  // Gradient primitives
+  void gradientRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t col1, uint16_t col2);
+  void gradientRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int8_t gAngle, uint16_t col1, uint16_t col2);
+  
   // Bitmap functions (flash)
   void displayFlashBitmap4Bit(int x, int y, uint16_t bitmapWidth, uint16_t bitmapHeight, uint16_t *bitmapPalette, uint8_t *bitmapData);
   

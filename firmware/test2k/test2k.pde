@@ -131,19 +131,37 @@ void setup() {
   
   // Font initialization
   initFont_Ubuntu();
+  int16_t boxWidth = 50;
+  int16_t boxDirection = 1;
+  
   while (1) {
-    for (uint8_t i=48; i<58; i++) {
+  //  for (uint8_t i=48; i<58; i++) {
       GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));
-      GFX.fillRect(0, GFX.height/2, GFX.width, GFX.height, RGB(255, 255, 255));
-      Serial.print ("Drawing Character: "); 
-      Serial.println (i);
+//      GFX.fillRect(0, GFX.height/2, GFX.width, GFX.height, RGB(255, 255, 255));
+//      GFX.gradientRect(1, 1, 50, 50, RGB(0, 0, 255), RGB(128, 128, 255));
+//      GFX.gradientRect(1, 60, 50, 110, 50, RGB(0, 0, 255), RGB(128, 128, 255));    // small angle
+      
+//      GFX.gradientRect(10, 50, 110, 53, RGB(0, 0, 255), RGB(255, 0, 0));
+
+      GFX.gradientRect(1, 1, boxWidth, boxWidth, 45, RGB(0, 0, 255), RGB(128, 128, 255));    // small angle
+      
+//      Serial.print ("Drawing Character: "); 
+//      Serial.println (i);
     
       GFX.drawText("Test Text 0123456789ABCDEFG", 10, 30, &Ubuntu14, RGB(255, 255, 255) );
-      GFX.drawChar(i, 50, 100, &Ubuntu14, RGB(0, 0, 0) );
+//      GFX.drawChar(i, 50, 100, &Ubuntu14, RGB(0, 0, 0) );
       Serial.println ("Updating Screen");
       GFX.updateScreen();      
-//      delay(1000);
-    }
+
+      boxWidth += boxDirection;
+      if (boxWidth > 126) {
+        boxDirection = -1;
+      }
+      if (boxWidth < 5) {
+        boxDirection = 1;      
+      }
+      
+//    }
   }
     
   // Bitmap test

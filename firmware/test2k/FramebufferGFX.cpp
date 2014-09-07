@@ -447,6 +447,103 @@ void FramebufferGFX::fillRoundRect(int16_t x0, int16_t y0, int16_t x1, int16_t y
   fillCircleHelper(x+r    , y+r, r, 2, h-2*r-1, color);  
 }
 
+/*
+ *  GRADIENT PRIMITIVES
+ */ 
+#define FPMULT 64              // Pseudo fixed-point math.  Chipkit could use a Fixed-point library. 
+#define GRAD_MAXWIDTH 150      // Same as the width of the screen, plus a little extra incase
+// No Angle (gradient is entirely horizontal)
+void FramebufferGFX::gradientRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t col1, uint16_t col2) {
+  gradientRect(x0, y0, x1, y1, 0, col1, col2);
+}
+
+// Allows an angle to the gradient for extra effect. Angle can be between -60 to 60, in degrees)
+// NOTE: This function takes around ~300+ bytes of RAM while it's running.
+void FramebufferGFX::gradientRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int8_t gAngle, uint16_t col1, uint16_t col2) {
+  // Step 0: Position Setup
+  int16_t w = x1 - x0;
+  int16_t h = y1 - y0;
+  int16_t x = x0;
+  int16_t y = y0;
+  if (x0 > x1) {
+    x = x1;
+    w = -w;
+  }
+  if (y0 > y1) {
+    y = y1;
+    h = -h;
+  }
+  
+  if ((w == 0) || (h == 0)) {
+    // Nothing to draw
+    return;
+  }
+  
+  if (w >= GRAD_MAXWIDTH) {
+    Serial.print("ERROR: FramebufferGFX::gradientRect: width exceeds GRAD_MAXWIDTH (");
+    Serial.print(GRAD_MAXWIDTH, DEC);
+    Serial.println (").  Gradient rectangle not drawn!");
+    fillRect(x0, y0, x1, y1, col1);
+    return;
+  }    
+  
+  // Step 1: Gradient computation setup
+  uint8_t r1 = getRed(col1);
+  uint8_t g1 = getGreen(col1);
+  uint8_t b1 = getBlue(col1);
+  uint8_t r2 = getRed(col2);
+  uint8_t g2 = getGreen(col2);
+  uint8_t b2 = getBlue(col2);
+  
+  int16_t deltaR = 0;
+  deltaR = ((r2 - r1) * FPMULT) / w;
+  int16_t deltaG = 0;
+  deltaG = ((g2 - g1) * FPMULT) / w;
+  int16_t deltaB = 0;
+  deltaB = ((b2 - b1) * FPMULT) / w;
+
+  // Gradient Angle
+  int16_t deltaH = 0;
+  if (gAngle != 0) {
+    if (gAngle < -60) gAngle = -60;
+    if (gAngle > 60) gAngle = 60;
+    float gAngleRad = (gAngle / 180.f) * 3.1415926f;
+    int16_t dist = (int16_t)floor(tan(gAngleRad) * h);
+    deltaH = (dist * FPMULT) / h;
+  }
+
+  // Step 2: Precompute gradient
+  uint16_t gradient[GRAD_MAXWIDTH];    // Normally you'd use dynamic memory here to allocate width*2bpp,
+                                       // But we're going to avoid dynamic memory for safety. 
+  int16_t r = r1 * FPMULT;
+  int16_t g = g1 * FPMULT;
+  int16_t b = b1 * FPMULT;                                         
+  for (int i=0; i<w; i++) {
+    // Convert colours from fixed-point to uint8_t, and store
+    uint8_t rc = (uint8_t)(r / FPMULT);
+    uint8_t gc = (uint8_t)(g / FPMULT);
+    uint8_t bc = (uint8_t)(b / FPMULT);
+    gradient[i] = RGB(rc, gc, bc);
+      
+    // Increment gradient variables
+    r += deltaR;
+    g += deltaG;
+    b += deltaB;      
+  }
+  
+  // Step 3: Draw gradient
+  // (x, y) is lower corner.  draw fill lines from top to bottom.   
+  for (int16_t j=0; j<h; j++) {  
+    int angleDelta = (deltaH * j) / FPMULT;    
+    for (int16_t i=0; i<w; i++) {
+      int offset = i + angleDelta;
+      if (offset < 0) offset = 0;
+      if (offset >= w) offset = w-1;
+      drawPixel(x+i, y+j, gradient[offset]);
+    }
+  }
+}
+
 
 /*
  *  POSTERIZED FLASH BITMAP FUNCTIONS

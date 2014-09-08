@@ -710,7 +710,7 @@ int FramebufferGFX::loadImageBMP(const char * fileName, uint16_t x, uint16_t y) 
  *  FONT RENDERER
  */ 
 
-void FramebufferGFX::drawText(char* text, int16_t xOffset, int16_t yOffset, FONTSTRUCT* font, uint16_t col) {
+void FramebufferGFX::drawText(char* text, int16_t xOffset, int16_t yOffset, const FONTSTRUCT* font, uint16_t col) {
   // Example: GFX.drawText("Test Text", 10, 30, &UbuntuCondensed28_smoothed, RGB(255, 255, 255) );
   int numCharacters = strlen(text);
   int x = xOffset;
@@ -719,7 +719,7 @@ void FramebufferGFX::drawText(char* text, int16_t xOffset, int16_t yOffset, FONT
   }
 }
 
-uint8_t FramebufferGFX::drawChar(uint8_t c, int16_t xOffset, int16_t yOffset, FONTSTRUCT* font, uint16_t col) {
+uint8_t FramebufferGFX::drawChar(uint8_t c, int16_t xOffset, int16_t yOffset, const FONTSTRUCT* font, uint16_t col) {
   // Step 1: Bound checking
   
   // Step 2: Setup
@@ -782,3 +782,14 @@ uint8_t FramebufferGFX::drawChar(uint8_t c, int16_t xOffset, int16_t yOffset, FO
 
   return sizeX;
 }
+
+// Returns the width (in pixels) required to draw a given piece of text
+int16_t FramebufferGFX::textLength(char* text, const FONTSTRUCT* font) {
+  int16_t length = 0;
+  int numCharacters = strlen(text);
+  for (int i=0; i<numCharacters; i++) {
+    length += font->sizesX[ text[i] ];
+  }
+  return length;  
+}
+

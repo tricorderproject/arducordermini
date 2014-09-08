@@ -24,6 +24,7 @@
 #include "sensor_BMP180.h"
 #include "sensor_AS3935.h"
 
+#include "Tile.h"
 #include "bitmap_earthatnight.h"
 #include "Fonts.h"
 
@@ -129,11 +130,23 @@ void setup() {
   touchWheel.initTouchWheel(8, -20);
   touchWheel.takeWheelBaseline();  
   
-  // Font initialization
-  initFont_Ubuntu();
-  initFont_Ubuntu_smoothed();
   int16_t boxWidth = 50;
   int16_t boxDirection = 1;
+  
+  Tile oneTile = Tile("Temperature", RGB(0, 0, 255), &GFX);
+
+  char buffer[10];
+  strcpy(buffer, "24");
+  strcat(buffer, " ");
+  strcat(buffer, "C");
+  buffer[2] = 176;
+  oneTile.setText(buffer);
+  
+  while (1) {      
+     oneTile.render(60, 60);
+     Serial.println ("Updating Screen");
+     GFX.updateScreen(); 
+  }
   
   while (1) {
   //  for (uint8_t i=48; i<58; i++) {
@@ -153,7 +166,7 @@ void setup() {
 //      Serial.println (i);
     
       GFX.drawText("Test Text 0123456789ABCDEFG", 10, 30, &Ubuntu28, RGB(255, 255, 255) );
-      GFX.drawText("Test Text 0123456789ABCDEFG", 10, 60, &Ubuntu28_smoothed, RGB(255, 255, 255) );      
+//      GFX.drawText("Test Text 0123456789ABCDEFG", 10, 60, &Ubuntu28_smoothed, RGB(255, 255, 255) );      
 //      GFX.drawChar(i, 50, 100, &Ubuntu14, RGB(0, 0, 0) );
       Serial.println ("Updating Screen");
       GFX.updateScreen();      

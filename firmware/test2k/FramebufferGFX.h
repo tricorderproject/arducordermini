@@ -67,9 +67,10 @@ class FramebufferGFX {
   int loadImageBMP(const char* fileName, uint16_t x, uint16_t y);
   
   // Font renderer functions
-  void drawText(char* text, int16_t xOffset, int16_t yOffset, FONTSTRUCT* font, uint16_t col);
-  uint8_t drawChar(uint8_t c, int16_t x, int16_t y, FONTSTRUCT* font, uint16_t col);
-   
+  void drawText(char* text, int16_t xOffset, int16_t yOffset, const FONTSTRUCT* font, uint16_t col);
+  uint8_t drawChar(uint8_t c, int16_t x, int16_t y, const FONTSTRUCT* font, uint16_t col);
+  int16_t textLength(char* text, const FONTSTRUCT* font);
+  
 };
 
 

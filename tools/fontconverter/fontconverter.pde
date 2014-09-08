@@ -50,7 +50,6 @@ int validCharacter[] = new int[256];
 int curSizeIdx = 0;
 int curSize = sizes[curSizeIdx];
 String outEnableHeader = "";
-String outHeader = "";
 String outData = "";
 String outInit = "";
 
@@ -111,8 +110,7 @@ void draw() {
   idx = idx + 1;
   if (idx > 255) {    
     println( writeFontDataToCode() );
-    outEnableHeader += writeEnableHeader();
-    outHeader += writeFontHeaderToCode();
+    outEnableHeader += writeEnableHeader();    
     outData += writeFontDataToCode();
     outInit += writeStructInitToCode();    
     
@@ -182,10 +180,7 @@ void writeCodeToFile(String filename) {
   output.println ("#include \"FontStructure.h\"");
   output.println ("#if !defined(" + getVariableNamePrefixNoSize().toUpperCase() + "_H)");
   output.println ("#define " + getVariableNamePrefixNoSize().toUpperCase() + "_H");
-  output.println ("");
-  output.println ("// Initialization Function (call this to initialize the font data structures)");
-  output.println ("void initFont_" + getVariableNamePrefixNoSize() + "();");
-  output.println ("");
+  output.println ("");  
   
   // Step 2: Write Enable header
   output.println ("// ========================================================================");
@@ -194,31 +189,21 @@ void writeCodeToFile(String filename) {
   output.println (outEnableHeader);
   output.println ("// ========================================================================");
   output.println ("");
-  
-  
-  // Step 3: Write Header
+      
+  // Step 3: Write font data
   output.println ("// ========================================================================");
-  output.println ("//  PART 1: Font structure definitions ");
+  output.println ("//  PART 1: Font data ");
   output.println ("// ========================================================================");
-  output.println (outHeader);
-  output.println ("");
-  
-  // Step 4: Write font data
-  output.println ("// ========================================================================");
-  output.println ("//  PART 2: Font data ");
-  output.println ("// ========================================================================");
-
   output.println (outData);
   output.println ("");
-  
-  // Step 5: Write initialization structure
+ 
+  // Step 4: Write font structures
   output.println ("// ========================================================================");
-  output.println ("//  PART 3: Font initialization function ");
+  output.println ("//  PART 2: Font structure definitions ");
   output.println ("// ========================================================================");
-  output.println ("void initFont_" + getVariableNamePrefixNoSize() + "() {"); 
   output.println (outInit);
-  output.println ("}");
   output.println ("");
+ 
  
   // Step X: Close
   output.println ("#endif");
@@ -241,6 +226,7 @@ String writeDefinePrefix() {
   return os; 
 }
 
+/*
 // Part 1: The header
 String writeFontHeaderToCode() {
   String os = "";
@@ -251,18 +237,23 @@ String writeFontHeaderToCode() {
   
   return os;  
 }
+*/
+
 // Part 3: The initialization function
 String writeStructInitToCode() {
   String os = "";
   String variableNamePrefix = getVariableNamePrefix();
   os += writeDefinePrefix() + " \n";
-  os += "\t" + variableNamePrefix + ".bpp = " + bitDepth + ";\n";
-  os += "\t" + variableNamePrefix + ".pixelsPerByte = " + pixelsPerByte + ";\n";
-  os += "\t" + variableNamePrefix + ".spaceWidth = " + curSize/2 + ";\n";
-  os += "\t" + variableNamePrefix + ".sizesX = " + variableNamePrefix + "_sizesX;\n";
-  os += "\t" + variableNamePrefix + ".sizesY = " + variableNamePrefix + "_sizesY;\n";
-  os += "\t" + variableNamePrefix + ".characterOffsets = " + variableNamePrefix + "_characterOffsets;\n";
-  os += "\t" + variableNamePrefix + ".fontData = " + variableNamePrefix + "_fontData;\n";
+  
+  os += "const FONTSTRUCT " + variableNamePrefix + " = { \n";
+  os += "\t" + bitDepth + ",\t // .bpp \n";
+  os += "\t" + pixelsPerByte + ",\t // .pixelsPerByte \n";
+  os += "\t" + curSize/2 + ",\t // .spaceWidth \n";
+  os += "\t" + variableNamePrefix + "_sizesX" + ",\t // .sizesX \n";
+  os += "\t" + variableNamePrefix + "_sizesY" + ",\t // .sizesY \n";
+  os += "\t" + variableNamePrefix + "_characterOffsets" + ",\t // .characterOffsets \n";
+  os += "\t" + variableNamePrefix + "_fontData" + "\t // .fontData \n";
+  os += "};\n";  
   os += "#endif \n\n";  
   return os;  
 }
@@ -275,7 +266,7 @@ String writeFontDataToCode() {
   os += writeDefinePrefix() + " \n";
 
   // Step 2: sizesX  
-  os += "uint8_t " + variableNamePrefix + "_sizesX[] = {";
+  os += "const uint8_t " + variableNamePrefix + "_sizesX[] = {";
   for (int i=0; i<255; i++) {
     os += sizesX[i] + ", ";
     if (i % 20 == 19) os += "\n        ";
@@ -283,7 +274,7 @@ String writeFontDataToCode() {
   os += sizesX[255] + " }; \n";
  
   // Step 3: sizesY
-  os += "uint8_t " + variableNamePrefix + "_sizesY[] = {";
+  os += "const uint8_t " + variableNamePrefix + "_sizesY[] = {";
   for (int i=0; i<255; i++) {
     os += sizesY[i] + ", ";
     if (i % 20 == 19) os += "\n        ";
@@ -291,7 +282,7 @@ String writeFontDataToCode() {
   os += sizesY[255] + " }; \n";
 
   // Step 4: fontOffsets
-  os += "uint16_t " + variableNamePrefix + "_characterOffsets[] = {";
+  os += "const uint16_t " + variableNamePrefix + "_characterOffsets[] = {";
   for (int i=0; i<255; i++) {
     os += fontOffsets[i] + ", ";
     if (i % 20 == 19) os += "\n        ";
@@ -299,7 +290,7 @@ String writeFontDataToCode() {
   os += fontOffsets[255] + " }; \n";
   
   // Step 5: fontData
-  os += "uint8_t " + variableNamePrefix + "_fontData[] = {";
+  os += "const uint8_t " + variableNamePrefix + "_fontData[] = {";
   for (int i=0; i<fontDataOffset; i++) {
     os += fontData[i] + ", ";
     if (i % 20 == 19) os += "\n        ";

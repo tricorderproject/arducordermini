@@ -25,8 +25,7 @@
 #include "sensor_AS3935.h"
 
 #include "bitmap_earthatnight.h"
-#include "FontUbuntu.h"
-#include "FontUbuntuSmoothed.h"
+#include "Fonts.h"
 
 // Defines
 #define SD_CS  84
@@ -145,7 +144,10 @@ void setup() {
       
 //      GFX.gradientRect(10, 50, 110, 53, RGB(0, 0, 255), RGB(255, 0, 0));
 
-      GFX.gradientRect(1, 1, boxWidth, boxWidth, 45, RGB(0, 0, 255), RGB(128, 128, 255));    // small angle
+      GFX.gradientRect(1, 1, 1+boxWidth, 1+boxWidth, 45, RGB(0, 0, 255), RGB(128, 128, 255));    // small angle
+      GFX.gradientRect(1, 60, 1+boxWidth, 60+boxWidth, 45, RGB(0, 0, 255), RGB(128, 128, 255));    // small angle
+      GFX.gradientRect(60, 1, 60+boxWidth, 1+boxWidth, 45, RGB(0, 255, 0), RGB(128, 255, 128));    // small angle
+      GFX.gradientRect(60, 60, 60+boxWidth, 60+boxWidth, 45, RGB(255, 128, 0), RGB(255, 255, 128));    // small angle
       
 //      Serial.print ("Drawing Character: "); 
 //      Serial.println (i);
@@ -156,6 +158,7 @@ void setup() {
       Serial.println ("Updating Screen");
       GFX.updateScreen();      
 
+/*
       boxWidth += boxDirection;
       if (boxWidth > 126) {
         boxDirection = -1;
@@ -163,7 +166,7 @@ void setup() {
       if (boxWidth < 5) {
         boxDirection = 1;      
       }
-      
+  */    
 //    }
   }
     
@@ -584,7 +587,6 @@ void bmp180_test() {
   }  
   
 }
-
 
 
 //## TEST

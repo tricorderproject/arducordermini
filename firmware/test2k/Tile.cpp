@@ -47,15 +47,23 @@ void Tile::setText(char* tileText) {
 // Render methods
 void Tile::render(int x, int y) {  
   // Background 
-  GFX->gradientRect(x, y, x+TILE_SIZEX, y+TILE_SIZEY, 45, color, color);    // small angle 
+  uint16_t r = getRed(color);
+  uint16_t g = getGreen(color);
+  uint16_t b = getBlue(color);
+  r += 64;
+  g += 64;
+  b += 64;
+  if (r > 255) r = 255;
+  if (g > 255) g = 255;
+  if (b > 255) b = 255;
+  uint16_t color2 = RGB(r, g, b);
+  GFX->gradientRect(x, y, x+TILE_SIZEX, y+TILE_SIZEY, 45, color, color2);    // small angle 
   
   // Label text on the bottom
-  GFX->drawText(name, x, y+TILE_SIZEY, &Ubuntu10, RGB(255, 255, 255) );
+  GFX->drawJustifiedText(name, x, (x+TILE_SIZEX)-1, y+TILE_SIZEY, &Ubuntu10, JUST_RIGHT, RGB(255, 255, 255) );
   
-  // Center text
-  int16_t length = GFX->textLength(text, &Ubuntu24);
-  int16_t offset = (TILE_SIZEX - length) / 2;
-  GFX->drawText(text, x + offset, y+((2*TILE_SIZEY)/3), &Ubuntu24, RGB(255, 255, 255) );
+  // Draw sensor text in the middle
+  GFX->drawJustifiedText(text, x, (x+TILE_SIZEX)-1, y+((2*TILE_SIZEY)/3), &Ubuntu24, JUST_CENTER, RGB(255, 255, 255) );
   
 }
     

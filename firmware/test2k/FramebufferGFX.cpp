@@ -715,7 +715,25 @@ void FramebufferGFX::drawText(char* text, int16_t xOffset, int16_t yOffset, cons
   int numCharacters = strlen(text);
   int x = xOffset;
   for (int i=0; i<numCharacters; i++) {
-    x += drawChar( text[i], x, yOffset, font, col);    
+    x += drawChar( text[i], x, yOffset, font, col);   
+  }
+}
+
+void FramebufferGFX::drawJustifiedText(char* text, int16_t xStart, int16_t xEnd, int16_t yOffset, const FONTSTRUCT* font, uint8_t mode, uint16_t col) {
+  // Example: GFX.drawText("Test Text", 1, 100, 30, &UbuntuCondensed28_smoothed, JUST_CENTER, RGB(255, 255, 255) );
+  // This would draw the text at the center of the line defined by (1, 100) -- i.e. centered around pixel 50. 
+  int xLength = textLength(text, font);  
+  int numCharacters = strlen(text);
+  
+  // Left justified text (default)
+  int x = xStart;    
+  // Right justified text
+  if (mode == JUST_RIGHT) x = xEnd - xLength;
+  // Center justified text
+  if (mode == JUST_CENTER) x = xStart + ((xEnd - xStart) - xLength);
+  
+  for (int i=0; i<numCharacters; i++) {
+    x += drawChar( text[i], x, yOffset, font, col);   
   }
 }
 
@@ -788,7 +806,8 @@ int16_t FramebufferGFX::textLength(char* text, const FONTSTRUCT* font) {
   int16_t length = 0;
   int numCharacters = strlen(text);
   for (int i=0; i<numCharacters; i++) {
-    length += font->sizesX[ text[i] ];
+    uint8_t charIdx = text[i];
+    length += font->sizesX[ charIdx ];
   }
   return length;  
 }

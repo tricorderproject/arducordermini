@@ -10,6 +10,10 @@
 
 #define BUFFPIXEL 20
 
+// Font renderer justifications
+#define JUST_LEFT 1
+#define JUST_RIGHT 2
+#define JUST_CENTER 3
 
 class FramebufferGFX {
  public:
@@ -68,6 +72,7 @@ class FramebufferGFX {
   
   // Font renderer functions
   void drawText(char* text, int16_t xOffset, int16_t yOffset, const FONTSTRUCT* font, uint16_t col);
+  void drawJustifiedText(char* text, int16_t xStart, int16_t xEnd, int16_t yOffset, const FONTSTRUCT* font, uint8_t mode, uint16_t col);
   uint8_t drawChar(uint8_t c, int16_t x, int16_t y, const FONTSTRUCT* font, uint16_t col);
   int16_t textLength(char* text, const FONTSTRUCT* font);
   

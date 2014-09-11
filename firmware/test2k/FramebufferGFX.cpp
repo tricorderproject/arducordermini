@@ -734,7 +734,7 @@ void FramebufferGFX::drawJustifiedText(char* text, int16_t xStart, int16_t xEnd,
   // Right justified text
   if (mode == JUST_RIGHT) x = xEnd - xLength;
   // Center justified text
-  if (mode == JUST_CENTER) x = xStart + ((xEnd - xStart) - xLength);
+  if (mode == JUST_CENTER) x = xStart + ((xEnd - xStart)/2) - (xLength/2);
   
   for (int i=0; i<numCharacters; i++) {
     x += drawChar( text[i], x, yOffset, font, col);   

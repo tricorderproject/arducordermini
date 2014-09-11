@@ -4,7 +4,7 @@
 #include "Fonts.h"
 
 // Constructor
-// NOTE: For no bitmap, initialize tileBitmap == NULL. 
+// NOTE: If no bitmap is to be used, initialize tileBitmap == NULL. 
 Tile::Tile(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap, FramebufferGFX* GFXPtr) {
   // Variables (physical parameters)
   setSize(1, 1);    // default size

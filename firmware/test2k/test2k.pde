@@ -27,7 +27,7 @@
 #include "Tile.h"
 #include "Fonts.h"
 #include "Bitmaps.h"
-
+#include "TileGUI.h"
 
 // Defines
 #define SD_CS  84
@@ -135,26 +135,36 @@ void setup() {
   int16_t boxDirection = 1;
   
   
-  Tile oneTile1 = Tile("Temp", RGB(0, 0, 255), &symbTempBitmap, &GFX); 
-  Tile oneTile2 = Tile("Humidity", RGB(0, 0, 255), &symbHumidityBitmap, &GFX);
-    
+  // Initialize Tile-based GUI
+  Serial.println ("Initializing tileGUI");
+  TileGUI tileGUI(&GFX);
+  
+  // Initialize tiles
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_ATMTEMP)->Initialize("Temp", RGB(0, 0, 255), &symbTempBitmap);
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_ATMHUMIDITY)->Initialize("Humidity", RGB(0, 0, 255), &symbHumidityBitmap);
+  
+  // Initial text    
   char buffer[10];
   strcpy(buffer, "24");
   strcat(buffer, " ");
   strcat(buffer, "C");
   buffer[2] = 176;
-  oneTile1.setText(buffer);
+  tileGUI.getTile(TILE_ATMTEMP)->setText(buffer);
   
-  oneTile2.setText("30");
+  tileGUI.getTile(TILE_ATMHUMIDITY)->setText("30%");  
   
-  while (1) {  
-     oneTile1.render(60, 60);
-     oneTile2.render(5, 60);
-     
-     Serial.println ("Updating Screen");
-     GFX.updateScreen(); 
+  // Render tiles
+  while(1) {
+    Serial.println ("Rendering");
+    tileGUI.render();
+    Serial.println ("Updating Screen");
+    GFX.updateScreen(); 
   }
   
+    
+      
   while (1) {
   //  for (uint8_t i=48; i<58; i++) {
       GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));

@@ -6,7 +6,23 @@
 // Constructor
 // NOTE: If no bitmap is to be used, initialize tileBitmap == NULL. 
 Tile::Tile(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap, FramebufferGFX* GFXPtr) {
-  // Variables (physical parameters)
+  Initialize(tileName, col, tileBitmap);
+  
+  // Variables (rendering)
+  GFX = GFXPtr;
+}
+    
+Tile::Tile(FramebufferGFX* GFXPtr) {
+  // Variables (rendering)
+  GFX = GFXPtr;  
+}
+
+// Destructor
+Tile::~Tile() {
+}
+  
+void Tile::Initialize(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap) {
+  // Variables (physical parameters)  
   setSize(1, 1);    // default size
   setColor(col);  
   
@@ -14,15 +30,7 @@ Tile::Tile(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap, Framebu
   category = 0;
   name = tileName;
   strcpy(text, "");
-  bitmap = tileBitmap;
-  
-  // Variables (rendering)
-  GFX = GFXPtr;
-}
-    
-// Destructor
-Tile::~Tile() {
-
+  bitmap = tileBitmap;  
 }
   
 // Setup methods
@@ -52,7 +60,6 @@ void Tile::setBitmap(const BITMAPSTRUCT* tileBitmap) {
 // Render methods
 void Tile::render(int x, int y) {  
   // Background 
-  Serial.println (" -- Background");
   uint16_t r = getRed(color);
   uint16_t g = getGreen(color);
   uint16_t b = getBlue(color);
@@ -63,26 +70,19 @@ void Tile::render(int x, int y) {
   if (g > 255) g = 255;
   if (b > 255) b = 255;
   uint16_t color2 = RGB(r, g, b);
-  Serial.println (" -- Draw Gradient");
   GFX->gradientRect(x, y, x+TILE_SIZEX, y+TILE_SIZEY, 45, color, color2);    // small angle 
 
   // Draw background bitmap 
   // Note: First colour is transparent (0)
-  Serial.println (" -- Bitmap Check");
   if (bitmap != NULL) {
-    Serial.println (" -- Bitmap");
     GFX->displayFlashBitmap4Bit(x, y, bitmap, 0);
   }
   
-  Serial.println (" -- Label Text");  
   // Label text on the bottom
   GFX->drawJustifiedText(name, x, (x+TILE_SIZEX)-1, y+TILE_SIZEY-2, &Ubuntu10, JUST_RIGHT, RGB(255, 255, 255) );
 
-  Serial.println (" -- Sensor Text");  
   // Draw sensor text in the middle
   GFX->drawJustifiedText(text, x, (x+TILE_SIZEX)-1, y+((2*TILE_SIZEY)/3), &Ubuntu24, JUST_CENTER, RGB(255, 255, 255) );
-  
-  Serial.println (" -- Complete");
   
 }
     

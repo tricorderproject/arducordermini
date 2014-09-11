@@ -11,6 +11,7 @@
 #define TILE_SIZEY  50
 #define TILE_SPACE  10
 #define TILE_MAXTEXTLENGTH  10
+
 class Tile {
   
   public:
@@ -30,9 +31,11 @@ class Tile {
   
   // Constructor/Destructor
   Tile(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap, FramebufferGFX* GFXPtr);
+  Tile(FramebufferGFX* GFXPtr);
   ~Tile();
   
   // Setup methods
+  void Initialize(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap);
   void setSize(uint8_t x, uint8_t y);
   void setColor(uint16_t col);  
   void setText(char* tileText);

@@ -151,7 +151,7 @@ void draw() {
     output.println ("");     
 
     // Step 2: Export Palette 
-    output.print("uint16_t " + variableName + "Palette[] = {");
+    output.print("const uint16_t " + variableName + "Palette[] = {");
     for (int i=0; i<MAX_COLORS; i++) {
       output.print ( colorToRGB565(Palette[i]) );
       if (i < (MAX_COLORS-1)) {
@@ -162,7 +162,7 @@ void draw() {
     output.println ("");
     
     // Step 3: Export pixel data 
-    output.print("uint8_t " + variableName + "Data[] = {"); 
+    output.print("const uint8_t " + variableName + "Data[] = {"); 
     for (int i = 0; i<bytesOut; i++) {
       output.print( dataOut[i] );
       if (i < (bytesOut-1)) {

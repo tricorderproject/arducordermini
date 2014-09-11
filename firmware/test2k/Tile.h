@@ -29,7 +29,7 @@ class Tile {
   FramebufferGFX* GFX;
   
   // Constructor/Destructor
-  Tile(char* tileName, uint16_t col, FramebufferGFX* GFXPtr);
+  Tile(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap, FramebufferGFX* GFXPtr);
   ~Tile();
   
   // Setup methods

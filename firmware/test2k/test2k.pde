@@ -134,18 +134,23 @@ void setup() {
   int16_t boxWidth = 50;
   int16_t boxDirection = 1;
   
-  Tile oneTile = Tile("Temperature", RGB(0, 0, 255), &GFX);
-  oneTile.setBitmap(&symbHumidityBitmap);
   
+  Tile oneTile1 = Tile("Temp", RGB(0, 0, 255), &symbTempBitmap, &GFX); 
+  Tile oneTile2 = Tile("Humidity", RGB(0, 0, 255), &symbHumidityBitmap, &GFX);
+    
   char buffer[10];
   strcpy(buffer, "24");
   strcat(buffer, " ");
   strcat(buffer, "C");
   buffer[2] = 176;
-  oneTile.setText(buffer);
+  oneTile1.setText(buffer);
   
-  while (1) {      
-     oneTile.render(60, 60);
+  oneTile2.setText("30");
+  
+  while (1) {  
+     oneTile1.render(60, 60);
+     oneTile2.render(5, 60);
+     
      Serial.println ("Updating Screen");
      GFX.updateScreen(); 
   }

@@ -25,8 +25,9 @@
 #include "sensor_AS3935.h"
 
 #include "Tile.h"
-#include "bitmap_earthatnight.h"
 #include "Fonts.h"
+#include "Bitmaps.h"
+
 
 // Defines
 #define SD_CS  84
@@ -134,7 +135,8 @@ void setup() {
   int16_t boxDirection = 1;
   
   Tile oneTile = Tile("Temperature", RGB(0, 0, 255), &GFX);
-
+  oneTile.setBitmap(&symbHumidityBitmap);
+  
   char buffer[10];
   strcpy(buffer, "24");
   strcat(buffer, " ");
@@ -182,9 +184,10 @@ void setup() {
   */    
 //    }
   }
-    
+
+/*    
   // Bitmap test
-  //displayFlashBitmap4Bit(int16_t x, int16_t y, uint16_t bitmapWidth, uint16_t bitmapHeight, uint16_t bitmapPalette, uint8_t *bitmapData) {
+  //displayFlashBitmap4Bit(int16_t x, int16_t y, uint16_t bitmapWidth, uint16_t bitmapHeight, uint16_t bitmapPalette, uint8_t *bitmapData) {    
   while (1) { 
     for (int x=0; x>-128; x--) {
       GFX.displayFlashBitmap4Bit(x, 0, earthatnightWidth, earthatnightHeight, earthatnightPalette, earthatnightData);
@@ -195,6 +198,7 @@ void setup() {
       GFX.updateScreen();      
     }    
   }
+*/  
 }
 
 uint8_t mode = 1;

@@ -2,6 +2,7 @@
 #if !defined(TILE_h) 
 #define TILE_h
 
+#include "BitmapStructure.h"
 #include "FramebufferGFX.h"
 
 #define SENSOR_BUFFER_STATIC_SIZE 100
@@ -22,7 +23,7 @@ class Tile {
   uint8_t category;
   char* name;
   char text[TILE_MAXTEXTLENGTH];
-  uint8_t* bitmap;
+  const BITMAPSTRUCT* bitmap;
   
   // Variables (rendering)
   FramebufferGFX* GFX;
@@ -35,7 +36,8 @@ class Tile {
   void setSize(uint8_t x, uint8_t y);
   void setColor(uint16_t col);  
   void setText(char* tileText);
-  
+  void setBitmap(const BITMAPSTRUCT* tileBitmap);
+    
   // Render methods
   void render(int x, int y);
     

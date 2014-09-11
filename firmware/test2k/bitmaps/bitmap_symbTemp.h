@@ -79,3 +79,4 @@ const BITMAPSTRUCT symbTempBitmap = {
 };
 
 #endif
+

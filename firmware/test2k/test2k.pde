@@ -141,9 +141,12 @@ void setup() {
   
   // Initialize tiles
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_ATMTEMP)->Initialize("Temp", RGB(0, 0, 255), &symbTempBitmap);
+  tileGUI.addTile(TILE_ATMTEMP)->Initialize("Temp", RGB(0, 0, 128), &symbTempBitmap);
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_ATMHUMIDITY)->Initialize("Humidity", RGB(0, 0, 255), &symbHumidityBitmap);
+  tileGUI.addTile(TILE_ATMHUMIDITY)->Initialize("Humidity", RGB(0, 0, 128), &symbHumidityBitmap);
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_ATMPRESSURE)->Initialize("Pressure", RGB(0, 128, 0), &symbHumidityBitmap);
+  tileGUI.getTile(TILE_ATMPRESSURE)->setSize(2, 1);
   
   // Initial text    
   char buffer[10];
@@ -154,6 +157,7 @@ void setup() {
   tileGUI.getTile(TILE_ATMTEMP)->setText(buffer);
   
   tileGUI.getTile(TILE_ATMHUMIDITY)->setText("30%");  
+  tileGUI.getTile(TILE_ATMPRESSURE)->setText("1200mbar"); 
   
   // Render tiles
   while(1) {

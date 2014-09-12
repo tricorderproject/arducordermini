@@ -70,7 +70,9 @@ void Tile::render(int x, int y) {
   if (g > 255) g = 255;
   if (b > 255) b = 255;
   uint16_t color2 = RGB(r, g, b);
-  GFX->gradientRect(x, y, x+TILE_SIZEX, y+TILE_SIZEY, 45, color, color2);    // small angle 
+  int16_t tileWidth = (gridSizeX * TILE_SIZEX) + ((gridSizeX-1) * TILE_SPACE);
+  int16_t tileHeight = (gridSizeY * TILE_SIZEY) + ((gridSizeY-1) * TILE_SPACE);
+  GFX->gradientRect(x, y, x+tileWidth, y+tileHeight, 45, color, color2);    // small angle 
 
   // Draw background bitmap 
   // Note: First colour is transparent (0)
@@ -79,10 +81,10 @@ void Tile::render(int x, int y) {
   }
   
   // Label text on the bottom
-  GFX->drawJustifiedText(name, x, (x+TILE_SIZEX)-1, y+TILE_SIZEY-2, &Ubuntu10, JUST_RIGHT, RGB(255, 255, 255) );
+  GFX->drawJustifiedText(name, x, (x+tileWidth)-1, y+tileHeight-2, &Ubuntu10, JUST_RIGHT, RGB(255, 255, 255) );
 
   // Draw sensor text in the middle
-  GFX->drawJustifiedText(text, x, (x+TILE_SIZEX)-1, y+((2*TILE_SIZEY)/3), &Ubuntu24, JUST_CENTER, RGB(255, 255, 255) );
+  GFX->drawJustifiedText(text, x, (x+tileWidth)-1, y+((2*tileHeight)/3), &Ubuntu24, JUST_CENTER, RGB(255, 255, 255) );
   
 }
     

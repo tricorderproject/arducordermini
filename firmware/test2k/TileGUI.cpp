@@ -11,9 +11,10 @@ TileGUI::TileGUI(FramebufferGFX* GFXPtr) {
   
   numTiles = 0;  
   selectedTile = 0;
-    
+
   // Variables (rendering)
   GFX = GFXPtr;
+  numTilePages = 0;
   
   // Initialize the page that each tile is on (populated by packTiles)
   for (int i=0; i<MAX_TILES; i++) {
@@ -80,12 +81,28 @@ void TileGUI::render() {
   Serial.println ("");
   Serial.println ("");
   Serial.println ("TileGUI::Rendering...");  
-  
+  // Find page of currently selected tile
+  int curPage = tilePages[selectedTile];
+    
   // Background
   GFX->gradientRect(0, 0, GFX->width, GFX->height, 0, RGB(0, 0, 0));      // Clear framebuffer
       
+  // Render tile page counter
+  #define TILE_COUNTER_SPACING  10
+  int pageCounterX = (GFX->width / 2) - ((numTilePages * TILE_COUNTER_SPACING)/2);
+  for (int i=0; i<=numTilePages; i++) {
+    int x = pageCounterX + (i * TILE_COUNTER_SPACING);
+    int y = 126;
+    
+    if (curPage != i) {
+      GFX->fillRect(x-1, y-1, x + 1, y + 1, RGB(32, 32, 32));      // Dark box
+    } else {
+      GFX->fillRect(x-1, y-1, x + 1, y + 1, RGB(128, 128, 128));      // Light box
+    }
+  }
+      
+      
   // Render tiles
-  int curPage = tilePages[selectedTile];
   for (int i=0; i<numTiles; i++) {
     int16_t tileX = tileCoords[i].x;
     int16_t tileY = tileCoords[i].y;
@@ -166,7 +183,10 @@ void TileGUI::packTiles() {
       i += 1; 
     }
     
-  }    
+  } 
+  
+  // Store total number of tile pages
+  numTilePages = curPage;
   Serial.println ("packTiles:: completed...");
 }
 

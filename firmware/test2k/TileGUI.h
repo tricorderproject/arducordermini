@@ -67,6 +67,7 @@ class TileGUI {
   int8_t pack[TILE_MAXGRIDX][TILE_MAXGRIDY];  
   POINT tileCoords[MAX_TILES];
   int8_t tilePages[MAX_TILES];
+  int8_t numTilePages;
     
   // Constructor/Destructor
   TileGUI(FramebufferGFX* GFXPtr);

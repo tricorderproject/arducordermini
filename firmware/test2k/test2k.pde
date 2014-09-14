@@ -131,17 +131,28 @@ void setup() {
   touchWheel.initTouchWheel(8, -20);
   touchWheel.takeWheelBaseline();  
   
-  int16_t boxWidth = 50;
-  int16_t boxDirection = 1;
+/*    
+  // TEST of touch wheel scrolling wheel high-level delta increment function
+  while (1) {
+    // Touch wheel
+    int16_t touchAngle = touchWheel.getWheelAngle();
+    int16_t deltaWheel = touchWheel.getWheelIncrement();  
+    Serial.print (" Wheel degree: ");
+    Serial.println(touchAngle, DEC);
+    Serial.print (" Wheel Increment: ");
+    Serial.println(deltaWheel, DEC);
+    delay(250);
+  }
+*/  
   
-  
+  // ******************************************
   // Initialize Tile-based GUI
+  // ******************************************  
   Serial.println ("Initializing tileGUI");
   TileGUI tileGUI(&GFX);
-  
-   
-  // Initialize tiles
-  
+     
+  // ******************************************     
+  // Initialize tiles 
   // ******************************************
   // THEME: Ambient atmospheric measurements
   // ******************************************  
@@ -271,77 +282,46 @@ void setup() {
   // ******************************************
   tileGUI.packTiles();
 
+
   // ******************************************    
   // Render tiles
   // ******************************************    
   int incrementDirection = 1;
   while(1) {
+    // Step 1: Render
     Serial.println ("Rendering");
     tileGUI.render();
     Serial.println ("Updating Screen");
     GFX.updateScreen(); 
     
-    // Select next tile
+    // Step 2: Read user input
+    // Increment/Decrement selected tile based on touch wheel input
+    int16_t deltaWheel = touchWheel.getWheelIncrement();  
+    // Negative delta: select previous tile
+    if (deltaWheel < 0) {      
+      for (int i=0; i<-deltaWheel; i++) {
+        tileGUI.selectPrevTile();
+      } 
+    }
+    // Positive delta: select next tile
+    if (deltaWheel > 0) {      
+      for (int i=0; i<deltaWheel; i++) {
+        tileGUI.selectNextTile();
+      } 
+    }
+
+/*    
     Serial.println ("Selecting next tile");  
     if (incrementDirection == 1) {  
       if (!tileGUI.selectNextTile() ) incrementDirection = 0;      
     } else {
       if (!tileGUI.selectPrevTile() ) incrementDirection = 1;      
     }
+*/
 //    delay(1000);
   }
   
-    
-      
-  while (1) {
-  //  for (uint8_t i=48; i<58; i++) {
-      GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));
-//      GFX.fillRect(0, GFX.height/2, GFX.width, GFX.height, RGB(255, 255, 255));
-//      GFX.gradientRect(1, 1, 50, 50, RGB(0, 0, 255), RGB(128, 128, 255));
-//      GFX.gradientRect(1, 60, 50, 110, 50, RGB(0, 0, 255), RGB(128, 128, 255));    // small angle
-      
-//      GFX.gradientRect(10, 50, 110, 53, RGB(0, 0, 255), RGB(255, 0, 0));
 
-      GFX.gradientRect(1, 1, 1+boxWidth, 1+boxWidth, 45, RGB(0, 0, 255), RGB(128, 128, 255));    // small angle
-      GFX.gradientRect(1, 60, 1+boxWidth, 60+boxWidth, 45, RGB(0, 0, 255), RGB(128, 128, 255));    // small angle
-      GFX.gradientRect(60, 1, 60+boxWidth, 1+boxWidth, 45, RGB(0, 255, 0), RGB(128, 255, 128));    // small angle
-      GFX.gradientRect(60, 60, 60+boxWidth, 60+boxWidth, 45, RGB(255, 128, 0), RGB(255, 255, 128));    // small angle
-      
-//      Serial.print ("Drawing Character: "); 
-//      Serial.println (i);
-    
-      GFX.drawText("Test Text 0123456789ABCDEFG", 10, 30, &Ubuntu28, RGB(255, 255, 255) );
-//      GFX.drawText("Test Text 0123456789ABCDEFG", 10, 60, &Ubuntu28_smoothed, RGB(255, 255, 255) );      
-//      GFX.drawChar(i, 50, 100, &Ubuntu14, RGB(0, 0, 0) );
-      Serial.println ("Updating Screen");
-      GFX.updateScreen();      
-
-/*
-      boxWidth += boxDirection;
-      if (boxWidth > 126) {
-        boxDirection = -1;
-      }
-      if (boxWidth < 5) {
-        boxDirection = 1;      
-      }
-  */    
-//    }
-  }
-
-/*    
-  // Bitmap test
-  //displayFlashBitmap4Bit(int16_t x, int16_t y, uint16_t bitmapWidth, uint16_t bitmapHeight, uint16_t bitmapPalette, uint8_t *bitmapData) {    
-  while (1) { 
-    for (int x=0; x>-128; x--) {
-      GFX.displayFlashBitmap4Bit(x, 0, earthatnightWidth, earthatnightHeight, earthatnightPalette, earthatnightData);
-      GFX.updateScreen();      
-    }
-    for (int x=-128; x<0; x++) {
-      GFX.displayFlashBitmap4Bit(x, 0, earthatnightWidth, earthatnightHeight, earthatnightPalette, earthatnightData);
-      GFX.updateScreen();      
-    }    
-  }
-*/  
 }
 
 uint8_t mode = 1;

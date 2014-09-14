@@ -101,6 +101,7 @@ uint16_t  Adafruit_MPR121::touched(void) {
 void Adafruit_MPR121::initTouchWheel(uint8_t numWheelPads, int16_t degreeOffset) {
   wheelPads = numWheelPads;
   wheelDegreeOffset = degreeOffset;
+  lastWheelAngle = -1;
 }
 
 void Adafruit_MPR121::takeWheelBaseline(void) {
@@ -175,6 +176,47 @@ int16_t Adafruit_MPR121::getWheelAngle(void) {
 }
 
 
+int16_t Adafruit_MPR121::getWheelIncrement(void) {
+  int16_t curWheelAngle = getWheelAngle();
+  int16_t wheelAnglePerTick = 90;
+  
+  // Case 1: Wheel is not being touched)
+  if (curWheelAngle == -1) {
+    lastWheelAngle = curWheelAngle;
+    return 0;
+  }
+  
+  // Case 2: Wheel has just started being touched
+  if ((lastWheelAngle == -1) && (curWheelAngle > -1)) {
+    lastWheelAngle = curWheelAngle;
+    return 0;
+  }
+  
+  // Case 3: Wheel was touched previously, and is currently being touched
+  // Special case: if current wheel angle and previous angle differ by more than 180, then a large move was made, or we're straddling 
+  // the 359/0 boundary. Let's make the math easier.
+  int16_t curWheelAngleAdj = curWheelAngle;
+  if (curWheelAngleAdj < (lastWheelAngle - 180)) {
+    curWheelAngleAdj += 360;
+  } else if (curWheelAngleAdj > (lastWheelAngle + 180)) {
+    curWheelAngleAdj -= 360;
+  }
+
+  Serial.print ("   lastWheelAngle: ");  Serial.println(lastWheelAngle, DEC);
+  Serial.print ("   curWheelAngleAdj: ");  Serial.println(curWheelAngleAdj, DEC);  
+  int16_t delta = (curWheelAngleAdj - lastWheelAngle) / wheelAnglePerTick;
+  Serial.print ("   delta: ");  Serial.println(delta, DEC);  
+  
+  if (delta != 0) {
+    // If we've made a movement that counts for at least one tick, then update lastWheelAngle to reflect the new position of the pointer
+    lastWheelAngle = curWheelAngle;    
+  }
+  
+  
+  // Return the number of inrement/decrement moves we've made  (or 0 if we haven't made any)
+  return delta;
+  
+}
 /*********************************************************************/
 
 

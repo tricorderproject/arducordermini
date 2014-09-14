@@ -72,7 +72,8 @@ class Adafruit_MPR121 {
   int16_t wheelBaseline[8];
   uint8_t wheelPads;
   int16_t wheelDegreeOffset;
- 
+  int16_t lastWheelAngle;
+  
   // Hardware I2C
   Adafruit_MPR121(void);
 
@@ -84,6 +85,7 @@ class Adafruit_MPR121 {
   void initTouchWheel(uint8_t numWheelPads, int16_t degreeOffset);
   void takeWheelBaseline(void);
   int16_t getWheelAngle(void);
+  int16_t getWheelIncrement(void);
 
   uint8_t readRegister8(uint8_t reg);
   uint16_t readRegister16(uint8_t reg);

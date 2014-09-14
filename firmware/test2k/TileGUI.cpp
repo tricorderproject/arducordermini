@@ -78,16 +78,14 @@ boolean TileGUI::selectPrevTile() {
   
 // Render methods
 void TileGUI::render() {  
-  Serial.println ("");
-  Serial.println ("");
-  Serial.println ("TileGUI::Rendering...");  
+//  Serial.println ("TileGUI::Rendering...");  
   // Find page of currently selected tile
   int curPage = tilePages[selectedTile];
     
-  // Background
+  // Step 1: Background
   GFX->gradientRect(0, 0, GFX->width, GFX->height, 0, RGB(0, 0, 0));      // Clear framebuffer
       
-  // Render tile page counter
+  // Step 2: Render tile page counter
   #define TILE_COUNTER_SPACING  10
   int pageCounterX = (GFX->width / 2) - ((numTilePages * TILE_COUNTER_SPACING)/2);
   for (int i=0; i<=numTilePages; i++) {
@@ -102,12 +100,12 @@ void TileGUI::render() {
   }
       
       
-  // Render tiles
+  // Step 3: Render tiles
   for (int i=0; i<numTiles; i++) {
     int16_t tileX = tileCoords[i].x;
     int16_t tileY = tileCoords[i].y;
-    Serial.print(i, DEC);
-    Serial.print(":  tileCoords ("); Serial.print(tileX, DEC); Serial.print(","); Serial.print(tileY, DEC); Serial.println(")");
+//    Serial.print(i, DEC);
+//    Serial.print(":  tileCoords ("); Serial.print(tileX, DEC); Serial.print(","); Serial.print(tileY, DEC); Serial.println(")");
     
     // Check if this tile is selcted (and should be highlighted)
     boolean isSelected = false;
@@ -123,7 +121,7 @@ void TileGUI::render() {
 
 // packTiles() must be called after all tiles have been added and before rendering, and also after new tiles are added or rearranged
 void TileGUI::packTiles() {
-  Serial.println ("packTiles::started...");
+//  Serial.println ("packTiles::started...");
   // Step 1: Initialize/clear packing array
   for (int i=0; i<TILE_MAXGRIDX; i++) {
     for (int j=0; j<TILE_MAXGRIDY; j++) {
@@ -145,22 +143,22 @@ void TileGUI::packTiles() {
   // Step 2: Pack
   int i = 0;
   while (i < numTiles) {
-    Serial.print("trying to pack tile: "); Serial.println(i, DEC);
+//    Serial.print("trying to pack tile: "); Serial.println(i, DEC);
     
     // Step 3: Try to pack top-to-bottom, left-to-right      
     boolean packed = false;    
     for (int tY=0; tY<TILE_MAXGRIDY; tY++) {
       for (int tX=0; tX<TILE_MAXGRIDX; tX++) {
-        Serial.print("  checking ("); Serial.print(tX, DEC); Serial.print(","); Serial.print(tY, DEC); Serial.println(")");
+//        Serial.print("  checking ("); Serial.print(tX, DEC); Serial.print(","); Serial.print(tY, DEC); Serial.println(")");
         if (canTilePack(tX, tY, i) == true) {
-          Serial.println("canPack: true!");
+//          Serial.println("canPack: true!");
           packed = true;
           int16_t tileX = TILE_SPACE + (tX * (TILE_SIZEX + TILE_SPACE));
           int16_t tileY = TILE_SPACE + (tY * (TILE_SIZEY + TILE_SPACE));
           tileCoords[i] = POINT{tileX, tileY};
           tilePages[i] = curPage;
         } else {
-          Serial.println("canPack: false!"); 
+//          Serial.println("canPack: false!"); 
         }
         if (packed) break;
       }
@@ -177,7 +175,7 @@ void TileGUI::packTiles() {
         }
       }
 
-      Serial.println ("packTiles::pack is full, moving to new page...");
+//      Serial.println ("packTiles::pack is full, moving to new page...");
     } else {
       // Packing completed successfully -- move on to packing next tile
       i += 1; 
@@ -187,17 +185,17 @@ void TileGUI::packTiles() {
   
   // Store total number of tile pages
   numTilePages = curPage;
-  Serial.println ("packTiles:: completed...");
+//  Serial.println ("packTiles:: completed...");
 }
 
 boolean TileGUI::canTilePack(int packX, int packY, int tileNum) {
-  Serial.println ("canTilePack::started...");
+//  Serial.println ("canTilePack::started...");
   // Fetch tile
   Tile* oneTile = tiles[tileNum];
   uint8_t tileSizeX = oneTile->gridSizeX;
   uint8_t tileSizeY = oneTile->gridSizeY;        
 
-  Serial.print ("tileSizeX: "); Serial.println(tileSizeX, DEC);
+//  Serial.print ("tileSizeX: "); Serial.println(tileSizeX, DEC);
   
   // Check to see if tile fits
   for (int x=0; x<tileSizeX; x++) {
@@ -207,7 +205,7 @@ boolean TileGUI::canTilePack(int packX, int packY, int tileNum) {
       if ((xC < TILE_MAXGRIDX) && (yC < TILE_MAXGRIDY)) {
          if (pack[xC][yC] != -1) {
            // This path on the pack has a tile in the way -- return false
-           Serial.println ("    canTilePack:: complete (tile can not pack)...");
+//           Serial.println ("    canTilePack:: complete (tile can not pack)...");
            return false;
          }
       }
@@ -222,7 +220,7 @@ boolean TileGUI::canTilePack(int packX, int packY, int tileNum) {
       pack[xC][yC] = tileNum;
     }
   }
-  Serial.println ("canTilePack:: complete (tile packed)");
+//  Serial.println ("canTilePack:: complete (tile packed)");
   return true;
 }  
 

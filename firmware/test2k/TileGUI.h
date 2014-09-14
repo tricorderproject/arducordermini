@@ -8,7 +8,7 @@
 #include "Tile.h"
 
 // Defines
-#define MAX_TILES  10
+#define MAX_TILES  20
 #define TILE_MAXGRIDX  2
 #define TILE_MAXGRIDY  2
 
@@ -17,6 +17,33 @@
 #define TILE_ATMTEMP        1
 #define TILE_ATMHUMIDITY    2
 #define TILE_ATMPRESSURE    3
+
+#define TILE_GAS_CO         10
+#define TILE_GAS_NO2        11
+#define TILE_GAS_NH3        12
+
+#define TILE_MAGFIELD       20
+#define TILE_MAGDIR         21
+
+#define TILE_LIGHTNING_STR  30
+#define TILE_LIGHTNING_DIS  31
+
+#define TILE_RADIATION_CPM  40
+
+#define TILE_THERMAL_CAM    50
+
+#define TILE_LINEAR_POL     60
+
+#define TILE_UV             70
+
+#define TILE_SPECTROMETER   80
+
+#define TILE_IMU_ACCEL      90
+#define TILE_IMU_GYRO       91
+
+#define TILE_AUDIO_MIC      100
+
+#define TILE_UTIL_DATASPARKFUN  110
 
 // Supporting Structs
 typedef struct point {
@@ -33,17 +60,21 @@ class TileGUI {
   int8_t tileIDs[MAX_TILES];
   int8_t numTiles;
   
-  int8_t selected; 
+  int8_t selectedTile; 
     
   // Variables (rendering)
   FramebufferGFX* GFX;
   int8_t pack[TILE_MAXGRIDX][TILE_MAXGRIDY];  
   POINT tileCoords[MAX_TILES];
-  int8_t lastTilePacked;
-  
+  int8_t tilePages[MAX_TILES];
+    
   // Constructor/Destructor
   TileGUI(FramebufferGFX* GFXPtr);
   ~TileGUI();
+  
+  // Navigation methods
+  boolean selectNextTile();
+  boolean selectPrevTile();  
   
   // Setup methods
   Tile* addTile(uint8_t tileID);
@@ -51,7 +82,7 @@ class TileGUI {
       
   // Render methods
   void render();
-  void packTiles2x2(int firstTile);
+  void packTiles();
   boolean canTilePack(int packX, int packY, int tileNum);
   
   // Debug 

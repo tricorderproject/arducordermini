@@ -58,7 +58,7 @@ void Tile::setBitmap(const BITMAPSTRUCT* tileBitmap) {
 }
   
 // Render methods
-void Tile::render(int x, int y) {  
+void Tile::render(int x, int y, boolean isSelected) {  
   // Background 
   uint16_t r = getRed(color);
   uint16_t g = getGreen(color);
@@ -73,6 +73,11 @@ void Tile::render(int x, int y) {
   int16_t tileWidth = (gridSizeX * TILE_SIZEX) + ((gridSizeX-1) * TILE_SPACE);
   int16_t tileHeight = (gridSizeY * TILE_SIZEY) + ((gridSizeY-1) * TILE_SPACE);
   GFX->gradientRect(x, y, x+tileWidth, y+tileHeight, 45, color, color2);    // small angle 
+
+  // If tile is selected, then draw border
+  if (isSelected) {
+    GFX->drawRect(x-TILE_SELECTED_DELTA, y-TILE_SELECTED_DELTA, x+tileWidth+TILE_SELECTED_DELTA, y+tileHeight+TILE_SELECTED_DELTA, colorSelected);    // small angle 
+  }
 
   // Draw background bitmap 
   // Note: First colour is transparent (0)

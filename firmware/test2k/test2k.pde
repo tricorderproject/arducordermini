@@ -139,16 +139,15 @@ void setup() {
   Serial.println ("Initializing tileGUI");
   TileGUI tileGUI(&GFX);
   
+   
   // Initialize tiles
+  
+  // ******************************************
+  // THEME: Ambient atmospheric measurements
+  // ******************************************  
+  // TILE: Ambient Temperature (1x1)
   Serial.println ("Adding tile...");
   tileGUI.addTile(TILE_ATMTEMP)->Initialize("Temp", RGB(0, 0, 128), &symbTempBitmap);
-  Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_ATMHUMIDITY)->Initialize("Humidity", RGB(0, 0, 128), &symbHumidityBitmap);
-  Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_ATMPRESSURE)->Initialize("Pressure", RGB(0, 128, 0), &symbHumidityBitmap);
-  tileGUI.getTile(TILE_ATMPRESSURE)->setSize(2, 1);
-  
-  // Initial text    
   char buffer[10];
   strcpy(buffer, "24");
   strcat(buffer, " ");
@@ -156,15 +155,140 @@ void setup() {
   buffer[2] = 176;
   tileGUI.getTile(TILE_ATMTEMP)->setText(buffer);
   
+  // TILE: Ambient Humidity (1x1)
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_ATMHUMIDITY)->Initialize("Humidity", RGB(0, 0, 128), &symbHumidityBitmap);
   tileGUI.getTile(TILE_ATMHUMIDITY)->setText("30%");  
+  
+  // TILE: Ambient Pressure (2x1)
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_ATMPRESSURE)->Initialize("Pressure", RGB(0, 128, 0), &symbPressureBitmap);
+  tileGUI.getTile(TILE_ATMPRESSURE)->setSize(2, 1);
   tileGUI.getTile(TILE_ATMPRESSURE)->setText("1200mbar"); 
   
+  
+  // ******************************************  
+  // THEME: Electromagnetic Readings (1)
+  // ******************************************  
+  // TILE: Magnetic Field Strength (1x1)
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_MAGFIELD)->Initialize("Magnetic", RGB(0, 0, 128), &symbMagBitmap);
+  char buffer1[10];
+  strcpy(buffer1, "100");
+  strcat(buffer1, " ");
+  strcat(buffer1, "T");
+  buffer1[2] = 181;
+  tileGUI.getTile(TILE_MAGFIELD)->setText(buffer1);
+  
+  // TILE: Magnetic Field Direction (1x1)  
+  // NOTE: Arrow tile currently unimplemented
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_MAGDIR)->Initialize("Magnetic", RGB(0, 0, 128), &symbMagBitmap);
+  tileGUI.getTile(TILE_MAGDIR)->setText("DIR");
+
+  // TILE: Lightning (strike distance) (1x1)
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_LIGHTNING_STR)->Initialize("Lightning", RGB(0, 0, 128), &symbLightningBitmap);
+  tileGUI.getTile(TILE_LIGHTNING_STR)->setText("5km");
+
+  // TILE: Radiation (counts per minute) (1x1)
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_RADIATION_CPM)->Initialize("Radiation", RGB(0, 0, 128), &symbRadiationBitmap);
+  tileGUI.getTile(TILE_RADIATION_CPM)->setText("100cpm");
+
+
+  // ******************************************
+  // THEME: Electromagnetic Readings (2)
+  // ******************************************  
+  // TILE: Spectrometer (2x1)
+  // NOTE: Spectrum (1D data) tile
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_SPECTROMETER)->Initialize("Spectrum", RGB(0, 0, 128), NULL);
+  tileGUI.getTile(TILE_SPECTROMETER)->setSize(2, 1);
+  tileGUI.getTile(TILE_SPECTROMETER)->setText("");   
+  
+  // TILE: UV (1x1)
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_UV)->Initialize("UV Index", RGB(128, 0, 128), &symbUVBitmap);
+  tileGUI.getTile(TILE_UV)->setText("6i");  
+
+  // TILE: Linear Polarization (1x1)  
+  Serial.println ("Adding tile...");  
+  tileGUI.addTile(TILE_LINEAR_POL)->Initialize("Polarization", RGB(128, 0, 128), &symbPolarizationBitmap);
+  tileGUI.getTile(TILE_LINEAR_POL)->setText("25%");  
+        
+        
+  // ******************************************        
+  // THEME: Electromagnetic Readings (3)
+  // ******************************************  
+  Serial.println ("Adding tile...");
+  // TILE: Lightning (disturber) (1x1)
+  tileGUI.addTile(TILE_LIGHTNING_DIS)->Initialize("Disturber", RGB(0, 0, 128), &symbLightningBitmap);
+  tileGUI.getTile(TILE_LIGHTNING_DIS)->setText("1km");  
+
+  // TILE: IMU (acceleration) (1x1)
+  tileGUI.addTile(TILE_IMU_ACCEL)->Initialize("Accel", RGB(0, 0, 128), &symbIMUBitmap);
+  tileGUI.getTile(TILE_IMU_ACCEL)->setText("1.2g");  
+  
+  // TILE: Thermal Imager (16x4)
+  // NOTE: Image (2D data) tile
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_THERMAL_CAM)->Initialize("Thermal Imager", RGB(0, 0, 128), NULL);
+  tileGUI.getTile(TILE_THERMAL_CAM)->setSize(2, 1);
+  tileGUI.getTile(TILE_THERMAL_CAM)->setText("");   
+
+
+  // ******************************************  
+  // THEME: Gas measurements
+  // ******************************************  
+  // TILE: Gas (CO) (1x1)
+  tileGUI.addTile(TILE_GAS_CO)->Initialize("CO Gas", RGB(0, 128, 0), &symbGasBitmap);
+  tileGUI.getTile(TILE_GAS_CO)->setText("10ppm");  
+
+  // TILE: Gas (NO2) (1x1)
+  tileGUI.addTile(TILE_GAS_NO2)->Initialize("NO2 Gas", RGB(0, 128, 0), &symbGasBitmap);
+  tileGUI.getTile(TILE_GAS_NO2)->setText("1ppm");  
+
+  // TILE: Gas (NH3) (1x1)
+  tileGUI.addTile(TILE_GAS_NH3)->Initialize("NH3 Gas", RGB(0, 128, 0), &symbGasBitmap);
+  tileGUI.getTile(TILE_GAS_NH3)->setText("5ppm");  
+
+  // TILE: Audio (microphone) (1x1)
+  tileGUI.addTile(TILE_AUDIO_MIC)->Initialize("Microphone", RGB(128, 0, 128), &symbMicrophoneBitmap);
+  tileGUI.getTile(TILE_GAS_NH3)->setText("10db");  
+
+
+  // ******************************************
+  // THEME: Settings/Utilities
+  // ******************************************  
+  // TILE: data.sparkfun.com
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_UTIL_DATASPARKFUN)->Initialize("enabled", RGB(128, 0, 0), &symbSparkfunDataBitmap);
+  tileGUI.getTile(TILE_UTIL_DATASPARKFUN)->setSize(2, 1);
+
+  // ******************************************  
+  // Pack tiles (must be called after adding tiles)
+  // ******************************************
+  tileGUI.packTiles();
+
+  // ******************************************    
   // Render tiles
+  // ******************************************    
+  int incrementDirection = 1;
   while(1) {
     Serial.println ("Rendering");
     tileGUI.render();
     Serial.println ("Updating Screen");
     GFX.updateScreen(); 
+    
+    // Select next tile
+    Serial.println ("Selecting next tile");  
+    if (incrementDirection == 1) {  
+      if (!tileGUI.selectNextTile() ) incrementDirection = 0;      
+    } else {
+      if (!tileGUI.selectPrevTile() ) incrementDirection = 1;      
+    }
+//    delay(1000);
   }
   
     

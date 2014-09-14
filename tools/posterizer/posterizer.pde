@@ -23,10 +23,10 @@
 // ====================================================================
 // SETUP VARIABLES (These must be set to your image, output filename, and variable name before running)
 // NOTE: Image dimensions must be evenly divisible by 2. 
-//String filenameIn = "earthatnight1.jpg";
-String filenameIn = "c:\\stuffs\\interfacenotes\\symbols\\symbol_amb_temp.png";
+//String filenameIn = "earthatnight1.jpg"; 
+String filenameIn = "..\\..\\firmware\\interfacenotes\\symbols\\symbol_sparkfundata.png";
 String filenameOut = "out.h";
-String variableName = "symbTemp";
+String variableName = "symbSparkfunData";
 
 // ====================================================================
 

@@ -9,8 +9,10 @@
 
 #define TILE_SIZEX  50
 #define TILE_SIZEY  50
-#define TILE_SPACE  10
+#define TILE_SPACE  10                        // space between tiles
 #define TILE_MAXTEXTLENGTH  10
+#define TILE_SELECTED_DELTA  2                // "selected" border distance off tile
+#define colorSelected RGB(128, 128, 128)
 
 class Tile {
   
@@ -42,7 +44,7 @@ class Tile {
   void setBitmap(const BITMAPSTRUCT* tileBitmap);
     
   // Render methods
-  void render(int x, int y);
+  void render(int x, int y, boolean isSelected);
     
   // Debug 
   void toString();

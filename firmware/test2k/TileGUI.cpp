@@ -10,20 +10,27 @@
 TileGUI::TileGUI(FramebufferGFX* GFXPtr) {  
   
   numTiles = 0;  
-  selected = 0;
-  lastTilePacked = 0;
-  
+  selectedTile = 0;
+    
   // Variables (rendering)
   GFX = GFXPtr;
+  
+  // Initialize the page that each tile is on (populated by packTiles)
+  for (int i=0; i<MAX_TILES; i++) {
+    tilePages[i] = 0;
+  }
+
 }
     
 // Destructor
 TileGUI::~TileGUI() {
 
 }
+
   
 // Setup methods
 // NOTE: Must still call initialize on tile after defining here. 
+// NOTE: Must call packTiles() immediately after all tiles have been added and before rendering.
 Tile* TileGUI::addTile(uint8_t tileID) {
   // If the tile stack is full, return a null pointer
   if (numTiles >= (MAX_TILES-1)) {
@@ -48,34 +55,57 @@ Tile* TileGUI::getTile(uint8_t tileID) {
   }
   return NULL;
 }
+
   
+// Navigation Methods
+boolean TileGUI::selectNextTile() {
+  if (selectedTile < (numTiles-1)) {
+    selectedTile += 1;
+    return true;
+  }  
+  return false;
+}
+
+boolean TileGUI::selectPrevTile() {
+  if (selectedTile > 0) {
+    selectedTile -= 1;
+    return true;
+  }  
+  return false;
+}
+
   
 // Render methods
 void TileGUI::render() {  
   Serial.println ("");
   Serial.println ("");
   Serial.println ("TileGUI::Rendering...");  
-  // Pack tiles
-  packTiles2x2(0);
   
   // Background
   GFX->gradientRect(0, 0, GFX->width, GFX->height, 0, RGB(0, 0, 0));      // Clear framebuffer
-  
+      
   // Render tiles
+  int curPage = tilePages[selectedTile];
   for (int i=0; i<numTiles; i++) {
     int16_t tileX = tileCoords[i].x;
     int16_t tileY = tileCoords[i].y;
     Serial.print(i, DEC);
     Serial.print(":  tileCoords ("); Serial.print(tileX, DEC); Serial.print(","); Serial.print(tileY, DEC); Serial.println(")");
-    if (tileX > -1) {
-      tiles[i]->render(tileX, tileY);
+    
+    // Check if this tile is selcted (and should be highlighted)
+    boolean isSelected = false;
+    if (i == selectedTile) isSelected = true;
+    
+    // Check if tile is on the same page as the selected tile -- if so, render
+    if (tilePages[i] == curPage) {
+      tiles[i]->render(tileX, tileY, isSelected);
     }
   }
   
 }
 
-// firstTile is the first tile displayed on the screen, queryTile is the tile that you'd like the coordintes for.
-void TileGUI::packTiles2x2(int firstTile) {
+// packTiles() must be called after all tiles have been added and before rendering, and also after new tiles are added or rearranged
+void TileGUI::packTiles() {
   Serial.println ("packTiles::started...");
   // Step 1: Initialize/clear packing array
   for (int i=0; i<TILE_MAXGRIDX; i++) {
@@ -88,9 +118,16 @@ void TileGUI::packTiles2x2(int firstTile) {
   for (int i=0; i<numTiles; i++) {
     tileCoords[i] = POINT{-1, -1};    // empty (unpopulated) point
   }
+
+  // Step 1B: Clear the array that describes which page a tile appears on  
+  for (int i=0; i<MAX_TILES; i++) {
+    tilePages[i] = -1;
+  }
   
+  int8_t curPage = 0;
   // Step 2: Pack
-  for (int i=firstTile; i<numTiles; i++) {
+  int i = 0;
+  while (i < numTiles) {
     Serial.print("trying to pack tile: "); Serial.println(i, DEC);
     
     // Step 3: Try to pack top-to-bottom, left-to-right      
@@ -104,6 +141,7 @@ void TileGUI::packTiles2x2(int firstTile) {
           int16_t tileX = TILE_SPACE + (tX * (TILE_SIZEX + TILE_SPACE));
           int16_t tileY = TILE_SPACE + (tY * (TILE_SIZEY + TILE_SPACE));
           tileCoords[i] = POINT{tileX, tileY};
+          tilePages[i] = curPage;
         } else {
           Serial.println("canPack: false!"); 
         }
@@ -112,12 +150,22 @@ void TileGUI::packTiles2x2(int firstTile) {
       if (packed) break;
     }
     
-    // Step 4: If we couldn't pack this tile, then we've reached our limit -- record where we stopped, and return
+    // Step 4: If we couldn't pack this tile, then we've reached our limit for this page -- reset the page and retry
     if (!packed) {
-      lastTilePacked = i-1;
-      Serial.println ("packTiles::pack is full, exiting...");
-      return;
-    }            
+      curPage += 1;      
+      // Clear pack array
+      for (int i=0; i<TILE_MAXGRIDX; i++) {
+        for (int j=0; j<TILE_MAXGRIDY; j++) {
+          pack[i][j] = -1;
+        }
+      }
+
+      Serial.println ("packTiles::pack is full, moving to new page...");
+    } else {
+      // Packing completed successfully -- move on to packing next tile
+      i += 1; 
+    }
+    
   }    
   Serial.println ("packTiles:: completed...");
 }

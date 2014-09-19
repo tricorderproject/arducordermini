@@ -4,6 +4,7 @@
 
 #include "BitmapStructure.h"
 #include "FramebufferGFX.h"
+#include "SensorBuffer.h"
 
 #define SENSOR_BUFFER_STATIC_SIZE 100
 
@@ -27,22 +28,27 @@ class Tile {
   char* name;
   char text[TILE_MAXTEXTLENGTH];
   const BITMAPSTRUCT* bitmap;
+  SensorBuffer* sensorBuffer;
   
   // Variables (rendering)
   FramebufferGFX* GFX;
   
   // Constructor/Destructor
-  Tile(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap, FramebufferGFX* GFXPtr);
+  Tile(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap, SensorBuffer* sb, FramebufferGFX* GFXPtr);
   Tile(FramebufferGFX* GFXPtr);
   ~Tile();
   
   // Setup methods
-  void Initialize(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap);
+  void Initialize(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap, SensorBuffer* sb);
   void setSize(uint8_t x, uint8_t y);
   void setColor(uint16_t col);  
   void setText(char* tileText);
   void setBitmap(const BITMAPSTRUCT* tileBitmap);
-    
+  void setDataSource(SensorBuffer* sb);
+  
+  // Data methods
+  void updateTextFromData();
+  
   // Render methods
   void render(int x, int y, boolean isSelected);
     

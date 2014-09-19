@@ -113,6 +113,9 @@ void TileGUI::render() {
     
     // Check if tile is on the same page as the selected tile -- if so, render
     if (tilePages[i] == curPage) {
+      // Retrieve most recent data for tile
+      tiles[i]->updateTextFromData();
+      // Render
       tiles[i]->render(tileX, tileY, isSelected);
     }
   }

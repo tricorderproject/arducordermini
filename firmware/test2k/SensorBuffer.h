@@ -12,6 +12,7 @@ class SensorBuffer {
   uint32_t ringReadIdx;
   uint32_t ringWriteIdx; 
   uint32_t ringStart; 
+  uint32_t lastWriteIdx; 
   uint32_t size;
     
 //  float* data;
@@ -29,7 +30,8 @@ class SensorBuffer {
   float getNext();
   void resetRingIdx();
   float getIdx(uint32_t idx);
-  
+  float getMostRecentValue();
+    
   // Storage methods
   void put(float value);
   void setAll(float value);

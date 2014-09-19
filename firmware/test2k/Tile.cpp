@@ -5,8 +5,8 @@
 
 // Constructor
 // NOTE: If no bitmap is to be used, initialize tileBitmap == NULL. 
-Tile::Tile(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap, FramebufferGFX* GFXPtr) {
-  Initialize(tileName, col, tileBitmap);
+Tile::Tile(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap, SensorBuffer* sb, FramebufferGFX* GFXPtr) {
+  Initialize(tileName, col, tileBitmap, sb);
   
   // Variables (rendering)
   GFX = GFXPtr;
@@ -21,7 +21,7 @@ Tile::Tile(FramebufferGFX* GFXPtr) {
 Tile::~Tile() {
 }
   
-void Tile::Initialize(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap) {
+void Tile::Initialize(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap, SensorBuffer* sb) {
   // Variables (physical parameters)  
   setSize(1, 1);    // default size
   setColor(col);  
@@ -31,6 +31,7 @@ void Tile::Initialize(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitm
   name = tileName;
   strcpy(text, "");
   bitmap = tileBitmap;  
+  setDataSource(sb);
 }
   
 // Setup methods
@@ -56,6 +57,28 @@ void Tile::setText(char* tileText) {
 void Tile::setBitmap(const BITMAPSTRUCT* tileBitmap) {
   bitmap = tileBitmap; 
 }
+  
+void Tile::setDataSource(SensorBuffer* sb) {
+  sensorBuffer = sb;
+}  
+  
+  
+// Data methods
+void Tile::updateTextFromData() {
+  // Step 1: Don't update the text if a sensor buffer hasn't been specified
+  if (sensorBuffer == NULL) {
+    return;
+  }
+  
+  // Step 2: Retrieve most recent data value
+  float data = sensorBuffer->getMostRecentValue();
+  
+  // Step 3: Write string representing that data
+  char buffer[10];
+  sprintf(buffer, "%.1f", data);
+  setText(buffer);
+}
+
   
 // Render methods
 void Tile::render(int x, int y, boolean isSelected) {  

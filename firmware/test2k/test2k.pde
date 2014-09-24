@@ -83,6 +83,19 @@ uint16_t showGraph = GRAPH_MAGXYZ;
 void setup() {
   Serial.begin(9600);
   Serial.println("Initializing... "); 
+
+  // Initialize framebuffer
+  Serial.println("Initializing Framebuffer...");  
+  Framebuffer.begin();  
+
+  // Initialize touch
+  Serial.println("Initializing MPR121...");  
+  if (!touchWheel.begin(0x5A)) {
+    Serial.println("MPR121 not found, check wiring?");
+  }
+  Serial.println("MPR121 found!");
+  touchWheel.initTouchWheel(8, -20);
+  touchWheel.takeWheelBaseline();  
   
   Serial.print("Initializing SD card...");
   pinMode(SD_CS, OUTPUT);
@@ -104,33 +117,29 @@ void setup() {
   Serial.println("Initializing sensors...");
   Wire.begin();
   delay(500);
+  Serial.println("Initializing HMC5883L...");
   sensorHMC5883L.init_HMC5883L();
   delay(500);
   
   // Initialize UV sensor
+  Serial.println("Initializing UV Sensor...");
   uv.begin();
   
-  // Initialize framebuffer
-  Framebuffer.begin();  
-  
-  // Visualization
-  initSensorGraph();
- 
+   
    // AS3935 setup
    //AS3935_setup();
    
    // Initialize MPU6050
+  Serial.println("Initializing MPU9050...");     
    accelgyro.initialize();
    Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");   
   
   
-  // Initialize touch
-  if (!touchWheel.begin(0x5A)) {
-    Serial.println("MPR121 not found, check wiring?");
-  }
-  Serial.println("MPR121 found!");
-  touchWheel.initTouchWheel(8, -20);
-  touchWheel.takeWheelBaseline();  
+  
+  // Visualization
+  Serial.println("Initializing Sensor Graph...");  
+  initSensorGraph();
+  
   
 /*    
   // TEST of touch wheel scrolling wheel high-level delta increment function

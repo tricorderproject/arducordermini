@@ -23,6 +23,7 @@
 #include "sensor_HTU21D.h"
 #include "sensor_BMP180.h"
 #include "sensor_AS3935.h"
+#include "SensorMLX90620.h"
 
 #include "Tile.h"
 #include "Fonts.h"
@@ -56,16 +57,17 @@ SensorBuffer sbGyroY(100);                       // Sensor buffer test
 SensorBuffer sbGyroZ(100);                       // Sensor buffer test
 
 // Sensor Variables
-SensorHMC5883L sensorHMC5883L;            // Magnetometerff
-Adafruit_MPR121 touchWheel = Adafruit_MPR121();             // MPR121 touch sensor
-Adafruit_SI1145 uv = Adafruit_SI1145();   // SI1445 UV sensor
-SensorMicrophone sensorMicrophone;        // ADMP401 microphone
-HTU21D sensorHTU21D;     // HTU21D temperature/humidity sensor
+SensorHMC5883L sensorHMC5883L;                      // Magnetometer
+Adafruit_MPR121 touchWheel = Adafruit_MPR121();     // MPR121 touch sensor
+Adafruit_SI1145 uv = Adafruit_SI1145();             // SI1445 UV sensor
+SensorMicrophone sensorMicrophone;                  // ADMP401 microphone
+HTU21D sensorHTU21D;                                // HTU21D temperature/humidity sensor
 
-Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
+Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);  // BMP180 barometric pressure sensor
 
-MPU6050 accelgyro(0x69); // <-- use for AD0 low
+MPU6050 accelgyro(0x69); // <-- use for AD0 low     // MPU9150 Inertial measurement unit
 
+SensorMLX90620 thermalImager;                       // MLX90620 16x4 Thermal Imager
 
 
 #define GRAPH_MAGXYZ  1
@@ -117,6 +119,12 @@ void setup() {
   Serial.println("Initializing sensors...");
   Wire.begin();
   delay(500);
+
+  // Initialize MLX90620
+  Serial.println ("Initializing MLX90620...");
+  thermalImager.begin();    
+  thermalImager.debugPrint();  
+  
   Serial.println("Initializing HMC5883L...");
   sensorHMC5883L.init_HMC5883L();
   delay(500);
@@ -133,9 +141,7 @@ void setup() {
   Serial.println("Initializing MPU9050...");     
    accelgyro.initialize();
    Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");   
-  
-  
-  
+    
   // Visualization
   Serial.println("Initializing Sensor Graph...");  
   initSensorGraph();
@@ -305,6 +311,8 @@ void loop() {
   sby.put( sensorHMC5883L.y );
   sbz.put( sensorHMC5883L.z );
 
+  thermalImager.updateThermalImage();
+  thermalImager.debugPrint();
 /*
   count1 += 0.1;
   sb.put( count1 );

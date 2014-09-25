@@ -23,6 +23,7 @@
 #include "sensor_HTU21D.h"
 #include "sensor_BMP180.h"
 #include "sensor_AS3935.h"
+#include "SensorMLX90620.h"
 
 #include "Tile.h"
 #include "Fonts.h"
@@ -38,6 +39,7 @@
 SSD1351 Framebuffer;                        // Display driver
 FramebufferGFX GFX(&Framebuffer);           // Graphics functions
 FramebufferGraphs Graph(&GFX);              // Graph display/visualization
+TileGUI tileGUI(&GFX);                      // Tile-based GUI
 
 SensorBuffer sb(100);                       // Sensor buffer test
 SensorBuffer sbx(100);                       // Sensor buffer test
@@ -55,16 +57,17 @@ SensorBuffer sbGyroY(100);                       // Sensor buffer test
 SensorBuffer sbGyroZ(100);                       // Sensor buffer test
 
 // Sensor Variables
-SensorHMC5883L sensorHMC5883L;            // Magnetometerff
-Adafruit_MPR121 touchWheel = Adafruit_MPR121();             // MPR121 touch sensor
-Adafruit_SI1145 uv = Adafruit_SI1145();   // SI1445 UV sensor
-SensorMicrophone sensorMicrophone;        // ADMP401 microphone
-HTU21D sensorHTU21D;     // HTU21D temperature/humidity sensor
+SensorHMC5883L sensorHMC5883L;                      // Magnetometer
+Adafruit_MPR121 touchWheel = Adafruit_MPR121();     // MPR121 touch sensor
+Adafruit_SI1145 uv = Adafruit_SI1145();             // SI1445 UV sensor
+SensorMicrophone sensorMicrophone;                  // ADMP401 microphone
+HTU21D sensorHTU21D;                                // HTU21D temperature/humidity sensor
 
-Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
+Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);  // BMP180 barometric pressure sensor
 
-MPU6050 accelgyro(0x69); // <-- use for AD0 low
+MPU6050 accelgyro(0x69); // <-- use for AD0 low     // MPU9150 Inertial measurement unit
 
+SensorMLX90620 thermalImager;                       // MLX90620 16x4 Thermal Imager
 
 
 #define GRAPH_MAGXYZ  1
@@ -82,6 +85,19 @@ uint16_t showGraph = GRAPH_MAGXYZ;
 void setup() {
   Serial.begin(9600);
   Serial.println("Initializing... "); 
+
+  // Initialize framebuffer
+  Serial.println("Initializing Framebuffer...");  
+  Framebuffer.begin();  
+
+  // Initialize touch
+  Serial.println("Initializing MPR121...");  
+  if (!touchWheel.begin(0x5A)) {
+    Serial.println("MPR121 not found, check wiring?");
+  }
+  Serial.println("MPR121 found!");
+  touchWheel.initTouchWheel(8, -20);
+  touchWheel.takeWheelBaseline();  
   
   Serial.print("Initializing SD card...");
   pinMode(SD_CS, OUTPUT);
@@ -103,33 +119,33 @@ void setup() {
   Serial.println("Initializing sensors...");
   Wire.begin();
   delay(500);
+
+  // Initialize MLX90620
+  Serial.println ("Initializing MLX90620...");
+  thermalImager.begin();    
+  thermalImager.debugPrint();  
+  
+  Serial.println("Initializing HMC5883L...");
   sensorHMC5883L.init_HMC5883L();
   delay(500);
   
   // Initialize UV sensor
+  Serial.println("Initializing UV Sensor...");
   uv.begin();
   
-  // Initialize framebuffer
-  Framebuffer.begin();  
-  
-  // Visualization
-  initSensorGraph();
- 
+   
    // AS3935 setup
    //AS3935_setup();
    
    // Initialize MPU6050
+  Serial.println("Initializing MPU9050...");     
    accelgyro.initialize();
    Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");   
+    
+  // Visualization
+  Serial.println("Initializing Sensor Graph...");  
+  initSensorGraph();
   
-  
-  // Initialize touch
-  if (!touchWheel.begin(0x5A)) {
-    Serial.println("MPR121 not found, check wiring?");
-  }
-  Serial.println("MPR121 found!");
-  touchWheel.initTouchWheel(8, -20);
-  touchWheel.takeWheelBaseline();  
   
 /*    
   // TEST of touch wheel scrolling wheel high-level delta increment function
@@ -149,7 +165,7 @@ void setup() {
   // Initialize Tile-based GUI
   // ******************************************  
   Serial.println ("Initializing tileGUI");
-  TileGUI tileGUI(&GFX);
+
      
   // ******************************************     
   // Initialize tiles 
@@ -158,7 +174,7 @@ void setup() {
   // ******************************************  
   // TILE: Ambient Temperature (1x1)
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_ATMTEMP)->Initialize("Temp", RGB(0, 0, 128), &symbTempBitmap);
+  tileGUI.addTile(TILE_ATMTEMP)->Initialize("Temp", RGB(0, 0, 128), &symbTempBitmap, NULL);
   char buffer[10];
   strcpy(buffer, "24");
   strcat(buffer, " ");
@@ -168,12 +184,12 @@ void setup() {
   
   // TILE: Ambient Humidity (1x1)
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_ATMHUMIDITY)->Initialize("Humidity", RGB(0, 0, 128), &symbHumidityBitmap);
+  tileGUI.addTile(TILE_ATMHUMIDITY)->Initialize("Humidity", RGB(0, 0, 128), &symbHumidityBitmap, NULL);
   tileGUI.getTile(TILE_ATMHUMIDITY)->setText("30%");  
   
   // TILE: Ambient Pressure (2x1)
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_ATMPRESSURE)->Initialize("Pressure", RGB(0, 128, 0), &symbPressureBitmap);
+  tileGUI.addTile(TILE_ATMPRESSURE)->Initialize("Pressure", RGB(0, 128, 0), &symbPressureBitmap, NULL);
   tileGUI.getTile(TILE_ATMPRESSURE)->setSize(2, 1);
   tileGUI.getTile(TILE_ATMPRESSURE)->setText("1200mbar"); 
   
@@ -183,7 +199,7 @@ void setup() {
   // ******************************************  
   // TILE: Magnetic Field Strength (1x1)
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_MAGFIELD)->Initialize("Magnetic", RGB(0, 0, 128), &symbMagBitmap);
+  tileGUI.addTile(TILE_MAGFIELD)->Initialize("Magnetic", RGB(0, 0, 128), &symbMagBitmap, &sb);
   char buffer1[10];
   strcpy(buffer1, "100");
   strcat(buffer1, " ");
@@ -194,17 +210,17 @@ void setup() {
   // TILE: Magnetic Field Direction (1x1)  
   // NOTE: Arrow tile currently unimplemented
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_MAGDIR)->Initialize("Magnetic", RGB(0, 0, 128), &symbMagBitmap);
+  tileGUI.addTile(TILE_MAGDIR)->Initialize("Magnetic", RGB(0, 0, 128), &symbMagBitmap, NULL);
   tileGUI.getTile(TILE_MAGDIR)->setText("DIR");
 
   // TILE: Lightning (strike distance) (1x1)
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_LIGHTNING_STR)->Initialize("Lightning", RGB(0, 0, 128), &symbLightningBitmap);
+  tileGUI.addTile(TILE_LIGHTNING_STR)->Initialize("Lightning", RGB(0, 0, 128), &symbLightningBitmap, NULL);
   tileGUI.getTile(TILE_LIGHTNING_STR)->setText("5km");
 
   // TILE: Radiation (counts per minute) (1x1)
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_RADIATION_CPM)->Initialize("Radiation", RGB(0, 0, 128), &symbRadiationBitmap);
+  tileGUI.addTile(TILE_RADIATION_CPM)->Initialize("Radiation", RGB(0, 0, 128), &symbRadiationBitmap, NULL);
   tileGUI.getTile(TILE_RADIATION_CPM)->setText("100cpm");
 
 
@@ -214,58 +230,61 @@ void setup() {
   // TILE: Spectrometer (2x1)
   // NOTE: Spectrum (1D data) tile
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_SPECTROMETER)->Initialize("Spectrum", RGB(0, 0, 128), NULL);
+  tileGUI.addTile(TILE_SPECTROMETER)->Initialize("Spectrum", RGB(0, 0, 128), NULL, NULL);
   tileGUI.getTile(TILE_SPECTROMETER)->setSize(2, 1);
   tileGUI.getTile(TILE_SPECTROMETER)->setText("");   
   
   // TILE: UV (1x1)
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_UV)->Initialize("UV Index", RGB(128, 0, 128), &symbUVBitmap);
+  tileGUI.addTile(TILE_UV)->Initialize("UV Index", RGB(128, 0, 128), &symbUVBitmap, NULL);
   tileGUI.getTile(TILE_UV)->setText("6i");  
 
   // TILE: Linear Polarization (1x1)  
   Serial.println ("Adding tile...");  
-  tileGUI.addTile(TILE_LINEAR_POL)->Initialize("Polarization", RGB(128, 0, 128), &symbPolarizationBitmap);
+  tileGUI.addTile(TILE_LINEAR_POL)->Initialize("Polarization", RGB(128, 0, 128), &symbPolarizationBitmap, NULL);
   tileGUI.getTile(TILE_LINEAR_POL)->setText("25%");  
         
         
   // ******************************************        
   // THEME: Electromagnetic Readings (3)
   // ******************************************  
-  Serial.println ("Adding tile...");
-  // TILE: Lightning (disturber) (1x1)
-  tileGUI.addTile(TILE_LIGHTNING_DIS)->Initialize("Disturber", RGB(0, 0, 128), &symbLightningBitmap);
-  tileGUI.getTile(TILE_LIGHTNING_DIS)->setText("1km");  
-
-  // TILE: IMU (acceleration) (1x1)
-  tileGUI.addTile(TILE_IMU_ACCEL)->Initialize("Accel", RGB(0, 0, 128), &symbIMUBitmap);
-  tileGUI.getTile(TILE_IMU_ACCEL)->setText("1.2g");  
-  
   // TILE: Thermal Imager (16x4)
   // NOTE: Image (2D data) tile
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_THERMAL_CAM)->Initialize("Thermal Imager", RGB(0, 0, 128), NULL);
-  tileGUI.getTile(TILE_THERMAL_CAM)->setSize(2, 1);
+  tileGUI.addTile(TILE_THERMAL_CAM)->Initialize("Thermal", RGB(0, 0, 128), NULL, NULL);
+  tileGUI.getTile(TILE_THERMAL_CAM)->setSize(1, 2);
   tileGUI.getTile(TILE_THERMAL_CAM)->setText("");   
+  tileGUI.getTile(TILE_THERMAL_CAM)->setLiveBitmap(&thermalImager.image[0][0], 4, 16);
+  
+  // TILE: Lightning (disturber) (1x1)
+  Serial.println ("Adding tile...");  
+  tileGUI.addTile(TILE_LIGHTNING_DIS)->Initialize("Disturber", RGB(0, 0, 128), &symbLightningBitmap, NULL);
+  tileGUI.getTile(TILE_LIGHTNING_DIS)->setText("1km");  
+
+  // TILE: IMU (acceleration) (1x1)
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_IMU_ACCEL)->Initialize("Accel", RGB(0, 0, 128), &symbIMUBitmap, NULL);
+  tileGUI.getTile(TILE_IMU_ACCEL)->setText("1.2g");  
+  
 
 
   // ******************************************  
   // THEME: Gas measurements
   // ******************************************  
   // TILE: Gas (CO) (1x1)
-  tileGUI.addTile(TILE_GAS_CO)->Initialize("CO Gas", RGB(0, 128, 0), &symbGasBitmap);
+  tileGUI.addTile(TILE_GAS_CO)->Initialize("CO Gas", RGB(0, 128, 0), &symbGasBitmap, NULL);
   tileGUI.getTile(TILE_GAS_CO)->setText("10ppm");  
 
   // TILE: Gas (NO2) (1x1)
-  tileGUI.addTile(TILE_GAS_NO2)->Initialize("NO2 Gas", RGB(0, 128, 0), &symbGasBitmap);
+  tileGUI.addTile(TILE_GAS_NO2)->Initialize("NO2 Gas", RGB(0, 128, 0), &symbGasBitmap, NULL);
   tileGUI.getTile(TILE_GAS_NO2)->setText("1ppm");  
 
   // TILE: Gas (NH3) (1x1)
-  tileGUI.addTile(TILE_GAS_NH3)->Initialize("NH3 Gas", RGB(0, 128, 0), &symbGasBitmap);
+  tileGUI.addTile(TILE_GAS_NH3)->Initialize("NH3 Gas", RGB(0, 128, 0), &symbGasBitmap, NULL);
   tileGUI.getTile(TILE_GAS_NH3)->setText("5ppm");  
 
   // TILE: Audio (microphone) (1x1)
-  tileGUI.addTile(TILE_AUDIO_MIC)->Initialize("Microphone", RGB(128, 0, 128), &symbMicrophoneBitmap);
+  tileGUI.addTile(TILE_AUDIO_MIC)->Initialize("Microphone", RGB(128, 0, 128), &symbMicrophoneBitmap, NULL);
   tileGUI.getTile(TILE_GAS_NH3)->setText("10db");  
 
 
@@ -274,41 +293,65 @@ void setup() {
   // ******************************************  
   // TILE: data.sparkfun.com
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_UTIL_DATASPARKFUN)->Initialize("enabled", RGB(128, 0, 0), &symbSparkfunDataBitmap);
+  tileGUI.addTile(TILE_UTIL_DATASPARKFUN)->Initialize("enabled", RGB(128, 0, 0), &symbSparkfunDataBitmap, NULL);
   tileGUI.getTile(TILE_UTIL_DATASPARKFUN)->setSize(2, 1);
 
   // ******************************************  
   // Pack tiles (must be called after adding tiles)
   // ******************************************
   tileGUI.packTiles();
+  
+  // Debug: Skip to Thermal Camera time
+  
+  tileGUI.selectedTile = 10;
 
 
+}
+
+float count1 = 0.0f;
+int incrementDirection = 1;
+void loop() {
+  // Update sensor data
+  float length = sensorHMC5883L.read_HMC5883L();
+  sb.put( length );
+  sbx.put( sensorHMC5883L.x );
+  sby.put( sensorHMC5883L.y );
+  sbz.put( sensorHMC5883L.z );
+
+  thermalImager.updateThermalImage();
+  thermalImager.debugPrint();
+/*
+  count1 += 0.1;
+  sb.put( count1 );
+  if (count1 > 200) {
+    count1 = 0.0f;
+  }
+*/  
+  
   // ******************************************    
   // Render tiles
   // ******************************************    
-  int incrementDirection = 1;
-  while(1) {
-    // Step 1: Render
-    Serial.println ("Rendering");
-    tileGUI.render();
-    Serial.println ("Updating Screen");
-    GFX.updateScreen(); 
+  // Step 1: Render
+  Serial.println ("Rendering");
+  tileGUI.render();
+  Serial.println ("Updating Screen");
+  GFX.updateScreen(); 
     
-    // Step 2: Read user input
-    // Increment/Decrement selected tile based on touch wheel input
-    int16_t deltaWheel = touchWheel.getWheelIncrement();  
-    // Negative delta: select previous tile
-    if (deltaWheel < 0) {      
-      for (int i=0; i<-deltaWheel; i++) {
-        tileGUI.selectPrevTile();
-      } 
-    }
-    // Positive delta: select next tile
-    if (deltaWheel > 0) {      
-      for (int i=0; i<deltaWheel; i++) {
-        tileGUI.selectNextTile();
-      } 
-    }
+  // Step 2: Read user input
+  // Increment/Decrement selected tile based on touch wheel input
+  int16_t deltaWheel = touchWheel.getWheelIncrement();  
+  // Negative delta: select previous tile
+  if (deltaWheel < 0) {      
+    for (int i=0; i<-deltaWheel; i++) {
+      tileGUI.selectPrevTile();
+    } 
+  }
+  // Positive delta: select next tile
+  if (deltaWheel > 0) {      
+    for (int i=0; i<deltaWheel; i++) {
+      tileGUI.selectNextTile();
+    } 
+  }
 
 /*    
     Serial.println ("Selecting next tile");  
@@ -317,11 +360,8 @@ void setup() {
     } else {
       if (!tileGUI.selectPrevTile() ) incrementDirection = 1;      
     }
-*/
-//    delay(1000);
-  }
+*/  
   
-
 }
 
 uint8_t mode = 1;
@@ -339,7 +379,8 @@ float sind(float angle) {
  return sin(angleRad);
 }
 
-void loop() {
+
+void loop1() {
 
 /*  
   // Touch wheel
@@ -381,7 +422,7 @@ void loop() {
   
   
   
-  
+/*  
   // Rotate graphs every N measurements
   count += 1;
   if (((count == 100) && (showGraph == GRAPH_MAGXYZ)) ||
@@ -403,7 +444,7 @@ void loop() {
   }
   
   showSensorGraph();
-  
+*/  
     
   
   /*

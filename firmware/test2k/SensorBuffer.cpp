@@ -11,8 +11,9 @@
 SensorBuffer::SensorBuffer(uint32_t bufferSize) {
   validData = 0;
   ringReadIdx = 0;
-  ringWriteIdx = 0;
+  ringWriteIdx = 0;  
   ringStart = 0;                             // Start of the first (least recent) element in the ring buffer
+  lastWriteIdx = 0;
   /*
   data = (float*) malloc(bufferSize);        // The heap is going to hate us...
   
@@ -64,11 +65,17 @@ float SensorBuffer::getIdx(uint32_t idx) {
   }
   return 0;
 }
+
+// Retrieve most recently written value
+float SensorBuffer::getMostRecentValue() {
+  return data[lastWriteIdx];
+}
     
 // Storage methods
 // Add one value to the ring buffer
 void SensorBuffer::put(float value) {  
-  data[ringWriteIdx] = value;                       // Write value
+  data[ringWriteIdx] = value;    // Write value
+  lastWriteIdx = ringWriteIdx;
   ringWriteIdx = (ringWriteIdx + 1) % size;         // Increment ring buffer  
   if (validData < size) {                           // Increment the number of data elements that are valid (rather than default) values
     validData += 1;
@@ -89,6 +96,7 @@ void SensorBuffer::setAll(float value) {
   ringWriteIdx = 0;
   validData = 0;
   ringStart = 0;
+  lastWriteIdx = 0;
 }
 
 

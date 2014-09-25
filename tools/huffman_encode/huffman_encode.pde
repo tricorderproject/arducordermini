@@ -36,7 +36,7 @@ void exportIntArray(PrintWriter output, ArrayList<Integer> a) {
 
 void setup() {
   PImage img;
-  int color_counts[] = new int[65536 * 32]; // 16 bits for colors + 5 bits for alpha
+  int color_counts[] = new int[65536 * 33]; // 16 bits for colors + 5 bits for alpha
 
   colorMode(RGB, 1.0);  
   img = loadImage(filenameIn);
@@ -55,11 +55,11 @@ void setup() {
       int r = round(red(img.pixels[offset]) * 31.0);
       int g = round(green(img.pixels[offset]) * 63.0);
       int b = round(blue(img.pixels[offset]) * 31.0);
-      int a = round(alpha(img.pixels[offset]) * 31.0);
+      int a = round(alpha(img.pixels[offset]) * 32.0);
       int argb5565 = a << 16 | r << 11 | g << 5 | b;
       argb_array[argb_array_index++] = argb5565;
       color_counts[argb5565]++;
-      img.pixels[offset] = color(r / 31.0, g / 63.0, b / 31.0, a / 31.0);          
+      img.pixels[offset] = color(r / 31.0, g / 63.0, b / 31.0, a / 32.0);          
     }
   }
   img.updatePixels();

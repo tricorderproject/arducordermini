@@ -107,6 +107,29 @@ inline void FramebufferGFX::drawPixel(uint16_t x, uint16_t y, uint16_t color) {
   display->framebuffer[ display->fbXY(x, y) ] = color;
 }
 
+// ALPHA_EXPAND converts 0000000000000000rrrrrggggggbbbbb into 00000gggggg00000rrrrr000000bbbbb
+// where r = bit assigned to red value, g = bit assigned to green, b = bit assigned to blue
+// This is useful because it makes space for a parallel fixed-point multiply
+#define ALPHA_EXPAND(x)     ((((uint32_t)(x)) | (((uint32_t)(x)) << 16)) & 0x07e0f81f)
+
+// Draw a pixel with alpha blending
+// This only works with RGB565 colors!
+// alpha = 0 represents fully transparent, alpha = 32 represents fully opaque
+inline void FramebufferGFX::drawPixel(uint16_t x, uint16_t y, uint16_t color, uint8_t alpha) {
+    uint32_t pos = display->fbXY(x, y);
+    uint32_t dest = display->framebuffer[pos];
+    dest = ALPHA_EXPAND(dest);
+    uint32_t src = ALPHA_EXPAND(color);
+    // This implements the linear interpolation formula: result = dest * (1.0 - alpha) + src * alpha
+    // This can be factorized into: result = dest + (src - dest) * alpha
+    // alpha is in Q1.5 format, so 0.0 is represented by 0, and 1.0 is represented by 32
+    uint32_t result = (src - dest) * alpha; // parallel fixed-point multiply of all components
+    result >>= 5;
+    result += dest;
+    result &= 0x07e0f81f; // mask out fractional parts
+    display->framebuffer[pos] = (uint16_t)((result >> 16) | result); // contract result
+}
+
 // Lines
 void FramebufferGFX::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color) {
   // Adafruit: Bresenham's algorithm - thx wikpedia  
@@ -610,7 +633,7 @@ void FramebufferGFX::displayFlashBitmapHuffman(int x, int y, const BITMAPHUFFMAN
             }
 
             if (((x + bx >= 0) && (x + bx < display->width)) && ((y + by >= 0) && (y + by < display->height))) {
-                drawPixel(x + bx, y + by, c & 0xffff);
+                drawPixel(x + bx, y + by, c & 0xffff, (c >> 16) & 0x7f);
             }
         }
     }

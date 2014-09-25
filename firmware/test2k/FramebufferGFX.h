@@ -44,6 +44,7 @@ class FramebufferGFX {
   
   // Low-level graphics primitives
   void drawPixel(uint16_t x, uint16_t y, uint16_t color);
+  void drawPixel(uint16_t x, uint16_t y, uint16_t color, uint8_t alpha);
 
   void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
   void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);

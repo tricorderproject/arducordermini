@@ -248,21 +248,24 @@ void setup() {
   // ******************************************        
   // THEME: Electromagnetic Readings (3)
   // ******************************************  
+  // TILE: Thermal Imager (16x4)
+  // NOTE: Image (2D data) tile
   Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_THERMAL_CAM)->Initialize("Thermal", RGB(0, 0, 128), NULL, NULL);
+  tileGUI.getTile(TILE_THERMAL_CAM)->setSize(1, 2);
+  tileGUI.getTile(TILE_THERMAL_CAM)->setText("");   
+  tileGUI.getTile(TILE_THERMAL_CAM)->setLiveBitmap(&thermalImager.image[0][0], 4, 16);
+  
   // TILE: Lightning (disturber) (1x1)
+  Serial.println ("Adding tile...");  
   tileGUI.addTile(TILE_LIGHTNING_DIS)->Initialize("Disturber", RGB(0, 0, 128), &symbLightningBitmap, NULL);
   tileGUI.getTile(TILE_LIGHTNING_DIS)->setText("1km");  
 
   // TILE: IMU (acceleration) (1x1)
+  Serial.println ("Adding tile...");
   tileGUI.addTile(TILE_IMU_ACCEL)->Initialize("Accel", RGB(0, 0, 128), &symbIMUBitmap, NULL);
   tileGUI.getTile(TILE_IMU_ACCEL)->setText("1.2g");  
   
-  // TILE: Thermal Imager (16x4)
-  // NOTE: Image (2D data) tile
-  Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_THERMAL_CAM)->Initialize("Thermal Imager", RGB(0, 0, 128), NULL, NULL);
-  tileGUI.getTile(TILE_THERMAL_CAM)->setSize(2, 1);
-  tileGUI.getTile(TILE_THERMAL_CAM)->setText("");   
 
 
   // ******************************************  
@@ -297,6 +300,10 @@ void setup() {
   // Pack tiles (must be called after adding tiles)
   // ******************************************
   tileGUI.packTiles();
+  
+  // Debug: Skip to Thermal Camera time
+  
+  tileGUI.selectedTile = 10;
 
 
 }

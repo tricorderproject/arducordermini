@@ -30,6 +30,11 @@ class Tile {
   const BITMAPSTRUCT* bitmap;
   SensorBuffer* sensorBuffer;
   
+  // Live bitmaps
+  int16_t* liveBitmapInt;
+  uint8_t liveBitmapSizeX;
+  uint8_t liveBitmapSizeY;
+  
   // Variables (rendering)
   FramebufferGFX* GFX;
   
@@ -44,6 +49,7 @@ class Tile {
   void setColor(uint16_t col);  
   void setText(char* tileText);
   void setBitmap(const BITMAPSTRUCT* tileBitmap);
+  void setLiveBitmap(int16_t* liveBitmap, uint8_t sizeX, uint8_t sizeY);
   void setDataSource(SensorBuffer* sb);
   
   // Data methods
@@ -51,7 +57,8 @@ class Tile {
   
   // Render methods
   void render(int x, int y, boolean isSelected);
-    
+  void drawLiveBitmap(int x, int y);
+
   // Debug 
   void toString();
 };

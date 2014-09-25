@@ -48,7 +48,7 @@ boolean SensorMLX90620::begin() {
   
   // Set Default Framerate
   writeConfigRegister(4);
-  delay(10);
+  delay(100);
     
   // Read ambient temperature
   updateAmbientTemperature();
@@ -57,8 +57,8 @@ boolean SensorMLX90620::begin() {
   delay(10);
 
   // Populate first thermal image
-  updateThermalImage();
-  delay(10);
+//  updateThermalImage();
+//  delay(10);
   
   // Optional: Display first thermal image to serial console
   //debugPrint();
@@ -81,6 +81,10 @@ void SensorMLX90620::updateAmbientTemperature() {
 
 
 void SensorMLX90620::updateThermalImage() {
+  // Reset minimum and maximum temperature
+  minTemp = 9999;
+  maxTemp = -9999;
+  
   // Read the compensation pixel
   int16_t pixelComp = readRegister16(0x91);
   float v_cp_off_comp = (float)pixelComp - (a_cp + (b_cp/pow(2, b_i_scale)) * (tAmbient - 25));

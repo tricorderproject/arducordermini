@@ -10,11 +10,13 @@
 #define MLX90620_SIZEY  4
 
 class SensorMLX90620 {
+  public:
   int16_t image[MLX90620_SIZEX][MLX90620_SIZEY];
   int16_t minTemp;
   int16_t maxTemp;
   float tAmbient;
   
+  private:
   byte eepromData[256];
   
   // Constants calculated from the calibration data stored in the EEPROM

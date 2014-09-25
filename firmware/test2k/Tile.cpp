@@ -180,7 +180,7 @@ void Tile::drawLiveBitmap(int x, int y) {
         // METHOD 1: Temperature color map
         // Convert temperature to color, using Hue/Saturation/Brightness conversion.
         // Note: 0 degrees C = 200 degrees Hue
-        // -40C = 320 degrees, +100C = 0 degrees
+        // -24C = 320 degrees Hue, +40C = 0 degrees Hue
         int value = liveBitmapInt[idx] / 10;   // Temps are stored as ints multiplied by ten -- e.g. 15.8 degrees is 158. 
         int degree = 200;
         if (value >= 0) {

@@ -63,4 +63,9 @@ class Tile {
   void toString();
 };
 
+
+// Color map IDs
+
+#define COLORMAP_TEMP     10
+
 #endif

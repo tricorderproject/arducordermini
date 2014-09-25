@@ -37,6 +37,47 @@ uint8_t getBlue(uint16_t col) {
   return (col & 0x001F) << 3;
 }
 
+uint16_t HueToRGB(float h) {
+  // Adapted from Schaller's course notes from the Rochester Institute of Technology
+  // Hue: 0-359, Saturation and brightness both assumed to be 1
+  // TODO: Make entirely integer arithmetic
+  
+  h /= 60;			// sector 0 to 5  
+  int i = floor( h );
+  int f = 255 * (h - i);	// factorial part of h
+  
+  float q = ( 255 - (255 * f) );
+  float t = ( 255 - ( 255 - f ) );
+  uint16_t p0 = 0;
+  uint16_t q0 = floor(q);
+  uint16_t t0 = floor(t);  
+  uint16_t v0 = 255;
+  
+  switch( i ) {
+    case 0:
+      return RGB(v0, t0, p0);
+    break;
+    case 1:
+      return RGB(q0, v0, p0);
+    break;
+    case 2:
+      return RGB(p0, v0, t0);
+    break;
+    case 3:
+      return RGB(p0, q0, v0);
+    break;
+    case 4:
+      return RGB(t0, p0, v0);
+    break;
+    default:		// case 5:
+      return RGB(v0, p0, q0);
+    break;
+  }
+  
+  return 0;
+}
+
+
 
 void SSD1351::writeCommand(uint8_t c) {
   while(mIsPMPBusy());                // Wait for PMP to be free

@@ -574,6 +574,50 @@ void FramebufferGFX::displayFlashBitmap4Bit(int x, int y, const BITMAPSTRUCT* bi
 
 
 /*
+ *  HUFFMAN ENCODED BITMAP FUNCTIONS
+ */ 
+// These functions read a Huffman-encoded bitmap stored in flash as a static structure exported into a header file
+void FramebufferGFX::displayFlashBitmapHuffman(int x, int y, const BITMAPHUFFMANSTRUCT *bitmap) {
+    unsigned int idx = 0;
+    uint32_t packed_data = bitmap->data[idx];
+    unsigned int packed_bit_offset = 0;
+    unsigned int bpc = bitmap->bpc; // bits per codeword
+    unsigned int bpc_mask = (1 << bpc) - 1;
+    const uint32_t *root = bitmap->tree;
+    uint32_t codeword;
+    for (uint16_t by = 0; by < bitmap->height; by++) {
+        for (uint16_t bx = 0; bx < bitmap->width; bx++) {
+            // traverse huffman tree beginning from root
+            const uint32_t *current_tree = root;
+            uint32_t c;
+            while (1) {
+                // extract next codeword from data word
+                if (packed_bit_offset >= 32) {
+                    // current data word exhausted, need to get next data word with packed codewords
+                    packed_data = bitmap->data[++idx];
+                    packed_bit_offset = 0;
+                }
+                codeword = packed_data & bpc_mask;
+                packed_data >>= bpc;
+                packed_bit_offset += bpc;
+
+                c = current_tree[codeword];
+                if ((c >> 31) == 0) {
+                    current_tree = root + c; // not a leaf node; keep traversing
+                } else {
+                    break; // is a leaf node; c is a color
+                }
+            }
+
+            if (((x + bx >= 0) && (x + bx < display->width)) && ((y + by >= 0) && (y + by < display->height))) {
+                drawPixel(x + bx, y + by, c & 0xffff);
+            }
+        }
+    }
+}
+
+
+/*
  *  BITMAP FUNCTIONS (adapted from Adafruit Library)
  */ 
 

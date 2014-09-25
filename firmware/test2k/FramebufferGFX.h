@@ -4,6 +4,7 @@
 #include <wprogram.h>
 #include "SSD1351.h"
 #include "BitmapStructure.h"
+#include "BitmapHuffmanStructure.h"
 #include "FontStructure.h"
 
 #include <SD.h>
@@ -66,6 +67,7 @@ class FramebufferGFX {
   
   // Bitmap functions (flash)
   void displayFlashBitmap4Bit(int x, int y, const BITMAPSTRUCT* bitmap, int8_t transparentIdx);
+  void displayFlashBitmapHuffman(int x, int y, const BITMAPHUFFMANSTRUCT *bitmap);
   
   // Bitmap functions (SD card)
   uint16_t read16(File f);

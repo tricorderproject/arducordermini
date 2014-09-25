@@ -21,7 +21,7 @@
 // Packs RGB values into a 16-bit RGB565 representation.  r, g, and b are between 255 (max) and 0 (min)
 uint16_t RGB(uint16_t r, uint16_t g, uint16_t b) {
   uint16_t c;
-  c += (r >> 3) << 11;
+  c = (r >> 3) << 11;
   c += (g >> 2) << 5;
   c += b >> 3;
   return c;

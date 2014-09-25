@@ -563,7 +563,7 @@ void FramebufferGFX::displayFlashBitmap4Bit(int x, int y, const BITMAPSTRUCT* bi
         
 //        uint32_t pos = display->fbXY(x + col, y + row);      
 //        display->framebuffer[pos] = RGB(r, g, b);
-        if (((x + bx > 0) && (x + bx < display->width)) && ((y + by > 0) && (y + by < display->height))) {          
+        if (((x + bx >= 0) && (x + bx <= display->width)) && ((y + by > 0) && (y + by < display->height))) {          
           if (pixel1Idx != transparentIdx) drawPixel(x + bx, y + by, pixel1);
           if (pixel2Idx != transparentIdx) drawPixel(x + bx + 1, y + by, pixel2);        
         }    

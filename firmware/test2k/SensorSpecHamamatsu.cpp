@@ -120,19 +120,45 @@ void SensorSpecHamamatsu::populateSensorBuffer(SensorBuffer* sb, uint8_t mode) {
   // Step 1: Clear data
   sb->setAll(0.0f);
   int maxVal = SPEC_MAX_VALUE - SPEC_MIN_VALUE;      // Maximum possible value to attain
+  int sbSize = sb->getSize();
+  float sbPerChannel = 1.0f;
+  if (sbSize < SPEC_CHANNELS) {
+    sbPerChannel = (float)SPEC_CHANNELS / (float)sbSize;
+  }
+  
+  float resampleCounter = sbPerChannel;
+  uint16_t maxSample = 0;
   
   if (mode == SPEC_DATA) {
+    // Measurement data
     for (int i=0; i<SPEC_CHANNELS; i++) {
-      sb->put( (float)data[i] / maxVal );
+      maxSample = max(maxSample, data[i]);
+      if (i > floor(resampleCounter)) {
+        sb->put( (float)maxSample ); // / maxVal );
+        resampleCounter += sbPerChannel;
+        maxSample = 0;
+      }
     }
   } else if (mode == SPEC_BASELINE) {
+    // Baseline data
     for (int i=0; i<SPEC_CHANNELS; i++) {
-      sb->put( (float)baseline[i] / maxVal );
-    }    
+      maxSample = max(maxSample, baseline[i]);
+      if (i > floor(resampleCounter)) {
+        sb->put( (float)maxSample ); // / maxVal );
+        resampleCounter += sbPerChannel;
+        maxSample = 0;
+      }
+    }
   } else {
+    // Measurement - baseline
     for (int i=0; i<SPEC_CHANNELS; i++) {
-      sb->put( (float)(data[i] - baseline[i]) / maxVal );
-    }        
+      maxSample = max(maxSample, data[i] - baseline[i]);
+      if (i > floor(resampleCounter)) {
+        sb->put( (float)maxSample ); // / maxVal );
+        resampleCounter += sbPerChannel;
+        maxSample = 0;
+      }
+    }    
   }
     
 }

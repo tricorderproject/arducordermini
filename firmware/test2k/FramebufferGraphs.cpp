@@ -76,7 +76,7 @@ void FramebufferGraphs::drawGraph(int16_t x, int16_t y, int16_t w, int16_t h, Se
   if (dataSize > w) {
     hscale = w / dataSize;
   }
-  
+    
   // Find vertical scale
   float max = sb->getMax();
   float min = sb->getMin();
@@ -169,10 +169,10 @@ void FramebufferGraphs::drawGraphSeries(int16_t x, int16_t y, int16_t w, int16_t
   
   // Draw dashed lines for this series
   GFX->setDashedLines(dashedLine);  
-  for (int32_t i=1; i<dataSize-1; i++) {    
+  for (int32_t i=1; i<dataSize-1; i++) {   
     int16_t xd = (int16_t)floor((float)i * hscale);
     int16_t yd = h - (int16_t)floor((sb->getNext() - minVal) * vscale);
-        
+    
     GFX->drawLine(x + prev_x, y + prev_y, x + xd, y + yd, colour);
     prev_x = xd;
     prev_y = yd;     

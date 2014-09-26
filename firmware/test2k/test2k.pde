@@ -24,6 +24,7 @@
 #include "sensor_BMP180.h"
 #include "sensor_AS3935.h"
 #include "SensorMLX90620.h"
+#include "SensorSpecHamamatsu.h"
 
 #include "Tile.h"
 #include "Fonts.h"
@@ -68,7 +69,7 @@ Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);  // BMP180 baromet
 MPU6050 accelgyro(0x69); // <-- use for AD0 low     // MPU9150 Inertial measurement unit
 
 SensorMLX90620 thermalImager;                       // MLX90620 16x4 Thermal Imager
-
+SensorSpecHamamatsu sensorSpectrometer;             // Hamamatsu C12666MA micro spectroemter
 
 #define GRAPH_MAGXYZ  1
 #define GRAPH_MAGSTRENGTH  2
@@ -125,6 +126,11 @@ void setup() {
   thermalImager.begin();    
   thermalImager.debugPrint();  
   
+  // Initialize C12666MA Micro Spectrometer
+  Serial.println ("Initializing C12666MA...");
+  sensorSpectrometer.begin();    
+  
+  // Initialize HMC5883L
   Serial.println("Initializing HMC5883L...");
   sensorHMC5883L.init_HMC5883L();
   delay(500);

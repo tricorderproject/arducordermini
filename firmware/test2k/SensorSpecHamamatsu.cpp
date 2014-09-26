@@ -114,8 +114,7 @@ boolean SensorSpecHamamatsu::postProcessing(uint16_t* data) {
 }
 
 void SensorSpecHamamatsu::populateSensorBuffer(SensorBuffer* sb, uint8_t mode) {
-  // This function populates a SensorBuffer with normalized (0-1) spectrometer data. 
-  // SB should be a sensorbuffer with exactly SPEC_CHANNELS (256) elements. 
+  // This function populates a SensorBuffer with spectrometer data (resampled to buffer size). 
   // MODE is either SPEC_DATA, SPEC_BASELINE, or SPEC_DELTA (data - baseline)
   // Step 1: Clear data
   sb->setAll(0.0f);

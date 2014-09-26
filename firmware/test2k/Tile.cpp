@@ -2,6 +2,7 @@
 #include <wprogram.h>
 #include "Tile.h"
 #include "Fonts.h"
+#include "FramebufferGraphs.h"
 
 // Constructor
 // NOTE: If no bitmap is to be used, initialize tileBitmap == NULL. 
@@ -15,6 +16,9 @@ Tile::Tile(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap, SensorB
   liveBitmapInt = NULL;
   liveBitmapSizeX = 0;
   liveBitmapSizeY = 0;  
+  
+  // Live graph (disabled by default)
+  liveGraph = NULL;
 }
     
 Tile::Tile(FramebufferGFX* GFXPtr) {
@@ -70,6 +74,11 @@ void Tile::setLiveBitmap(int16_t* liveBitmapPtr, uint8_t sizeX, uint8_t sizeY) {
   liveBitmapSizeY = sizeY;    
 }  
   
+void Tile::setLiveGraph(FramebufferGraphs* liveGraphSource) {
+  // Setup live graph variables
+  liveGraph = liveGraphSource; 
+}
+  
 void Tile::setDataSource(SensorBuffer* sb) {
   sensorBuffer = sb;
 }  
@@ -122,6 +131,9 @@ void Tile::render(int x, int y, boolean isSelected) {
   
   // Draw live bitmap 
   drawLiveBitmap(x, y);
+
+  // Draw live graph
+  drawLiveGraph(x, y);
   
   // Label text on the bottom
   GFX->drawJustifiedText(name, x, (x+tileWidth)-1, y+tileHeight-2, &Ubuntu10, JUST_RIGHT, RGB(255, 255, 255) );
@@ -204,6 +216,28 @@ void Tile::drawLiveBitmap(int x, int y) {
       idx += 1;
     }
   } 
+  
+}
+
+void Tile::drawLiveGraph(int x, int y) {
+  int borderX = 6;
+  int borderY = 10;
+  
+  // Step 1: Ensure live bitmap is enabled and points to a data source
+  if (liveGraph == NULL) {
+    return;
+  }
+     
+  // Step 2: Calculate graph dimensions
+  int16_t tileWidth = (gridSizeX * TILE_SIZEX) + ((gridSizeX-1) * TILE_SPACE);
+  int16_t tileHeight = (gridSizeY * TILE_SIZEY) + ((gridSizeY-1) * TILE_SPACE);
+  int16_t graphWidth = tileWidth - borderX; 
+  int16_t graphHeight = tileHeight - borderY;
+  int16_t borderOffsetX = (borderX / 2);
+  int16_t borderOffsetY = (borderY / 2);   // 15 for the text at the bottom
+
+  // Step 3: Draw graph
+  liveGraph->renderGraph(x + borderOffsetX, y + borderOffsetY, graphWidth, graphHeight);
   
 }
 

@@ -57,6 +57,9 @@ SensorBuffer sbGyroX(100);                       // Sensor buffer test
 SensorBuffer sbGyroY(100);                       // Sensor buffer test
 SensorBuffer sbGyroZ(100);                       // Sensor buffer test
 
+SensorBuffer sbSpectMeasurement(256);            // Sensor buffer test
+FramebufferGraphs SpectrometerGraph(&GFX);  
+
 // Sensor Variables
 SensorHMC5883L sensorHMC5883L;                      // Magnetometer
 Adafruit_MPR121 touchWheel = Adafruit_MPR121();     // MPR121 touch sensor
@@ -240,6 +243,11 @@ void setup() {
   tileGUI.getTile(TILE_SPECTROMETER)->setSize(2, 1);
   tileGUI.getTile(TILE_SPECTROMETER)->setText("");   
   
+  SpectrometerGraph.clearSeries();
+  SpectrometerGraph.addSeries( &sbSpectMeasurement, RGB(128, 128, 255) );
+  tileGUI.getTile(TILE_SPECTROMETER)->setLiveGraph(&SpectrometerGraph);   
+
+  
   // TILE: UV (1x1)
   Serial.println ("Adding tile...");
   tileGUI.addTile(TILE_UV)->Initialize("UV Index", RGB(128, 0, 128), &symbUVBitmap, NULL);
@@ -309,7 +317,8 @@ void setup() {
   
   // Debug: Skip to Thermal Camera time
   
-  tileGUI.selectedTile = 10;
+  tileGUI.selectedTile = 7;   // Spectrometer
+//  tileGUI.selectedTile = 10;  // Thermal camera
 
 
 }
@@ -324,8 +333,10 @@ void loop() {
   sby.put( sensorHMC5883L.y );
   sbz.put( sensorHMC5883L.z );
 
-  thermalImager.updateThermalImage();
-  thermalImager.debugPrint();
+//  thermalImager.updateThermalImage();
+//  thermalImager.debugPrint();
+  sensorSpectrometer.takeMeasurement();
+  sensorSpectrometer.populateSensorBuffer(&sbSpectMeasurement, SPEC_DATA);
 /*
   count1 += 0.1;
   sb.put( count1 );

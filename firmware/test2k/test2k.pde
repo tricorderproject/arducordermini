@@ -77,14 +77,25 @@ SensorMLX90620 thermalImager;                       // MLX90620 16x4 Thermal Ima
 SensorSpecHamamatsu sensorSpectrometer;             // Hamamatsu C12666MA micro spectroemter
 SensorRadiation sensorRadiation(&sbRad);            // Radiation Watch Type 5 High-energy Particle Detector
 
-#define GRAPH_MAGXYZ  1
-#define GRAPH_MAGSTRENGTH  2
-#define GRAPH_MIC  3
-#define GRAPH_HUMIDITY 4
-#define GRAPH_PRESSURE 5
-#define GRAPH_ACCELGYRO 6
-#define GRAPH_MAX 6
+
+// User interface -- modes
+uint8_t userInterfaceMode;
+#define UI_MODE_TILE     10
+#define UI_MODE_GRAPH    20
+
+// User interface -- graph based displays
+#define GRAPH_MAGXYZ         1
+#define GRAPH_MAGSTRENGTH    2
+#define GRAPH_MIC            3
+#define GRAPH_HUMIDITY       4
+#define GRAPH_PRESSURE       5
+#define GRAPH_ACCELGYRO      6
+#define GRAPH_MAX            6
 uint16_t showGraph = GRAPH_MAGXYZ;
+
+// User interface -- push buttons (MPR121 electrode numbers)
+#define BUTTON_TOUCH_SELECT    10  
+#define BUTTON_TOUCH_BACK      9
 
 // Temporary buffer for string operations
 char stringBuffer[10];
@@ -152,13 +163,14 @@ void setup() {
     Serial.println("ERROR: Could not initialize BMP180...");     
   }
   
-   // AS3935 setup
-   //AS3935_setup();
+  // Initialize AS3935 
+  //Serial.println("Initializing AS3935...");     
+  //AS3935_setup();
    
-   // Initialize MPU6050
+  // Initialize MPU6050
   Serial.println("Initializing MPU9050...");     
-   accelgyro.initialize();
-   Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");   
+  accelgyro.initialize();
+  Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");   
     
   // Initialize Radiation sensor (interrupt driven)
   Serial.println("Initializing Radiation sensor...");       
@@ -343,13 +355,73 @@ void setup() {
 //  tileGUI.selectedTile = 7;   // Spectrometer
 //  tileGUI.selectedTile = 10;  // Thermal camera
 
+  // Set initial user interface mode (tile)
+  userInterfaceMode = UI_MODE_TILE;
+}
+
+//float count1 = 0.0f;
+//int incrementDirection = 1;
+int interfaceMode = 0;
+void loop() {
+  // ******************************************    
+  // Update sensor data
+  // ******************************************      
+  updateSensorData();  
+  
+
+  // ******************************************    
+  // Render tile or graph display
+  // ******************************************      
+  if (userInterfaceMode == UI_MODE_TILE) {
+    // Tile display
+    userInterfaceTiles();
+    // If the SELECT button has been pressed, transition to a graph view for this tile
+    if (touchWheel.isButtonPressed(BUTTON_TOUCH_SELECT)) {
+      userInterfaceMode = UI_MODE_GRAPH; 
+    }
+  } else if (userInterfaceMode == UI_MODE_GRAPH) {
+    // Graph display
+    
+    // If the BACK button has been pressed, transition back to the tile view
+    if (touchWheel.isButtonPressed(BUTTON_TOUCH_BACK)) {
+      userInterfaceMode = UI_MODE_TILE; 
+    }    
+  }
 
 }
 
-float count1 = 0.0f;
-int incrementDirection = 1;
-void loop() {
-  // Update sensor data
+
+void userInterfaceTiles() {
+  // ******************************************    
+  // Step 1: Render tiles
+  // ******************************************    
+  Serial.println ("Rendering");
+  tileGUI.render();
+  Serial.println ("Updating Screen");
+  GFX.updateScreen(); 
+
+  // *********************************************    
+  // Step 2: Read user input for scrolling (tile based display)
+  // *********************************************    
+  // Increment/Decrement selected tile based on touch wheel input
+  int16_t deltaWheel = touchWheel.getWheelIncrement();  
+  // Negative delta: select previous tile
+  if (deltaWheel < 0) {      
+    for (int i=0; i<-deltaWheel; i++) {
+      tileGUI.selectPrevTile();
+    } 
+  }
+  // Positive delta: select next tile
+  if (deltaWheel > 0) {      
+    for (int i=0; i<deltaWheel; i++) {
+      tileGUI.selectNextTile();
+    } 
+  }  
+}
+
+
+void updateSensorData() {
+  // Update sensor data based on tiles that are currently visible on the display
   
   // Atmospheric temperature and pressure
   if (( tileGUI.isTileOnScreen(TILE_ATMTEMP) )
@@ -442,50 +514,10 @@ void loop() {
     uint16_t micVal = sensorMicrophone.readValue();
     sbMic.put ((float)micVal / 1024);    
   }
-  
-/*
-  count1 += 0.1;
-  sb.put( count1 );
-  if (count1 > 200) {
-    count1 = 0.0f;
-  }
-*/  
-  
-  // ******************************************    
-  // Render tiles
-  // ******************************************    
-  // Step 1: Render
-  Serial.println ("Rendering");
-  tileGUI.render();
-  Serial.println ("Updating Screen");
-  GFX.updateScreen(); 
-    
-  // Step 2: Read user input
-  // Increment/Decrement selected tile based on touch wheel input
-  int16_t deltaWheel = touchWheel.getWheelIncrement();  
-  // Negative delta: select previous tile
-  if (deltaWheel < 0) {      
-    for (int i=0; i<-deltaWheel; i++) {
-      tileGUI.selectPrevTile();
-    } 
-  }
-  // Positive delta: select next tile
-  if (deltaWheel > 0) {      
-    for (int i=0; i<deltaWheel; i++) {
-      tileGUI.selectNextTile();
-    } 
-  }
 
-/*    
-    Serial.println ("Selecting next tile");  
-    if (incrementDirection == 1) {  
-      if (!tileGUI.selectNextTile() ) incrementDirection = 0;      
-    } else {
-      if (!tileGUI.selectPrevTile() ) incrementDirection = 1;      
-    }
-*/  
-  
 }
+
+
 
 uint8_t mode = 1;
 int count = 0;

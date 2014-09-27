@@ -19,6 +19,7 @@ Tile::Tile(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitmap, SensorB
   
   // Live graph (disabled by default)
   liveGraph = NULL;
+  
 }
     
 Tile::Tile(FramebufferGFX* GFXPtr) {
@@ -39,8 +40,12 @@ void Tile::Initialize(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitm
   category = 0;
   name = tileName;
   strcpy(text, "");
+  strcpy(units, "");
+  setSensorTextFormat(TEXT_INT);
+  setSensorTextMinMaxRecent(DISP_RECENT);
+  
   bitmap = tileBitmap;  
-  setDataSource(sb);
+  setDataSource(sb);      
 }
   
 // Setup methods
@@ -59,7 +64,16 @@ void Tile::setText(char* tileText) {
     strcpy(text, tileText); 
   } else {
     strncpy(text, tileText, TILE_MAXTEXTLENGTH-1);
-    tileText[TILE_MAXTEXTLENGTH-1] = '\0';  // Add null manually
+    text[TILE_MAXTEXTLENGTH-1] = '\0';  // Add null manually
+  }
+}
+
+void Tile::setUnitText(char* unitText) {
+  if (strlen(unitText) < TILE_MAXTEXTLENGTH) {
+    strcpy(units, unitText); 
+  } else {
+    strncpy(units, unitText, TILE_MAXTEXTLENGTH-1);
+    units[TILE_MAXTEXTLENGTH-1] = '\0';  // Add null manually
   }
 }
 
@@ -91,14 +105,50 @@ void Tile::updateTextFromData() {
     return;
   }
   
-  // Step 2: Retrieve most recent data value
-  float data = sensorBuffer->getMostRecentValue();
+  // Step 2: Retrieve (min / max / most recent) data value in sensor buffer
+  float data = 0;
+  switch (sensorMinMaxRecent) {
+    case DISP_MIN: 
+      data = sensorBuffer->getMin();
+      break;
+    case DISP_MAX: 
+      data = sensorBuffer->getMax();
+      break;
+    case DISP_RECENT:
+    default:
+      data = sensorBuffer->getMostRecentValue();
+      break;
+  }
   
   // Step 3: Write string representing that data
-  char buffer[10];
-  sprintf(buffer, "%.1f", data);
+  char buffer[20];
+  if (sensorTextFormat == TEXT_FLOAT1DEC) {
+    // Float with 1 decimal place
+    sprintf(buffer, "%.1f", data);
+  } else if (sensorTextFormat == TEXT_FLOAT2DEC) {
+    // Float with 2 decimal place
+    sprintf(buffer, "%.2f", data);
+  } else {
+    // Integer
+    sprintf(buffer, "%.0f", data);
+  }
+  // Append unit text (if applicable)
+  strcat(buffer, units);  
+  
+  // Update tile text  
   setText(buffer);
 }
+
+// Set the display format of the sensor data (TEXT_INT, TEXT_FLOAT1DEC, TEXT_FLOAT2DEC)
+void Tile::setSensorTextFormat(uint8_t mode) {
+  sensorTextFormat = mode; 
+}
+
+// Set whether the min, max, or most recent value is displayed
+void Tile::setSensorTextMinMaxRecent(uint8_t mode) {
+  sensorMinMaxRecent = mode;
+}
+
 
   
 // Render methods

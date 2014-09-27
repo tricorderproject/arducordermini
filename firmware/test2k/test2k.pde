@@ -86,7 +86,8 @@ SensorRadiation sensorRadiation(&sbRad);            // Radiation Watch Type 5 Hi
 #define GRAPH_MAX 6
 uint16_t showGraph = GRAPH_MAGXYZ;
 
-
+// Temporary buffer for string operations
+char stringBuffer[10];
 
 // Functions
 void setup() {
@@ -191,24 +192,23 @@ void setup() {
   // ******************************************  
   // TILE: Ambient Temperature (1x1)
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_ATMTEMP)->Initialize("Temp", RGB(0, 0, 128), &symbTempBitmap, NULL);
-  char buffer[10];
-  strcpy(buffer, "24");
-  strcat(buffer, " ");
-  strcat(buffer, "C");
-  buffer[2] = 176;
-  tileGUI.getTile(TILE_ATMTEMP)->setText(buffer);
+  tileGUI.addTile(TILE_ATMTEMP)->Initialize("Temp", RGB(0, 0, 128), &symbTempBitmap, &sbTemp);
+  // Set unit text to "[degree]C"
+  strcpy(stringBuffer, " C");
+  stringBuffer[0] = 176;
+  tileGUI.getTile(TILE_ATMTEMP)->setUnitText(stringBuffer);
   
   // TILE: Ambient Humidity (1x1)
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_ATMHUMIDITY)->Initialize("Humidity", RGB(0, 0, 128), &symbHumidityBitmap, NULL);
-  tileGUI.getTile(TILE_ATMHUMIDITY)->setText("30%");  
+  tileGUI.addTile(TILE_ATMHUMIDITY)->Initialize("Humidity", RGB(0, 0, 128), &symbHumidityBitmap, &sbHumidity);
+  tileGUI.getTile(TILE_ATMHUMIDITY)->setUnitText("%");
   
   // TILE: Ambient Pressure (2x1)
   Serial.println ("Adding tile...");
   tileGUI.addTile(TILE_ATMPRESSURE)->Initialize("Pressure", RGB(0, 128, 0), &symbPressureBitmap, NULL);
   tileGUI.getTile(TILE_ATMPRESSURE)->setSize(2, 1);
-  tileGUI.getTile(TILE_ATMPRESSURE)->setText("1200mbar"); 
+  tileGUI.getTile(TILE_ATMPRESSURE)->setText("0");
+  tileGUI.getTile(TILE_ATMPRESSURE)->setUnitText("mbar");  
   
   
   // ******************************************  
@@ -217,12 +217,9 @@ void setup() {
   // TILE: Magnetic Field Strength (1x1)
   Serial.println ("Adding tile...");
   tileGUI.addTile(TILE_MAGFIELD)->Initialize("Magnetic", RGB(0, 0, 128), &symbMagBitmap, &sb);
-  char buffer1[10];
-  strcpy(buffer1, "100");
-  strcat(buffer1, " ");
-  strcat(buffer1, "T");
-  buffer1[2] = 181;
-  tileGUI.getTile(TILE_MAGFIELD)->setText(buffer1);
+  strcpy(stringBuffer, " T");
+  stringBuffer[0] = 181;
+  tileGUI.getTile(TILE_MAGFIELD)->setUnitText(stringBuffer);
   
   // TILE: Magnetic Field Direction (1x1)  
   // NOTE: Arrow tile currently unimplemented
@@ -233,12 +230,14 @@ void setup() {
   // TILE: Lightning (strike distance) (1x1)
   Serial.println ("Adding tile...");
   tileGUI.addTile(TILE_LIGHTNING_STR)->Initialize("Lightning", RGB(0, 0, 128), &symbLightningBitmap, NULL);
-  tileGUI.getTile(TILE_LIGHTNING_STR)->setText("5km");
+  tileGUI.getTile(TILE_LIGHTNING_STR)->setText("5");
+  tileGUI.getTile(TILE_LIGHTNING_STR)->setUnitText("km");
 
   // TILE: Radiation (counts per minute) (1x1)
   Serial.println ("Adding tile...");
   tileGUI.addTile(TILE_RADIATION_CPM)->Initialize("Radiation", RGB(0, 0, 128), &symbRadiationBitmap, NULL);
-  tileGUI.getTile(TILE_RADIATION_CPM)->setText("100cpm");
+  tileGUI.getTile(TILE_RADIATION_CPM)->setUnitText("cpm");
+
 
 
   // ******************************************
@@ -259,12 +258,16 @@ void setup() {
   // TILE: UV (1x1)
   Serial.println ("Adding tile...");
   tileGUI.addTile(TILE_UV)->Initialize("UV Index", RGB(128, 0, 128), &symbUVBitmap, NULL);
-  tileGUI.getTile(TILE_UV)->setText("6i");  
+  tileGUI.getTile(TILE_UV)->setText("6");  
+  tileGUI.getTile(TILE_UV)->setUnitText("i");
 
   // TILE: Linear Polarization (1x1)  
   Serial.println ("Adding tile...");  
   tileGUI.addTile(TILE_LINEAR_POL)->Initialize("Polarization", RGB(128, 0, 128), &symbPolarizationBitmap, NULL);
-  tileGUI.getTile(TILE_LINEAR_POL)->setText("25%");  
+  tileGUI.getTile(TILE_LINEAR_POL)->setText("25");
+  tileGUI.getTile(TILE_LINEAR_POL)->setUnitText("%");  
+
+  
         
         
   // ******************************************        
@@ -281,12 +284,15 @@ void setup() {
   // TILE: Lightning (disturber) (1x1)
   Serial.println ("Adding tile...");  
   tileGUI.addTile(TILE_LIGHTNING_DIS)->Initialize("Disturber", RGB(0, 0, 128), &symbLightningBitmap, NULL);
-  tileGUI.getTile(TILE_LIGHTNING_DIS)->setText("1km");  
+  tileGUI.getTile(TILE_LIGHTNING_DIS)->setText("1");  
+  tileGUI.getTile(TILE_LIGHTNING_DIS)->setUnitText("km");
 
   // TILE: IMU (acceleration) (1x1)
   Serial.println ("Adding tile...");
   tileGUI.addTile(TILE_IMU_ACCEL)->Initialize("Accel", RGB(0, 0, 128), &symbIMUBitmap, NULL);
-  tileGUI.getTile(TILE_IMU_ACCEL)->setText("1.2g");  
+  tileGUI.getTile(TILE_IMU_ACCEL)->setText("1.0");
+  tileGUI.getTile(TILE_IMU_ACCEL)->setUnitText("g");
+
   
 
 
@@ -306,9 +312,10 @@ void setup() {
   tileGUI.getTile(TILE_GAS_NH3)->setText("5ppm");  
 
   // TILE: Audio (microphone) (1x1)
-  tileGUI.addTile(TILE_AUDIO_MIC)->Initialize("Microphone", RGB(128, 0, 128), &symbMicrophoneBitmap, NULL);
-  tileGUI.getTile(TILE_GAS_NH3)->setText("10db");  
-
+  tileGUI.addTile(TILE_AUDIO_MIC)->Initialize("Microphone", RGB(128, 0, 128), &symbMicrophoneBitmap, &sbMic);
+  tileGUI.getTile(TILE_AUDIO_MIC)->setText("10");  
+  tileGUI.getTile(TILE_AUDIO_MIC)->setUnitText("v");
+  tileGUI.getTile(TILE_AUDIO_MIC)->setSensorTextMinMaxRecent(DISP_MAX);
 
   // ******************************************
   // THEME: Settings/Utilities
@@ -324,8 +331,8 @@ void setup() {
   tileGUI.packTiles();
   
   // Debug: Skip to Thermal Camera time
-  
-  tileGUI.selectedTile = 7;   // Spectrometer
+  tileGUI.selectedTile = 1;   // First page
+//  tileGUI.selectedTile = 7;   // Spectrometer
 //  tileGUI.selectedTile = 10;  // Thermal camera
 
 
@@ -335,6 +342,14 @@ float count1 = 0.0f;
 int incrementDirection = 1;
 void loop() {
   // Update sensor data
+  
+  if (( tileGUI.isTileOnScreen(TILE_ATMTEMP) )
+    || ( tileGUI.isTileOnScreen(TILE_ATMHUMIDITY) )) {
+    float humd = sensorHTU21D.readHumidity();
+    float temp = sensorHTU21D.readTemperature();
+    sbTemp.put( temp );
+    sbHumidity.put( humd );    
+  }
   
   // Magnetometer
   if ( tileGUI.isTileOnScreen(TILE_MAGFIELD) ) { 
@@ -357,11 +372,40 @@ void loop() {
     sensorSpectrometer.populateSensorBuffer(&sbSpectMeasurement, SPEC_DATA);
   }
   
-  // Radiation Sensor
+  // Radiation Sensor (measurement is interrupt driven, so here we just need to update the text)
   if ( tileGUI.isTileOnScreen(TILE_RADIATION_CPM) ) { 
     char buffer[10];
     sprintf(buffer, "%.0f", sensorRadiation.calculateCPM());
     tileGUI.getTile(TILE_RADIATION_CPM)->setText(buffer);
+  }
+  
+  // Acceleration/IMU
+  if ( tileGUI.isTileOnScreen(TILE_IMU_ACCEL) ) { 
+    int16_t ax, ay, az;
+    int16_t gx, gy, gz;
+    // read raw accel/gyro measurements from device 
+    accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+    
+    // Store motion
+    sbAccelX.put( (float)ax );
+    sbAccelY.put( (float)ay );
+    sbAccelZ.put( (float)az );
+    sbGyroX.put( (float)gx );
+    sbGyroY.put( (float)gy );
+    sbGyroZ.put( (float)gz );
+    
+    // Calculate length of acceleration vector
+    float length = sqrt(pow((float)gx, 2) + pow((float)gy, 2) + pow((float)gz, 2));
+
+    // Set text
+    sprintf(stringBuffer, "%.2f", length);
+    tileGUI.getTile(TILE_IMU_ACCEL)->setText(stringBuffer);
+  }
+  
+  // Microphone
+  if ( tileGUI.isTileOnScreen(TILE_AUDIO_MIC) ) {    
+    uint16_t micVal = sensorMicrophone.readValue();
+    sbMic.put ((float)micVal);    
   }
   
 /*

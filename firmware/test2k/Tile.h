@@ -16,6 +16,16 @@
 #define TILE_SELECTED_DELTA  2                // "selected" border distance off tile
 #define colorSelected RGB(128, 128, 128)
 
+// Settings for rendering text as integers or floats
+#define TEXT_INT          10
+#define TEXT_FLOAT1DEC    20
+#define TEXT_FLOAT2DEC    21
+
+// Settings for showing the min, max, or most recent sensor value
+#define DISP_RECENT        0
+#define DISP_MIN          10
+#define DISP_MAX          20
+
 class Tile {
   
   public:
@@ -28,8 +38,11 @@ class Tile {
   uint8_t category;
   char* name;
   char text[TILE_MAXTEXTLENGTH];
+  char units[TILE_MAXTEXTLENGTH];
   const BITMAPSTRUCT* bitmap;
   SensorBuffer* sensorBuffer;
+  uint8_t sensorTextFormat;
+  uint8_t sensorMinMaxRecent;
   
   // Live bitmaps
   int16_t* liveBitmapInt;
@@ -52,13 +65,18 @@ class Tile {
   void setSize(uint8_t x, uint8_t y);
   void setColor(uint16_t col);  
   void setText(char* tileText);
+  void setUnitText(char* unitText);
+
   void setBitmap(const BITMAPSTRUCT* tileBitmap);
   void setLiveBitmap(int16_t* liveBitmap, uint8_t sizeX, uint8_t sizeY);
   void setLiveGraph(FramebufferGraphs* liveGraphSource);
+  
   void setDataSource(SensorBuffer* sb);
+  void setSensorTextFormat(uint8_t mode);
+  void setSensorTextMinMaxRecent(uint8_t mode);
   
   // Data methods
-  void updateTextFromData();
+  void updateTextFromData();  
   
   // Render methods
   void render(int x, int y, boolean isSelected);

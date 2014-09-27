@@ -1,5 +1,4 @@
 // SensorSpecHamamatsu.h
-// SensorMLX90620.h
 #if !defined(SENSOR_SPEC_C12666_h) 
 #define SENSOR_SPEC_C12666_h
 

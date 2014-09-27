@@ -57,6 +57,19 @@ Tile* TileGUI::getTile(uint8_t tileID) {
   return NULL;
 }
 
+// Returns true if the file is currently on the screen
+boolean TileGUI::isTileOnScreen(uint8_t tileID) {
+  int curPage = tilePages[selectedTile];
+  for (int i=0; i<numTiles; i++) {
+    if (tileIDs[i] == tileID) {
+      if (tilePages[i] == curPage) {
+        return true;
+      } 
+      return false;
+    } 
+  }
+  return false;  
+}
   
 // Navigation Methods
 boolean TileGUI::selectNextTile() {

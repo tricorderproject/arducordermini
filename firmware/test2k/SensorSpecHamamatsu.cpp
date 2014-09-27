@@ -107,7 +107,11 @@ boolean SensorSpecHamamatsu::postProcessing(uint16_t* data) {
     // Check for overexposure
     if (data[i] > SPEC_MAX_VALUE) flagOverexposed = true;
     // Subtract the offset
-    data[i] = data[i] - SPEC_MIN_VALUE;
+    if (data[i] > SPEC_MIN_VALUE) {
+      data[i] = data[i] - SPEC_MIN_VALUE;
+    } else {
+      data[i] = 0;
+    }
   }
   
   return flagOverexposed;

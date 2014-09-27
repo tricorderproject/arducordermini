@@ -80,6 +80,7 @@ class TileGUI {
   // Setup methods
   Tile* addTile(uint8_t tileID);
   Tile* getTile(uint8_t tileID);
+  boolean isTileOnScreen(uint8_t tileID);
       
   // Render methods
   void render();

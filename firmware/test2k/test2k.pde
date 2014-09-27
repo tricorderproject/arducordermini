@@ -25,6 +25,7 @@
 #include "sensor_AS3935.h"
 #include "SensorMLX90620.h"
 #include "SensorSpecHamamatsu.h"
+#include "SensorRadiation.h"
 
 #include "Tile.h"
 #include "Fonts.h"
@@ -56,6 +57,7 @@ SensorBuffer sbAccelZ(100);                       // Sensor buffer test
 SensorBuffer sbGyroX(100);                       // Sensor buffer test
 SensorBuffer sbGyroY(100);                       // Sensor buffer test
 SensorBuffer sbGyroZ(100);                       // Sensor buffer test
+SensorBuffer sbRad(100);
 
 SensorBuffer sbSpectMeasurement(256);            // Sensor buffer test
 FramebufferGraphs SpectrometerGraph(&GFX);  
@@ -73,6 +75,7 @@ MPU6050 accelgyro(0x69); // <-- use for AD0 low     // MPU9150 Inertial measurem
 
 SensorMLX90620 thermalImager;                       // MLX90620 16x4 Thermal Imager
 SensorSpecHamamatsu sensorSpectrometer;             // Hamamatsu C12666MA micro spectroemter
+SensorRadiation sensorRadiation(&sbRad);            // Radiation Watch Type 5 High-energy Particle Detector
 
 #define GRAPH_MAGXYZ  1
 #define GRAPH_MAGSTRENGTH  2
@@ -150,6 +153,11 @@ void setup() {
   Serial.println("Initializing MPU9050...");     
    accelgyro.initialize();
    Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");   
+    
+  // Initialize Radiation sensor (interrupt driven)
+  Serial.println("Initializing Radiation sensor...");       
+  setupRadiationISR(&sensorRadiation);     // MUST be called before begin()
+  sensorRadiation.begin();
     
   // Visualization
   Serial.println("Initializing Sensor Graph...");  
@@ -327,16 +335,35 @@ float count1 = 0.0f;
 int incrementDirection = 1;
 void loop() {
   // Update sensor data
-  float length = sensorHMC5883L.read_HMC5883L();
-  sb.put( length );
-  sbx.put( sensorHMC5883L.x );
-  sby.put( sensorHMC5883L.y );
-  sbz.put( sensorHMC5883L.z );
+  
+  // Magnetometer
+  if ( tileGUI.isTileOnScreen(TILE_MAGFIELD) ) { 
+    float length = sensorHMC5883L.read_HMC5883L();
+    sb.put( length );
+    sbx.put( sensorHMC5883L.x );
+    sby.put( sensorHMC5883L.y );
+    sbz.put( sensorHMC5883L.z );
+  }
 
-//  thermalImager.updateThermalImage();
-//  thermalImager.debugPrint();
-  sensorSpectrometer.takeMeasurement();
-  sensorSpectrometer.populateSensorBuffer(&sbSpectMeasurement, SPEC_DATA);
+  // Thermal Imager
+  if ( tileGUI.isTileOnScreen(TILE_THERMAL_CAM) ) { 
+    thermalImager.updateThermalImage();
+    thermalImager.debugPrint();
+  }
+
+  // Spectrometer
+  if ( tileGUI.isTileOnScreen(TILE_SPECTROMETER) ) {   
+    sensorSpectrometer.takeMeasurement();
+    sensorSpectrometer.populateSensorBuffer(&sbSpectMeasurement, SPEC_DATA);
+  }
+  
+  // Radiation Sensor
+  if ( tileGUI.isTileOnScreen(TILE_RADIATION_CPM) ) { 
+    char buffer[10];
+    sprintf(buffer, "%.0f", sensorRadiation.calculateCPM());
+    tileGUI.getTile(TILE_RADIATION_CPM)->setText(buffer);
+  }
+  
 /*
   count1 += 0.1;
   sb.put( count1 );

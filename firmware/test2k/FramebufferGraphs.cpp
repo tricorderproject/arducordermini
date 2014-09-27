@@ -3,6 +3,7 @@
 #include <wprogram.h>
 #include "FramebufferGraphs.h"
 #include "FramebufferGFX.h"
+#include "Fonts.h"
 
 // Constructor
 FramebufferGraphs::FramebufferGraphs(FramebufferGFX* GFXPtr) { 
@@ -10,6 +11,9 @@ FramebufferGraphs::FramebufferGraphs(FramebufferGFX* GFXPtr) {
   
   // Initialize/clear the list of data series
   clearSeries();
+  
+  // Set label mode -- default no labels
+  setLabelMode(LABELMODE_NONE);
 }
  
 /*
@@ -58,6 +62,11 @@ void FramebufferGraphs::findMinMaxSeries() {
       if (min > seriesMin) min = seriesMin; 
     }
   }
+}
+      
+// Set how the axes are labeled      
+void FramebufferGraphs::setLabelMode(uint8_t mode) {
+  labelMode = mode; 
 }
       
 /*
@@ -142,6 +151,17 @@ void FramebufferGraphs::renderGraph(int16_t x, int16_t y, int16_t w, int16_t h) 
   // Draw graph axes
   GFX->drawFastHLine(x, y+h+1, w, RGB(255, 255, 255));
   GFX->drawFastVLine(x, y, h, RGB(255, 255, 255));  
+  
+  // Draw graph labels
+  if (labelMode == LABELMODE_MINMAX) {
+     char buffer[20];
+     sprintf(buffer, "%.1f", min);
+     GFX->drawJustifiedText(buffer, x-23, x-2, y+h+6, &UbuntuCondensed12, JUST_RIGHT, RGB(255, 255, 255) );
+     
+     sprintf(buffer, "%.1f", max);
+     GFX->drawJustifiedText(buffer, x-23, x-2, y+6, &UbuntuCondensed12, JUST_RIGHT, RGB(255, 255, 255) );
+     
+  }
   
 }
 

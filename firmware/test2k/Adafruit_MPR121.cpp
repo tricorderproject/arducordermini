@@ -119,6 +119,7 @@ int16_t Adafruit_MPR121::getWheelAngle(void) {
 
 
   // Display deltas (debug)
+/*  
   Serial.print ("baselines: \t");
   for (uint8_t i=0; i<13; i++) {
     Serial.print(filteredData(i), DEC);
@@ -132,7 +133,8 @@ int16_t Adafruit_MPR121::getWheelAngle(void) {
     Serial.print("\t");
   } 
   Serial.println ("");
-  
+*/
+
   // Find maximum delta
   int16_t maxVal = 10;  
   int16_t maxIdx = -1;

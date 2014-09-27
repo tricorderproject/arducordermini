@@ -59,7 +59,7 @@ SensorBuffer sbGyroY(100);                       // Sensor buffer test
 SensorBuffer sbGyroZ(100);                       // Sensor buffer test
 SensorBuffer sbRad(100);
 
-SensorBuffer sbSpectMeasurement(256);            // Sensor buffer test
+SensorBuffer sbSpectMeasurement(100);            // Sensor buffer test
 FramebufferGraphs SpectrometerGraph(&GFX);  
 
 // Sensor Variables
@@ -369,6 +369,7 @@ void loop() {
   // ******************************************    
   // Update sensor data
   // ******************************************      
+  Serial.println ("Updating Sensor Data...");
   updateSensorData();  
   
 
@@ -376,6 +377,8 @@ void loop() {
   // Render tile or graph display
   // ******************************************      
   if (userInterfaceMode == UI_MODE_TILE) {
+    Serial.println ("Tile Interface...");
+      
     // Tile display
     userInterfaceTiles();
     // If the SELECT button has been pressed, transition to a graph view for this tile
@@ -424,8 +427,11 @@ void loop() {
       }
     }
   } else if (userInterfaceMode == UI_MODE_GRAPH) {
+    Serial.println ("Graph Display...");    
     // Graph display
-    showSensorGraph();
+    int selectedTile = tileGUI.getSelectedTileID();
+    Tile* curTile = tileGUI.getTile(selectedTile);
+    showSensorGraph(curTile);
     
     // If the BACK button has been pressed, transition back to the tile view
     if (touchWheel.isButtonPressed(BUTTON_TOUCH_BACK)) {
@@ -485,6 +491,7 @@ void updateSensorData() {
     sbPressure.put(event.pressure);  
     
     // Measure altitute (NOTE: currently unused)
+/*    
     float temperature;
     bmp.getTemperature(&temperature);
     float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
@@ -492,6 +499,7 @@ void updateSensorData() {
     Serial.print(bmp.pressureToAltitude(seaLevelPressure,
                                         event.pressure,
                                         temperature)); 
+*/
     
   }
      
@@ -701,31 +709,80 @@ void loop1() {
 
 
 void initSensorGraph() {
-  if (showGraph == GRAPH_MAGXYZ) {
-    initMagGraphXYZL();
-  } else if (showGraph == GRAPH_MAGSTRENGTH) {
-    initMagGraphLength();    
-  } else if (showGraph == GRAPH_MIC) {
-    initMicGraph();
-  } else if (showGraph == GRAPH_HUMIDITY) {
-    initHumidityGraph();    
-  } else if (showGraph == GRAPH_ACCELGYRO) {
-    initAccelGyroGraph();        
+  switch (showGraph) {
+    case GRAPH_HUMIDITY:
+      initHumidityGraph();    
+      break;
+    case GRAPH_PRESSURE:
+      initPressureGraph();    
+      break;      
+    case GRAPH_MAGXYZ:
+      initMagGraphXYZL();
+      break;
+    case GRAPH_RADIATION:
+      initRadiationGraph();
+      break;
+    case GRAPH_SPECTROMETER:
+      initSpectrometerGraph();
+      break;    
+    case GRAPH_ACCELGYRO:
+      initAccelGyroGraph();                  
+      break;            
+    case GRAPH_MIC:
+      initMicGraph();
+      break;
   }
+  
 }
 
-void showSensorGraph() {
-  if (showGraph == GRAPH_MAGXYZ) {
-    doMagGraphXYZL();
-  } else if (showGraph == GRAPH_MAGSTRENGTH) {
-    doMagGraphLength();    
-  } else if (showGraph == GRAPH_MIC) {
-    doMicGraph();
-  } else if (showGraph == GRAPH_HUMIDITY) {
-    doHumidityGraph();    
-  } else if (showGraph == GRAPH_ACCELGYRO) {
-    doAccelGyroGraph();        
-  }  
+void showSensorGraph(Tile* curTile) {  
+  
+  // Step 1: Clear framebuffer
+  GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));
+  
+  // Step 2: Draw gradient tile backdrop
+  uint16_t r = getRed(curTile->color);
+  uint16_t g = getGreen(curTile->color);
+  uint16_t b = getBlue(curTile->color);
+  r += 64;
+  g += 64;
+  b += 64;
+  if (r > 255) r = 255;
+  if (g > 255) g = 255;
+  if (b > 255) b = 255;
+  uint16_t color2 = RGB(r, g, b);
+
+  GFX.gradientRect(2, 2, 126, 126, 45, curTile->color, color2);    // small angle 
+  
+  // Step 3: Render graph
+  Graph.renderGraph(25, 10, 100, 100);
+    
+  // Step 4: Label text
+  GFX.drawJustifiedText(curTile->name, 1, 126, 126, &Ubuntu14, JUST_RIGHT, RGB(255, 255, 255) );
+  
+  // Step 4: Update Screen
+  GFX.updateScreen();  
+
+  /*
+  switch (showGraph) {
+    case GRAPH_HUMIDITY:
+      doHumidityGraph();    
+      break;
+    case GRAPH_PRESSURE:
+      doPressureGraph();    
+      break;            
+    case GRAPH_MAGXYZ:
+      doMagGraphXYZL();
+      break;
+    case GRAPH_ACCELGYRO:
+      doAccelGyroGraph();        
+      break;
+    case GRAPH_MIC:
+      doMicGraph();
+      break;
+  }
+  */
+  
 }
 
 
@@ -740,33 +797,10 @@ void initMagGraphXYZL() {
   Graph.addSeries( &sby, RGB(0, 255, 0) );
   Graph.addSeries( &sbz, RGB(0, 0, 255) );  
   Graph.addSeries( &sb, RGB(255, 255, 255) );    
+  Graph.setLabelMode(LABELMODE_MINMAX);
 }
 
 void doMagGraphXYZL() {
-  // Read magnetometer
-  float length = sensorHMC5883L.read_HMC5883L();
-  sb.put( length );
-  sbx.put( sensorHMC5883L.x );
-  sby.put( sensorHMC5883L.y );
-  sbz.put( sensorHMC5883L.z );
-
-  GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));
-  Graph.renderGraph(10, 10, 100, 100);
-  
-  GFX.updateScreen();  
-}
-
-void initMagGraphLength() {
-  // Initialize magnetometer graph (Just display total field strength)
-  Graph.clearSeries();
-  Graph.addSeries( &sb, RGB(0, 0, 255) );    
-}
-
-void doMagGraphLength() {
-  // Read magnetometer
-  float length = sensorHMC5883L.read_HMC5883L();
-  sb.put( length );
-  
   GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));
   Graph.renderGraph(10, 10, 100, 100);
   
@@ -780,13 +814,10 @@ void initMicGraph() {
   // Initialize magnetometer graph
   Graph.clearSeries();
   Graph.addSeries( &sbMic, RGB(255, 0, 255) );
+  Graph.setLabelMode(LABELMODE_MINMAX);
 }
 
-void doMicGraph() {
-  // Read microphone
-  uint16_t micVal = sensorMicrophone.readValue();
-  sbMic.put ((float)micVal / 1024);
-  
+void doMicGraph() {  
   GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));
   Graph.renderGraph(10, 10, 100, 100);
   
@@ -803,28 +834,15 @@ void initHumidityGraph() {
   Graph.clearSeries();
   Graph.addSeries( &sbTemp, RGB(255, 0, 0) );
   Graph.addSeries( &sbHumidity, RGB(0, 255, 0) );
+  Graph.setLabelMode(LABELMODE_MINMAX);  
 }
 
 void doHumidityGraph() {
-  // Read humidity
-  float humd = sensorHTU21D.readHumidity();
-  float temp = sensorHTU21D.readTemperature();
-
-  Serial.print ("Humidity: ");
-  Serial.println (humd);
-  Serial.print ("Ambient Temperature: ");
-  Serial.println (temp);
-  
-  sbTemp.put( temp );
-  sbHumidity.put( humd );
-
   GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));
   Graph.renderGraph(10, 10, 100, 100);
   
   GFX.updateScreen();  
-//  delay(250);
 }
-
 
 /*
  * Pressure 
@@ -833,27 +851,14 @@ void initPressureGraph() {
   // Initialize pressure graph
   Graph.clearSeries();
   Graph.addSeries( &sbPressure, RGB(255, 255, 0) );
+  Graph.setLabelMode(LABELMODE_MINMAX);  
 }
 
 void doPressureGraph() {
-  // Read pressure
-  /*
-  float humd = sensorHTU21D.readHumidity();
-  float temp = sensorHTU21D.readTemperature();
-
-  Serial.print ("Humidity: ");
-  Serial.println (humd);
-  Serial.print ("Ambient Temperature: ");
-  Serial.println (temp);
-  
-  sbTemp.put( temp );
-  sbHumidity.put( humd );
-  */
   GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));
   Graph.renderGraph(10, 10, 100, 100);
   
   GFX.updateScreen();  
-//  delay(250);
 }
 
 /* 
@@ -867,31 +872,47 @@ void initAccelGyroGraph() {
   Graph.addSeries( &sbAccelZ, RGB(0, 0, 255) );
   Graph.addSeries( &sbGyroX, RGB(255, 255, 0) );  
   Graph.addSeries( &sbGyroY, RGB(255, 0, 255) );  
-  Graph.addSeries( &sbGyroZ, RGB(0, 255, 255) );    
+  Graph.addSeries( &sbGyroZ, RGB(0, 255, 255) );   
+  Graph.setLabelMode(LABELMODE_MINMAX);  
 }
 
 void doAccelGyroGraph() {
-  // Read magnetometer
-  int16_t ax, ay, az;
-  int16_t gx, gy, gz;
-  // read raw accel/gyro measurements from device
-  //Serial.println ("Reading motion...");
-  accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-
-  //Serial.println ("Storing motion...");
-  sbAccelX.put( (float)ax );
-  sbAccelY.put( (float)ay );
-  sbAccelZ.put( (float)az );
-  sbGyroX.put( (float)gx );
-  sbGyroY.put( (float)gy );
-  sbGyroZ.put( (float)gz );
-
-  GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));
-  
-  //Serial.println ("Rendering graph...");
+  GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));    
   Graph.renderGraph(10, 10, 100, 100);
 
   //Serial.println ("Updating...");
+  GFX.updateScreen();  
+}
+
+/*
+ * Radiation
+ */ 
+void initRadiationGraph() {
+  Graph.clearSeries();
+  Graph.addSeries( &sbRad, RGB(128, 255, 128) );
+  Graph.setLabelMode(LABELMODE_MINMAX);  
+}
+
+void doRadiationGraph() {
+  GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));
+  Graph.renderGraph(10, 10, 100, 100);
+  
+  GFX.updateScreen();  
+}
+
+/*
+ * Spectrometer
+ */ 
+void initSpectrometerGraph() {
+  Graph.clearSeries();
+  Graph.addSeries( &sbSpectMeasurement, RGB(128, 128, 255) );
+  Graph.setLabelMode(LABELMODE_MINMAX);  
+}
+
+void doSpectrometerGraph() {
+  GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));
+  Graph.renderGraph(10, 10, 100, 100);
+  
   GFX.updateScreen();  
 }
 
@@ -899,75 +920,6 @@ void doAccelGyroGraph() {
 
 
 
-
-
-// TEST
-void bmp180_test() {
-  Serial.println("Pressure Sensor Test"); Serial.println("");
-  
-  /* Initialise the sensor */
-  if(!bmp.begin())
-  {
-    /* There was a problem detecting the BMP085 ... check your connections */
-    Serial.print("Ooops, no BMP085 detected ... Check your wiring or I2C ADDR!");
-    while(1);
-  }
-
-  while (1) {
-    /* Get a new sensor event */ 
-  sensors_event_t event;
-  bmp.getEvent(&event);
- 
-  /* Display the results (barometric pressure is measure in hPa) */
-  if (event.pressure)
-  {
-    /* Display atmospheric pressue in hPa */
-    Serial.print("Pressure:    ");
-    Serial.print(event.pressure);
-    Serial.println(" hPa");
-    
-    /* Calculating altitude with reasonable accuracy requires pressure    *
-     * sea level pressure for your position at the moment the data is     *
-     * converted, as well as the ambient temperature in degress           *
-     * celcius.  If you don't have these values, a 'generic' value of     *
-     * 1013.25 hPa can be used (defined as SENSORS_PRESSURE_SEALEVELHPA   *
-     * in sensors.h), but this isn't ideal and will give variable         *
-     * results from one day to the next.                                  *
-     *                                                                    *
-     * You can usually find the current SLP value by looking at weather   *
-     * websites or from environmental information centers near any major  *
-     * airport.                                                           *
-     *                                                                    *
-     * For example, for Paris, France you can check the current mean      *
-     * pressure and sea level at: http://bit.ly/16Au8ol                   */
-     
-    /* First we get the current temperature from the BMP085 */
-    float temperature;
-    bmp.getTemperature(&temperature);
-    Serial.print("Temperature: ");
-    Serial.print(temperature);
-    Serial.println(" C");
-
-    /* Then convert the atmospheric pressure, SLP and temp to altitude    */
-    /* Update this next line with the current SLP for better results      */
-    float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
-    Serial.print("Altitude:    "); 
-    Serial.print(bmp.pressureToAltitude(seaLevelPressure,
-                                        event.pressure,
-                                        temperature)); 
-    Serial.println(" m");
-    Serial.println("");
-  }
-  else
-  {
-    Serial.println("Sensor error");
-  }
-  delay(1000);
-
-  
-  }  
-  
-}
 
 
 //## TEST
@@ -1069,41 +1021,6 @@ void printAS3935Registers()
 
 // this is irq handler for AS3935 interrupts, has to return void and take no arguments
 // always make code in interrupt handlers fast and short
-void AS3935Irq()
-{
+void AS3935Irq() {
   AS3935IrqTriggered = 1;
 }
-
-/*
-//##
-void initMPU6050() {  
-    accelgyro.initialize();
-    Serial.println("Testing device connections...");
-    Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
-}
-
-void readMPU6050() {
-  int16_t ax, ay, az;
-  int16_t gx, gy, gz;
-  
-  while (1) {
-      // read raw accel/gyro measurements from device
-    //accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-
-    // these methods (and a few others) are also available
-    accelgyro.getAcceleration(&ax, &ay, &az);
-    accelgyro.getRotation(&gx, &gy, &gz);
-
-        // display tab-separated accel/gyro x/y/z values
-        Serial.print("a/g:\t");
-        Serial.print(ax); Serial.print("\t");
-        Serial.print(ay); Serial.print("\t");
-        Serial.print(az); Serial.print("\t");
-        Serial.print(gx); Serial.print("\t");
-        Serial.print(gy); Serial.print("\t");
-        Serial.println(gz);
-    
-    delay(250);
-  }
-}
-*/

@@ -8,6 +8,10 @@
 
 #define MAX_SERIES   10
 
+#define LABELMODE_NONE      0
+#define LABELMODE_MINMAX    10
+
+
 class FramebufferGraphs {
  public:  
   FramebufferGFX* GFX;                  // Graphics routines (lines, circles, etc)
@@ -19,6 +23,8 @@ class FramebufferGraphs {
   float min;
   float max;
  
+  uint8_t labelMode;
+  
   // Constructor
   FramebufferGraphs(FramebufferGFX* GFXPtr);
 
@@ -26,10 +32,10 @@ class FramebufferGraphs {
   void clearSeries();
   int addSeries(SensorBuffer* sb, uint16_t colour);
   void findMinMaxSeries();  
+  void setLabelMode(uint8_t mode);
   
   
-  void renderGraph(int16_t x, int16_t y, int16_t w, int16_t h);
-    
+  void renderGraph(int16_t x, int16_t y, int16_t w, int16_t h);    
     
   void drawGraph(int16_t x, int16_t y, int16_t w, int16_t h, SensorBuffer* sb);  
 

@@ -90,7 +90,10 @@ uint8_t userInterfaceMode;
 #define GRAPH_HUMIDITY       4
 #define GRAPH_PRESSURE       5
 #define GRAPH_ACCELGYRO      6
-#define GRAPH_MAX            6
+#define GRAPH_RADIATION      7
+#define GRAPH_SPECTROMETER   8
+#define GRAPH_THERMAL        9
+
 uint16_t showGraph = GRAPH_MAGXYZ;
 
 // User interface -- push buttons (MPR121 electrode numbers)
@@ -377,10 +380,52 @@ void loop() {
     userInterfaceTiles();
     // If the SELECT button has been pressed, transition to a graph view for this tile
     if (touchWheel.isButtonPressed(BUTTON_TOUCH_SELECT)) {
-      userInterfaceMode = UI_MODE_GRAPH; 
+
+      int selectedTile = tileGUI.getSelectedTileID();
+      
+      // Setup graph display
+      boolean validSwitch = true;
+      switch(selectedTile) {
+        case TILE_ATMTEMP:
+        case TILE_ATMHUMIDITY:
+          showGraph = GRAPH_HUMIDITY;
+          break;
+        case TILE_ATMPRESSURE:
+          showGraph = GRAPH_PRESSURE;
+          break;
+        case TILE_MAGFIELD:
+          showGraph = GRAPH_MAGXYZ;
+          break;
+        case TILE_RADIATION_CPM:
+          showGraph = GRAPH_RADIATION;
+          break;
+        case TILE_SPECTROMETER:
+          showGraph = GRAPH_SPECTROMETER;
+          break;
+        case TILE_THERMAL_CAM:
+          showGraph = GRAPH_THERMAL;
+          break;
+        case TILE_IMU_ACCEL:
+          showGraph = GRAPH_ACCELGYRO;
+          break;
+        case TILE_AUDIO_MIC:
+          showGraph = GRAPH_MIC;
+          break;
+        
+          
+        default:
+          validSwitch = false;
+          break;
+      }
+      
+      if (validSwitch) {
+        userInterfaceMode = UI_MODE_GRAPH;       
+        initSensorGraph();
+      }
     }
   } else if (userInterfaceMode == UI_MODE_GRAPH) {
     // Graph display
+    showSensorGraph();
     
     // If the BACK button has been pressed, transition back to the tile view
     if (touchWheel.isButtonPressed(BUTTON_TOUCH_BACK)) {

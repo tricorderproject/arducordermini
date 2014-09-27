@@ -76,6 +76,7 @@ class TileGUI {
   // Navigation methods
   boolean selectNextTile();
   boolean selectPrevTile();  
+  int8_t getSelectedTileID();  
   
   // Setup methods
   Tile* addTile(uint8_t tileID);

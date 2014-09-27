@@ -70,6 +70,11 @@ boolean TileGUI::isTileOnScreen(uint8_t tileID) {
   }
   return false;  
 }
+
+// Returns the TileID of the currently selected tile
+int8_t TileGUI::getSelectedTileID() {
+  return tileIDs[selectedTile]; 
+}
   
 // Navigation Methods
 boolean TileGUI::selectNextTile() {

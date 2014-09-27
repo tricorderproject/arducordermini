@@ -117,15 +117,22 @@ int16_t Adafruit_MPR121::getWheelAngle(void) {
     wheelDeltas[i] = wheelBaseline[i] - filteredData(i);
   } 
 
-/*
+
   // Display deltas (debug)
+  Serial.print ("baselines: \t");
+  for (uint8_t i=0; i<13; i++) {
+    Serial.print(filteredData(i), DEC);
+    Serial.print("\t");
+  } 
+  Serial.println ("");
+  
   Serial.print ("deltas: \t");
   for (uint8_t i=0; i<wheelPads; i++) {
     Serial.print(wheelDeltas[i], DEC);
     Serial.print("\t");
   } 
   Serial.println ("");
-*/  
+  
   // Find maximum delta
   int16_t maxVal = 10;  
   int16_t maxIdx = -1;
@@ -216,8 +223,22 @@ int16_t Adafruit_MPR121::getWheelIncrement(void) {
   return delta;
   
 }
-/*********************************************************************/
 
+/*********************************************************************/
+// Push buttons
+// For momentary pushbuttons, wired as open/momentarily closed to ground
+/*********************************************************************/
+boolean Adafruit_MPR121::isButtonPressed(uint8_t channel) {
+  if (filteredData(channel) < MPR121_BUTTON_PRESS_THRESH) {
+    return true;
+  } 
+  return false;
+}
+
+
+/*********************************************************************/
+// Low Level Communications
+/*********************************************************************/
 
 uint8_t Adafruit_MPR121::readRegister8(uint8_t reg) {
     Wire.beginTransmission(_i2caddr);

@@ -61,9 +61,9 @@
 #define MPR121_GPIOCLR  0x79
 #define MPR121_GPIOTOGGLE  0x7A
 
-
-
 #define MPR121_SOFTRESET 0x80
+
+#define MPR121_BUTTON_PRESS_THRESH  10
 
 //.. thru to 0x1C/0x1D
 class Adafruit_MPR121 {
@@ -86,6 +86,8 @@ class Adafruit_MPR121 {
   void takeWheelBaseline(void);
   int16_t getWheelAngle(void);
   int16_t getWheelIncrement(void);
+
+  boolean isButtonPressed(uint8_t channel);
 
   uint8_t readRegister8(uint8_t reg);
   uint16_t readRegister16(uint8_t reg);

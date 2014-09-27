@@ -26,6 +26,7 @@ void SensorHMC5883L::init_HMC5883L() {
 
 // Read sensor and update internal values
 float SensorHMC5883L::read_HMC5883L() {
+  int16_t x0, y0, z0;
   //Serial.println ("Reading HMC5883L..."); 
 
   //Tell the HMC5883 where to begin reading data
@@ -36,13 +37,19 @@ float SensorHMC5883L::read_HMC5883L() {
  //Read data from each axis, 2 registers per axis
   Wire.requestFrom(address_HMC5883L, 6);
   if(6<=Wire.available()){
-    x = Wire.read()<<8; //X msb
-    x |= Wire.read(); //X lsb
-    z = Wire.read()<<8; //Z msb
-    z |= Wire.read(); //Z lsb
-    y = Wire.read()<<8; //Y msb
-    y |= Wire.read(); //Y lsb
+    x0 = Wire.read()<<8; //X msb
+    x0 |= Wire.read(); //X lsb
+    z0 = Wire.read()<<8; //Z msb
+    z0 |= Wire.read(); //Z lsb
+    y0 = Wire.read()<<8; //Y msb
+    y0 |= Wire.read(); //Y lsb
   }
+  
+  // Convert to microtesla
+  float convFactor = 10.9;     // 1090 LSB / Gauss, Convert to uTesla
+  x = (float)x0/convFactor;
+  y = (float)y0/convFactor;
+  z = (float)z0/convFactor;
   
   // Return length
   float length = sqrt(((float)x * (float)x) + ((float)y * (float)y) + ((float)z * (float)z));

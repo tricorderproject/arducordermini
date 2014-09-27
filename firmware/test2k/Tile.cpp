@@ -190,6 +190,17 @@ void Tile::render(int x, int y, boolean isSelected) {
 
   // Draw sensor text in the middle
   GFX->drawJustifiedText(text, x, (x+tileWidth)-1, y+((2*tileHeight)/3), &Ubuntu24, JUST_CENTER, RGB(255, 255, 255) );
+
+  // Draw any notes about the samples that are displayed (min, max, etc)  
+  switch (sensorMinMaxRecent) {
+    case DISP_MIN: 
+      GFX->drawJustifiedText("min", x, (x+tileWidth)-1, y+10-2, &Ubuntu10, JUST_RIGHT, RGB(255, 255, 255) );
+      break;
+    case DISP_MAX: 
+      GFX->drawJustifiedText("max", x, (x+tileWidth)-1, y+10-2, &Ubuntu10, JUST_RIGHT, RGB(255, 255, 255) );
+      break;
+  }
+  
   
 }
 

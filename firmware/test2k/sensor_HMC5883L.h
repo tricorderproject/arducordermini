@@ -9,7 +9,7 @@
 
 class SensorHMC5883L {
   public:
-   int16_t x,y,z; //triple axis data
+   float x,y,z; //triple axis data
   
    // Prototypes
    SensorHMC5883L();

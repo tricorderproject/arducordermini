@@ -39,12 +39,13 @@ boolean SensorMLX90620::begin() {
   // Read EEPROM configuration data
   readEEPROM();
   delay(50);     
-  // Initialize constants using EEPROM data
-  initializeConstants();
   
   // Set oscillator trim value
   writeTrimmingRegister( eepromData[REG_OSC_TRIM] );
   delay(10);
+  
+  // Initialize constants using EEPROM data
+  initializeConstants();  
   
   // Set Default Framerate
   writeConfigRegister(4);

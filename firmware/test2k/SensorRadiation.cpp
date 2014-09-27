@@ -129,8 +129,8 @@ float SensorRadiation::calculateCPM() {
     numCounts += floor(sbRadCounts->getNext());
   }
   
-  Serial.print("numCounts: ");
-  Serial.println(numCounts, DEC);
+//  Serial.print("numCounts: ");
+//  Serial.println(numCounts, DEC);
   // Step 3: Calculate CPM
   float cpm = ((float)numCounts / (float)(intTime * sbRadCounts->getValidDataSize())) * 60000.0f;  
   return cpm;

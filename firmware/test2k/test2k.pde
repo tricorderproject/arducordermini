@@ -131,7 +131,7 @@ void setup() {
   // Initialize MLX90620
   Serial.println ("Initializing MLX90620...");
   thermalImager.begin();    
-  thermalImager.debugPrint();  
+//  thermalImager.debugPrint();  
   
   // Initialize C12666MA Micro Spectrometer
   Serial.println ("Initializing C12666MA...");
@@ -146,7 +146,12 @@ void setup() {
   Serial.println("Initializing UV Sensor...");
   uv.begin();
   
-   
+  // Initialize pressure sensor
+  Serial.println("Initializing BMP180...");     
+  if (!bmp.begin()) {
+    Serial.println("ERROR: Could not initialize BMP180...");     
+  }
+  
    // AS3935 setup
    //AS3935_setup();
    
@@ -159,6 +164,10 @@ void setup() {
   Serial.println("Initializing Radiation sensor...");       
   setupRadiationISR(&sensorRadiation);     // MUST be called before begin()
   sensorRadiation.begin();
+  
+  // Re-initialize the MLX90620 
+  // TODO: The thermal imager seems to require initialization twice -- check into this
+  thermalImager.begin();    
     
   // Visualization
   Serial.println("Initializing Sensor Graph...");  
@@ -205,11 +214,10 @@ void setup() {
   
   // TILE: Ambient Pressure (2x1)
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_ATMPRESSURE)->Initialize("Pressure", RGB(0, 128, 0), &symbPressureBitmap, NULL);
+  tileGUI.addTile(TILE_ATMPRESSURE)->Initialize("Pressure", RGB(0, 128, 0), &symbPressureBitmap, &sbPressure);
   tileGUI.getTile(TILE_ATMPRESSURE)->setSize(2, 1);
-  tileGUI.getTile(TILE_ATMPRESSURE)->setText("0");
-  tileGUI.getTile(TILE_ATMPRESSURE)->setUnitText("mbar");  
-  
+  tileGUI.getTile(TILE_ATMPRESSURE)->setUnitText("mbar");    
+  tileGUI.getTile(TILE_ATMPRESSURE)->setSensorTextFormat(TEXT_FLOAT1DEC);
   
   // ******************************************  
   // THEME: Electromagnetic Readings (1)
@@ -313,8 +321,8 @@ void setup() {
 
   // TILE: Audio (microphone) (1x1)
   tileGUI.addTile(TILE_AUDIO_MIC)->Initialize("Microphone", RGB(128, 0, 128), &symbMicrophoneBitmap, &sbMic);
-  tileGUI.getTile(TILE_AUDIO_MIC)->setText("10");  
   tileGUI.getTile(TILE_AUDIO_MIC)->setUnitText("v");
+  tileGUI.getTile(TILE_AUDIO_MIC)->setSensorTextFormat(TEXT_FLOAT2DEC);
   tileGUI.getTile(TILE_AUDIO_MIC)->setSensorTextMinMaxRecent(DISP_MAX);
 
   // ******************************************
@@ -343,6 +351,7 @@ int incrementDirection = 1;
 void loop() {
   // Update sensor data
   
+  // Atmospheric temperature and pressure
   if (( tileGUI.isTileOnScreen(TILE_ATMTEMP) )
     || ( tileGUI.isTileOnScreen(TILE_ATMHUMIDITY) )) {
     float humd = sensorHTU21D.readHumidity();
@@ -350,6 +359,25 @@ void loop() {
     sbTemp.put( temp );
     sbHumidity.put( humd );    
   }
+  
+  // Atmospheric pressure
+  if ( tileGUI.isTileOnScreen(TILE_ATMPRESSURE) ) { 
+    // Measure pressure
+    sensors_event_t event;
+    bmp.getEvent(&event);
+    sbPressure.put(event.pressure);  
+    
+    // Measure altitute (NOTE: currently unused)
+    float temperature;
+    bmp.getTemperature(&temperature);
+    float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
+    Serial.print("Altitude:    "); 
+    Serial.print(bmp.pressureToAltitude(seaLevelPressure,
+                                        event.pressure,
+                                        temperature)); 
+    
+  }
+     
   
   // Magnetometer
   if ( tileGUI.isTileOnScreen(TILE_MAGFIELD) ) { 
@@ -363,7 +391,7 @@ void loop() {
   // Thermal Imager
   if ( tileGUI.isTileOnScreen(TILE_THERMAL_CAM) ) { 
     thermalImager.updateThermalImage();
-    thermalImager.debugPrint();
+//    thermalImager.debugPrint();
   }
 
   // Spectrometer
@@ -381,31 +409,38 @@ void loop() {
   
   // Acceleration/IMU
   if ( tileGUI.isTileOnScreen(TILE_IMU_ACCEL) ) { 
+    int16_t unitConv = 16384;      // +/- 2g
     int16_t ax, ay, az;
     int16_t gx, gy, gz;
     // read raw accel/gyro measurements from device 
     accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
     
+    // Convert to g's
+    float axF, ayF, azF;
+    axF = (float)ax/(float)unitConv;
+    ayF = (float)ay/(float)unitConv;    
+    azF = (float)az/(float)unitConv;
+    
     // Store motion
-    sbAccelX.put( (float)ax );
-    sbAccelY.put( (float)ay );
-    sbAccelZ.put( (float)az );
+    sbAccelX.put( axF );
+    sbAccelY.put( ayF );
+    sbAccelZ.put( azF );
     sbGyroX.put( (float)gx );
     sbGyroY.put( (float)gy );
     sbGyroZ.put( (float)gz );
     
     // Calculate length of acceleration vector
-    float length = sqrt(pow((float)gx, 2) + pow((float)gy, 2) + pow((float)gz, 2));
+    float length = sqrt(pow((float)axF, 2) + pow((float)ayF, 2) + pow((float)azF, 2));
 
     // Set text
-    sprintf(stringBuffer, "%.2f", length);
+    sprintf(stringBuffer, "%.2fg", length);
     tileGUI.getTile(TILE_IMU_ACCEL)->setText(stringBuffer);
   }
   
   // Microphone
   if ( tileGUI.isTileOnScreen(TILE_AUDIO_MIC) ) {    
     uint16_t micVal = sensorMicrophone.readValue();
-    sbMic.put ((float)micVal);    
+    sbMic.put ((float)micVal / 1024);    
   }
   
 /*
@@ -673,7 +708,7 @@ void initMicGraph() {
 void doMicGraph() {
   // Read microphone
   uint16_t micVal = sensorMicrophone.readValue();
-  sbMic.put ((float)micVal);
+  sbMic.put ((float)micVal / 1024);
   
   GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));
   Graph.renderGraph(10, 10, 100, 100);

@@ -354,7 +354,7 @@ void setup() {
   tileGUI.packTiles();
   
   // Debug: Skip to Thermal Camera time
-  tileGUI.selectedTile = 1;   // First page
+  tileGUI.selectedTile = 0;   // First page
 //  tileGUI.selectedTile = 7;   // Spectrometer
 //  tileGUI.selectedTile = 10;  // Thermal camera
 
@@ -534,7 +534,8 @@ void updateSensorData() {
   
   // Acceleration/IMU
   if ( tileGUI.isTileOnScreen(TILE_IMU_ACCEL) ) { 
-    int16_t unitConv = 16384;      // +/- 2g
+    int16_t unitConvA = 16384;      // +/- 2g
+    float unitConvG = 131/57.3;     // to degrees, then to radians
     int16_t ax, ay, az;
     int16_t gx, gy, gz;
     // read raw accel/gyro measurements from device 
@@ -542,9 +543,15 @@ void updateSensorData() {
     
     // Convert to g's
     float axF, ayF, azF;
-    axF = (float)ax/(float)unitConv;
-    ayF = (float)ay/(float)unitConv;    
-    azF = (float)az/(float)unitConv;
+    axF = (float)ax/(float)unitConvA;
+    ayF = (float)ay/(float)unitConvA;    
+    azF = (float)az/(float)unitConvA;
+
+    // Convert to radians/sec
+    float gxF, gyF, gzF;
+    gxF = (float)gx/unitConvG;
+    gyF = (float)gy/unitConvG;
+    gzF = (float)gz/unitConvG;    
     
     // Store motion
     sbAccelX.put( axF );

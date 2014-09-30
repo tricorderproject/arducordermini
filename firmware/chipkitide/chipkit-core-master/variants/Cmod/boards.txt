@@ -1,0 +1,37 @@
+############################################################
+cmod.name=chipKIT Cmod
+cmod.group=chipKIT
+
+# new items
+cmod.platform=pic32
+cmod.board=_BOARD_CMOD_
+cmod.board.define=
+cmod.ccflags=ffff
+cmod.ldscript=chipKIT-application-32MX150F128.ld
+# end of new items
+
+# Use a high -Gnum for devices that have less than 64K of data memory
+# For -G1024, objects 1024 bytes or smaller will be accessed by
+# gp-relative addressing
+cmod.compiler.c.flags=-O2::-c::-mno-smart-io::-w::-ffunction-sections::-fdata-sections::-G1024::-g::-mdebugger::-Wcast-align::-fno-short-double
+cmod.compiler.cpp.flags=-O2::-c::-mno-smart-io::-w::-fno-exceptions::-ffunction-sections::-fdata-sections::-G1024::-g::-mdebugger::-Wcast-align::-fno-short-double
+
+cmod.upload.protocol=stk500v2
+# 128KB - 4K for EEPROM
+cmod.upload.maximum_size=126976
+cmod.upload.speed=115200
+
+cmod.bootloader.low_fuses=0xff
+cmod.bootloader.high_fuses=0xdd
+cmod.bootloader.extended_fuses=0x00
+cmod.bootloader.path=not-supported
+cmod.bootloader.file=not-supported
+cmod.bootloader.unlock_bits=0x3F
+cmod.bootloader.lock_bits=0x0F
+
+cmod.build.mcu=32MX150F128D
+cmod.build.f_cpu=40000000L
+cmod.build.core=pic32
+cmod.build.variant=Cmod
+
+############################################################

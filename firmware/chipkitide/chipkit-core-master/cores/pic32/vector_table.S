@@ -1,0 +1,102 @@
+#include <p32xxxx.h>
+#include <System_Defs.h>
+
+.extern _isr_primary_install
+
+.globl __use_isr_install
+__use_isr_install:
+
+#if (__C32_VERSION__ < 200)
+# define USE_OLD_DOTSECTION
+#endif
+
+#ifdef USE_OLD_DOTSECTION
+# define CODE_SECTION(name) .section name, "ax", @progbits
+#else
+# define CODE_SECTION(name) .section name, code
+#endif
+#define VECTOR_SYMBOLNAME(number) __vector_ ## number
+#define VECTOR_SECTIONNAME(number) .vector_new_ ## number
+
+#define NEWLINE_MACRO \n
+
+#define VECTOR_ENTRY(number)  \
+  .globl VECTOR_SYMBOLNAME(number); \
+  CODE_SECTION(VECTOR_SECTIONNAME(number)); \
+  .align 2; \
+  .set nomips16; \
+  .set nomicromips; \
+  .ent VECTOR_SYMBOLNAME(number); \
+  .type VECTOR_SYMBOLNAME(number), @function; \
+  VECTOR_SYMBOLNAME(number):;\
+    lui      k0,%hi(_isr_primary_install); \
+    addiu    k0,k0,%lo(_isr_primary_install); \
+    lw       k0,4 * number (k0); \
+    jr       k0; \
+    .end VECTOR_SYMBOLNAME(number); \
+    .size VECTOR_SYMBOLNAME(number), .-VECTOR_SYMBOLNAME(number);
+
+ VECTOR_ENTRY(0)
+ VECTOR_ENTRY(1)
+ VECTOR_ENTRY(2)
+ VECTOR_ENTRY(3)
+ VECTOR_ENTRY(4)
+ VECTOR_ENTRY(5)
+ VECTOR_ENTRY(6)
+ VECTOR_ENTRY(7)
+ VECTOR_ENTRY(8)
+ VECTOR_ENTRY(9)
+ VECTOR_ENTRY(10)
+ VECTOR_ENTRY(11)
+ VECTOR_ENTRY(12)
+ VECTOR_ENTRY(13)
+ VECTOR_ENTRY(14)
+ VECTOR_ENTRY(15)
+ VECTOR_ENTRY(16)
+ VECTOR_ENTRY(17)
+ VECTOR_ENTRY(18)
+ VECTOR_ENTRY(19)
+ VECTOR_ENTRY(20)
+ VECTOR_ENTRY(21)
+ VECTOR_ENTRY(22)
+ VECTOR_ENTRY(23)
+ VECTOR_ENTRY(24)
+ VECTOR_ENTRY(25)
+ VECTOR_ENTRY(26)
+ VECTOR_ENTRY(27)
+ VECTOR_ENTRY(28)
+ VECTOR_ENTRY(29)
+ VECTOR_ENTRY(30)
+ VECTOR_ENTRY(31)
+ VECTOR_ENTRY(32)
+ VECTOR_ENTRY(33)
+ VECTOR_ENTRY(34)
+ VECTOR_ENTRY(35)
+ VECTOR_ENTRY(36)
+ VECTOR_ENTRY(37)
+ VECTOR_ENTRY(38)
+ VECTOR_ENTRY(39)
+ VECTOR_ENTRY(40)
+ VECTOR_ENTRY(41)
+ VECTOR_ENTRY(42)
+ VECTOR_ENTRY(43)
+ VECTOR_ENTRY(44)
+ VECTOR_ENTRY(45)
+ VECTOR_ENTRY(46)
+ VECTOR_ENTRY(47)
+ VECTOR_ENTRY(48)
+ VECTOR_ENTRY(49)
+ VECTOR_ENTRY(50)
+ VECTOR_ENTRY(51)
+ VECTOR_ENTRY(52)
+ VECTOR_ENTRY(53)
+ VECTOR_ENTRY(54)
+ VECTOR_ENTRY(55)
+ VECTOR_ENTRY(56)
+ VECTOR_ENTRY(57)
+ VECTOR_ENTRY(58)
+ VECTOR_ENTRY(59)
+ VECTOR_ENTRY(60)
+ VECTOR_ENTRY(61)
+ VECTOR_ENTRY(62)
+ VECTOR_ENTRY(63)

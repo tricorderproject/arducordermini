@@ -1,0 +1,37 @@
+############################################################
+chipkit_DP32.name=chipKIT DP32
+chipkit_DP32.group=chipKIT
+
+# new items
+chipkit_DP32.platform=pic32
+chipkit_DP32.board=_BOARD_DP32_
+chipkit_DP32.board.define=-D_USE_USB_FOR_SERIAL_
+chipkit_DP32.ccflags=-Map="map.map"
+chipkit_DP32.ldscript=chipKIT-application-32MX250F128.ld
+# end of new items
+
+# Use a high -Gnum for devices that have less than 64K of data memory
+# For -G1024, objects 1024 bytes or smaller will be accessed by
+# gp-relative addressing
+chipkit_DP32.compiler.c.flags=-O2::-c::-mno-smart-io::-w::-ffunction-sections::-fdata-sections::-G1024::-g::-mdebugger::-Wcast-align::-fno-short-double
+chipkit_DP32.compiler.cpp.flags=-O2::-c::-mno-smart-io::-w::-fno-exceptions::-ffunction-sections::-fdata-sections::-G1024::-g::-mdebugger::-Wcast-align::-fno-short-double
+
+chipkit_DP32.upload.protocol=stk500v2
+# 128KB - 4K for EEPROM - 4K for bootloader
+chipkit_DP32.upload.maximum_size=122880
+chipkit_DP32.upload.speed=115200
+
+chipkit_DP32.bootloader.low_fuses=0xff
+chipkit_DP32.bootloader.high_fuses=0xdd
+chipkit_DP32.bootloader.extended_fuses=0x00
+chipkit_DP32.bootloader.path=not-supported
+chipkit_DP32.bootloader.file=not-supported
+chipkit_DP32.bootloader.unlock_bits=0x3F
+chipkit_DP32.bootloader.lock_bits=0x0F
+
+chipkit_DP32.build.mcu=32MX250F128B
+chipkit_DP32.build.f_cpu=40000000L
+chipkit_DP32.build.core=pic32
+chipkit_DP32.build.variant=DP32
+
+############################################################

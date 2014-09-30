@@ -1,0 +1,74 @@
+############################################################
+chipkit_Pi.name=chipKIT Pi
+chipkit_Pi.group=chipKIT
+
+# new items
+chipkit_Pi.platform=pic32
+chipkit_Pi.board=_BOARD_CHIPKIT_PI_
+chipkit_Pi.ccflags=-Map="map.map"
+chipkit_Pi.board.define=
+chipkit_Pi.ldscript=chipKIT-application-32MX250F128.ld
+# end of new items
+
+# Use a high -Gnum for devices that have less than 64K of data memory
+# For -G1024, objects 1024 bytes or smaller will be accessed by
+# gp-relative addressing
+chipkit_Pi.compiler.c.flags=-O2::-c::-mno-smart-io::-w::-ffunction-sections::-fdata-sections::-G1024::-g::-mdebugger::-Wcast-align::-fno-short-double
+chipkit_Pi.compiler.cpp.flags=-O2::-c::-mno-smart-io::-w::-fno-exceptions::-ffunction-sections::-fdata-sections::-G1024::-g::-mdebugger::-Wcast-align::-fno-short-double
+
+chipkit_Pi.upload.protocol=stk500v2
+# 128KB - 4K for EEPROM - 4K for bootloader
+chipkit_Pi.upload.maximum_size=122880
+chipkit_Pi.upload.speed=115200
+
+chipkit_Pi.bootloader.low_fuses=0xff
+chipkit_Pi.bootloader.high_fuses=0xdd
+chipkit_Pi.bootloader.extended_fuses=0x00
+chipkit_Pi.bootloader.path=not-supported
+chipkit_Pi.bootloader.file=not-supported
+chipkit_Pi.bootloader.unlock_bits=0x3F
+chipkit_Pi.bootloader.lock_bits=0x0F
+
+chipkit_Pi.build.mcu=32MX250F128B
+chipkit_Pi.build.f_cpu=40000000L
+chipkit_Pi.build.core=pic32
+chipkit_Pi.build.variant=ChipKIT_Pi
+
+############################################################
+############################################################
+chipkit_Pi_USB_Serial.name=chipKIT Pi USB_Serial
+chipkit_Pi_USB_Serial.group=chipKIT
+
+# new items
+chipkit_Pi_USB_Serial.platform=pic32
+chipkit_Pi_USB_Serial.board=_BOARD_CHIPKIT_PI_
+chipkit_Pi_USB_Serial.board.define=-D_USE_USB_FOR_SERIAL_
+chipkit_Pi_USB_Serial.ccflags=-Map="map.map"
+chipkit_Pi_USB_Serial.ldscript=chipKIT-application-32MX250F128.ld
+# end of new items
+
+# Use a high -Gnum for devices that have less than 64K of data memory
+# For -G1024, objects 1024 bytes or smaller will be accessed by
+# gp-relative addressing
+chipkit_Pi_USB_Serial.compiler.c.flags=-O2::-c::-mno-smart-io::-w::-ffunction-sections::-fdata-sections::-G1024::-g::-mdebugger::-Wcast-align::-fno-short-double
+chipkit_Pi_USB_Serial.compiler.cpp.flags=-O2::-c::-mno-smart-io::-w::-fno-exceptions::-ffunction-sections::-fdata-sections::-G1024::-g::-mdebugger::-Wcast-align::-fno-short-double
+
+chipkit_Pi_USB_Serial.upload.protocol=stk500v2
+# 128KB - 4K for EEPROM - 4K for bootloader
+chipkit_Pi_USB_Serial.upload.maximum_size=122880
+chipkit_Pi_USB_Serial.upload.speed=115200
+
+chipkit_Pi_USB_Serial.bootloader.low_fuses=0xff
+chipkit_Pi_USB_Serial.bootloader.high_fuses=0xdd
+chipkit_Pi_USB_Serial.bootloader.extended_fuses=0x00
+chipkit_Pi_USB_Serial.bootloader.path=not-supported
+chipkit_Pi_USB_Serial.bootloader.file=not-supported
+chipkit_Pi_USB_Serial.bootloader.unlock_bits=0x3F
+chipkit_Pi_USB_Serial.bootloader.lock_bits=0x0F
+
+chipkit_Pi_USB_Serial.build.mcu=32MX250F128B
+chipkit_Pi_USB_Serial.build.f_cpu=40000000L
+chipkit_Pi_USB_Serial.build.core=pic32
+chipkit_Pi_USB_Serial.build.variant=ChipKIT_Pi
+
+############################################################

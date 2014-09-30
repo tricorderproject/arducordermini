@@ -1,0 +1,124 @@
+Tests run on 9/15/2013
+Purpose: To find any errors in the variants files
+Board; ChipKit Pi v3.37
+
+Digital I/O:
+
+	Test that each digital I/O (D0, D1, D2, D3, D8, D9, D10, D11, D12, D13) can drive an LED High and Low
+
+	Sketch: (With TEST_PIN changing to all GPIO)
+
+		int TEST_PIN = 0;
+
+		void setup() {                
+		  pinMode(TEST_PIN, OUTPUT);     
+		}
+
+		void loop() {
+		  digitalWrite(TEST_PIN, HIGH);
+		  delay(50);
+		  digitalWrite(TEST_PIN, LOW);
+		  delay(50);
+		}
+
+	Results:
+		D0 	works
+		D1 	works
+		D2 	works (J10 set for D2)
+		D3 	works
+		D8 	works (JP13 set for D8)
+		D9 	works (JP12 set for D9)
+		D10 works (JP14 set for SS)
+		D11 works
+		D12 works (JP8 set to MISO)
+		D13 works
+
+Analog Input:
+
+	Test that each analog input (A0, A1, A4, A5) can read from 0 through 1023 when 0 to 3.3V is applied to each pin.
+
+	Sketch (With TEST_ANALOG changed to each analog input pin):
+	
+		int TEST_ANALOG = A0;
+
+		void setup() {
+		  Serial.begin(9600);
+		}
+
+		void loop() {
+		  int sensorValue = analogRead(TEST_ANALOG);
+		  Serial.print("Value = ");
+		  Serial.println(sensorValue, DEC);
+		  delay(100);
+		}
+
+	Results:
+		A0 works (JP15 set to A0)
+		A1 works (JP11 set to A1)
+		A4 works 
+		A5 works
+
+
+PWM Output:
+
+Test that each PWM output (PWM0, and PWM1) can all output PWM signals.
+
+
+UART:
+
+	Test that the USB connector can be used for serial I/O from the sketch.
+
+	Test that TXD/RXD (on D1/D0) can be used for serial I/O. (Serial)
+
+	Test that TX2/RX2 (on Pi connector pin 8 and 10) can be used for serial I/O.
+
+	Sketch:
+		int inByte = 0;
+		void setup()
+		{
+		  Serial.begin(9600);
+		}
+
+		void loop()
+		{
+		  if (Serial.available() > 0) {
+			inByte = Serial.read();
+			Serial.print(inByte, DEC);
+		  }
+		  delay(250);
+		}
+		
+	Results:
+		TXD/RXD works (JP9 set to RX1 and JP7 set to RX1) (Serial)
+		TX2/RX2 works (JP4 set to TX2 and JP1 set to RX2) (Serial1)
+		USB does not work (JP13 set to RD+ and JP12 set to RD-, and use chipKIT Pi USB_serial board) (Serial)
+
+Change Notice:
+
+Test that all CN inputs can be used to trigger an interrupt.
+
+
+
+Interrupts:
+
+Test that INT1 and INT2 can be used to trigger an interrupt
+
+
+SPI:
+
+Test that a SPI peripheral can be communicated with on SCK, MISO, MOSI and SS.
+
+
+I2C:
+
+Test that an I2C peripheral can be communicated with on SDA/SCL.
+
+
+EEPROM;
+
+Test that the EEPROM section of Flash is usable for both reading and writing.
+
+
+Virtual Bootloader Button:
+
+Test that the virtual bootloader button function works to trigger the bootloader from a sketch.

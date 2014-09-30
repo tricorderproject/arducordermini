@@ -1,0 +1,42 @@
+#######################################
+# Syntax Coloring Map DSPI
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+DSPI0	KEYWORD1
+DSPI1	KEYWORD1
+DSPI2	KEYWORD1
+DSPI3	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+begin	KEYWORD2
+end	KEYWORD2
+setSpeed	KEYWORD2
+setMode	KEYWORD2
+setPinSelect	KEYWORD2
+setSelect	KEYWORD2
+setTransferSize	KEYWORD2
+transfer	KEYWORD2
+enableInterruptTransfer	KEYWORD2
+disableInterruptTransfer	KEYWORD2
+intTransfer	KEYWORD2
+transCount	KEYWORD2
+isOverflow	KEYWORD2
+clearOverflow	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+DSPI_MODE0	LITERAL1
+DSPI_MODE1	LITERAL1
+DSPI_MODE2	LITERAL1
+DSPI_MODE3	LITERAL1
+
+DSPI_8BIT	LITERAL1
+DSPI_16BIT	LITERAL1
+DSPI_32BIT	LITERAL1

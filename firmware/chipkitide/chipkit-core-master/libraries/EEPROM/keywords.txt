@@ -1,0 +1,24 @@
+#######################################
+# Syntax Coloring Map For EEPROM
+#######################################
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+setMaxAddress	KEYWORD2
+getMaxAddress	KEYWORD2
+clear	KEYWORD2
+read	KEYWORD2
+write	KEYWORD2
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+EEPROM	KEYWORD1
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+

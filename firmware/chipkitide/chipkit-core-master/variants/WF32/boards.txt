@@ -1,0 +1,32 @@
+############################################################
+chipkit_WF32.name=chipKIT WF32
+chipkit_WF32.group=chipKIT
+
+
+# new items
+chipkit_WF32.platform=pic32
+chipkit_WF32.board=_BOARD_WF32_
+chipkit_WF32.board.define=
+chipkit_WF32.ccflags=ffff
+chipkit_WF32.ldscript=chipKIT-application-32MX695F512.ld
+# end of new items
+
+chipkit_WF32.upload.protocol=stk500v2
+chipkit_WF32.upload.maximum_size=520192
+chipkit_WF32.upload.speed=115200
+
+chipkit_WF32.bootloader.low_fuses=0xff
+chipkit_WF32.bootloader.high_fuses=0xdd
+chipkit_WF32.bootloader.extended_fuses=0x00
+chipkit_WF32.bootloader.path=not-supported
+chipkit_WF32.bootloader.file=not-supported
+chipkit_WF32.bootloader.unlock_bits=0x3F
+chipkit_WF32.bootloader.lock_bits=0x0F
+
+chipkit_WF32.build.mcu=32MX695F512L
+chipkit_WF32.build.f_cpu=80000000L
+chipkit_WF32.build.core=pic32
+chipkit_WF32.build.variant=WF32
+#chipkit_WF32.upload.using=avrdude1
+
+############################################################

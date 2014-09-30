@@ -1,0 +1,5 @@
+avrdude.command=avrdude -C%T/avrdude.conf %V -p%M -c%O -P%P -b%B -D -Uflash:w:%H:i
+avrdude.command_windows=avr/bin/avrdude -c%O -P%P -b%B -D -Uflash:w:%H:i -C%T/avr/etc/avrdude.conf %V -p%M
+avrdude.verbose=-v
+avrdude.quiet=-q -q
+

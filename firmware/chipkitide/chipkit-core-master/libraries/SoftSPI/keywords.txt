@@ -1,0 +1,31 @@
+#######################################
+# Syntax Coloring Map DSPI
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+SoftSPI	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+begin	KEYWORD2
+end	KEYWORD2
+setSpeed	KEYWORD2
+setMode	KEYWORD2
+setDirection	KEYWORD2
+setDelay	KEYWORD2
+setSelect	KEYWORD2
+transfer	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+SSPI_MODE0	LITERAL1
+SSPI_MODE1	LITERAL1
+SSPI_MODE2	LITERAL1
+SSPI_MODE3	LITERAL1
+SSPI_SHIFT_LEFT	LITERAL1
+SSPI_SHIFT_RIGHT	LITERAL1

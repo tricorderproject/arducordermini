@@ -1,0 +1,39 @@
+#######################################
+# Syntax Coloring Map SoftPWMServo
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+SoftPWMServoInit            KEYWORD2
+SoftPWMServoUnload          KEYWORD2
+SoftPWMServoPinEnable       KEYWORD2
+SoftPWMServoPinDisable      KEYWORD2
+SoftPWMServoRawWrite        KEYWORD2
+SoftPWMServoServoWrite      KEYWORD2
+SoftPWMServoPWMWrite        KEYWORD2
+SoftPWMServoRawRead         KEYWORD2
+SoftPWMServoServoRead       KEYWORD2
+SoftPWMServoPWMRead         KEYWORD2
+SoftPWMServoSetFrameTime    KEYWORD2
+SoftPWMServoSetServoFrames  KEYWORD2
+usToTicks                   KEYWORD2
+ticksToUs                   KEYWORD2
+#######################################
+# Constants (LITERAL1)
+#######################################
+SOFTPWMSERVO_VERSION        LITERAL1
+SOFTPWMSERVO_MAX_PINS       LITERAL1
+SOFTPWMSERVO_ERROR          LITERAL1
+SOFTPWMSERVO_OK             LITERAL1
+SOFTPWMSERVO_SERVO          LITERAL1
+SOFTPWMSERVO_PWM            LITERAL1
+DEFAULT_FRAMES_PER_SECOND   LITERAL1
+SOFTPWMSERVO_DEFAULT_FRAME_TIME LITERAL1
+CORE_TICKS_PER_US           LITERAL1
+SOFTPWMSERVO_DEFAULT_SERVO_FRAMES   LITERAL1
+

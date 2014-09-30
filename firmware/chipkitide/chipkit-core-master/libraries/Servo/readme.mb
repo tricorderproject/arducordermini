@@ -1,0 +1,41 @@
+# readme.mb : Readme file for chipKIT/MPIDE Servo library
+
+## Overview:
+
+The Servo library allows a sketch to output RC servo pulses on up to 24 of the I/O pins
+at a time. These servo pulses are all controlled by hardware timers and interrupts, so that
+once they are started, they continue to output pulses with no sketch code interaction.
+
+Use this library to control up to 24 RC servos at a time, using either degree (0 to 179)
+parameter or microsecond pulse durations (from 544us to 2400us).
+
+## Usage:
+
+See the Servo.cpp and Servo.h files for detailed usage information.
+
+## Operation:
+
+The way the library works is to keep a list of all possible servos. Each time you create
+a new Servo object and attach it to a pin, the next servo in the list is populated with
+the pin number, the duration (in uS) and which of three timers will control that servo.
+
+The three timers are dynamically turned on/off as needed to support the number of servos
+used, with up to 8 servos on each of the three timers. Each time the timer fires, it
+clears the current servo pin and set the next one in the list, then sets itself to fire
+again in the future the duration of the new servo high period. After all servos have fired,
+the timer then sets itself to fire such that the entire process repeats every 20ms or so.
+
+Even though timers are used, the actual pin setting and clearing is done in software in
+the timer's ISR. Thus these servos will have jitter based upon what other interrupts
+are enabled and running on the system at the time.
+
+## Notes:
+
+See Servo.cpp and Servo.h for more information on special precautions when using the
+library.
+
+## History:
+
+This library was adatped for the PIC32 architecture from the Arduino Servo library. See
+Servo.cpp for more history information
+

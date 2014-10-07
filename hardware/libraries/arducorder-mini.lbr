@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.25" unitdist="mm" unit="mm" style="lines" multiple="1" display="yes" altdistance="0.025" altunitdist="inch" altunit="inch"/>
+<grid distance="1.5" unitdist="mm" unit="mm" style="lines" multiple="1" display="yes" altdistance="0.025" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="yes"/>
@@ -490,8 +490,8 @@ shrink quad flat pack, square</description>
 <smd name="2" x="-1" y="-2" dx="1.5" dy="0.25" layer="16" rot="R90"/>
 <hole x="2.05" y="1.5" drill="0.6"/>
 <hole x="-2.05" y="1.5" drill="0.6"/>
-<smd name="PAD2" x="2.2" y="0" dx="1.5" dy="1.15" layer="16" rot="R90"/>
-<smd name="PAD1" x="-2.2" y="0" dx="1.5" dy="1.15" layer="16" rot="R90"/>
+<smd name="PAD2" x="2.4" y="0" dx="1.5" dy="1.5" layer="16" rot="R90"/>
+<smd name="PAD1" x="-2.4" y="0" dx="1.5" dy="1.5" layer="16" rot="R90"/>
 <wire x1="2.5" y1="2.5" x2="1.5" y2="2.5" width="0.127" layer="22"/>
 <wire x1="2.5" y1="-2.5" x2="1.5" y2="-2.5" width="0.127" layer="22"/>
 <wire x1="-2.5" y1="2.5" x2="-1.5" y2="2.5" width="0.127" layer="22"/>

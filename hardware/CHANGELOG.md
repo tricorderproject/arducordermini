@@ -13,3 +13,11 @@ Change Log
 - Moved capacitive touch board connector to a lower position, to facilitate the mount holes on the mating connector not intersecting with the capacitive touch wheel. 
 - Increased and oversized power trace widths to OLED, and CC3000.  There weren't any previous issues with the CC3000, but the OLED would flicker if the display was full white, full intensity (~300ma).  
 
+**Capacitive Touch Sensor board**  
+*rev2*
+- Designed to mate with motherboard rev1
+- Added four M2 machine screw mount points to motherboard, for mechanical stability. 
+- Moved all components to the bottom of the board, to facilitate mounting in a case.  (The two pushbuttons are the two exceptions)
+- Capacitive touch wheel electrodes are wired to the MPR121 in a slightly different pattern -- the touch wheel calculations will likely be offset, or reversed. 
+- Added slot at the bottom of the board for motherboard LEDs (charging, FT232) to shine through. 
+- Added mount holes to connector, for increased mechanical stability. 

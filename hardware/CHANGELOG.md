@@ -21,3 +21,12 @@ Change Log
 - Capacitive touch wheel electrodes are wired to the MPR121 in a slightly different pattern -- the touch wheel calculations will likely be offset, or reversed. 
 - Added slot at the bottom of the board for motherboard LEDs (charging, FT232) to shine through. 
 - Added mount holes to connector, for increased mechanical stability. 
+
+
+**Sensor Board: Radiation board (with mini speaker)**  
+*rev1*
+- Connector to motherboard (CN2) part number identified as Samtec PHT-106-01-L-S.  Drills on connector increased to 1.2mm to accommodate.
+- R7 part number needs to be specified -- this can be tuned, but I believe around 9k.
+- Precision pull-up resistors for output signals (OUT, SIG, NS) specified -- (R12 to R14). 10k pullups should give between a 30uS and 70uS pulse duration. 
+- Speaker is quiet, and I'm not great with audio circuitry -- moved some of the opamp passives to the accessible side of the board so that they can be tinkered with, if required. 
+

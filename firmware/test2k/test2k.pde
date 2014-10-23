@@ -174,12 +174,12 @@ void setup() {
   accelgyro.initialize();
   Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");   
 
-/*    
+    
   // Initialize Radiation sensor (interrupt driven)
   Serial.println("Initializing Radiation sensor...");       
   setupRadiationISR(&sensorRadiation);     // MUST be called before begin()
   sensorRadiation.begin();
-*/
+
 
   // Re-initialize the MLX90620 
   // TODO: The thermal imager seems to require initialization twice -- check into this
@@ -270,7 +270,7 @@ void setup() {
   // TILE: UV (1x1)
   Serial.println ("Adding tile...");
   tileGUI.addTile(TILE_UV)->Initialize("UV Index", RGB(128, 0, 128), &symbUVBitmap, NULL);
-  tileGUI.getTile(TILE_UV)->setText("6");  
+  tileGUI.getTile(TILE_UV)->setText("0");  
   tileGUI.getTile(TILE_UV)->setUnitText("i");
 
   // TILE: Linear Polarization (1x1)  
@@ -520,6 +520,22 @@ void updateSensorData() {
     sprintf(buffer, "%.0f", sensorRadiation.calculateCPM());
     tileGUI.getTile(TILE_RADIATION_CPM)->setText(buffer);
   }
+  
+  if ( tileGUI.isTileOnScreen(TILE_UV) ) { 
+    char buffer[10];
+    // Read UV index
+    float UVIndex = uv.readUV();
+    UVIndex /= 100.0;  
+    
+    // Dynamically scale 
+    if (UVIndex < 1.0f) {    
+      sprintf(buffer, "%.2f", UVIndex);      // Two decimal places if less than one
+    } else {
+      sprintf(buffer, "%.1f", UVIndex);      // One decimal place if above one
+    }
+    tileGUI.getTile(TILE_UV)->setText(buffer);    
+  }
+  
   
   // Acceleration/IMU
   if ( tileGUI.isTileOnScreen(TILE_IMU_ACCEL) ) { 

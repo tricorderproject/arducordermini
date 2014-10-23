@@ -125,7 +125,6 @@ void setup() {
   pinMode(SD_CS, OUTPUT);
   digitalWrite(SD_CS, 1);
  
-
   // see if the card is present and can be initialized:
   // Note: I'm not sure why, but SD.begin() is failing, but subsequent functions seem fine. 
   if (!SD.begin(SD_CS)) {
@@ -174,34 +173,24 @@ void setup() {
   Serial.println("Initializing MPU9050...");     
   accelgyro.initialize();
   Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");   
-    
+
+/*    
   // Initialize Radiation sensor (interrupt driven)
   Serial.println("Initializing Radiation sensor...");       
   setupRadiationISR(&sensorRadiation);     // MUST be called before begin()
   sensorRadiation.begin();
-  
+*/
+
   // Re-initialize the MLX90620 
   // TODO: The thermal imager seems to require initialization twice -- check into this
+  Serial.println("Initializing Thermal Imager...");  
   thermalImager.begin();    
-    
+
   // Visualization
   Serial.println("Initializing Sensor Graph...");  
   initSensorGraph();
   
   
-/*    
-  // TEST of touch wheel scrolling wheel high-level delta increment function
-  while (1) {
-    // Touch wheel
-    int16_t touchAngle = touchWheel.getWheelAngle();
-    int16_t deltaWheel = touchWheel.getWheelIncrement();  
-    Serial.print (" Wheel degree: ");
-    Serial.println(touchAngle, DEC);
-    Serial.print (" Wheel Increment: ");
-    Serial.println(deltaWheel, DEC);
-    delay(250);
-  }
-*/  
   
   // ******************************************
   // Initialize Tile-based GUI
@@ -518,7 +507,7 @@ void updateSensorData() {
     thermalImager.updateThermalImage();
 //    thermalImager.debugPrint();
   }
-
+    
   // Spectrometer
   if ( tileGUI.isTileOnScreen(TILE_SPECTROMETER) ) {   
     sensorSpectrometer.takeMeasurement();

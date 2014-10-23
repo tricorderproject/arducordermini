@@ -136,7 +136,7 @@ int16_t Adafruit_MPR121::getWheelAngle(void) {
 */
 
   // Find maximum delta
-  int16_t maxVal = 10;  
+  int16_t maxVal = 1;  
   int16_t maxIdx = -1;
   for (uint8_t i=0; i<wheelPads; i++) {
      if (wheelDeltas[i] > maxVal) {
@@ -146,7 +146,7 @@ int16_t Adafruit_MPR121::getWheelAngle(void) {
   } 
   
   // If there are no significant deltas (ie no strong touch signals), return -1 (no touch wheel activity)
-  if (maxVal < 20) {
+  if (maxVal < 2) {    // was <20
     return -1;
   }
 

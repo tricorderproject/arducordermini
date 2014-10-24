@@ -40,10 +40,11 @@
 
 #define TILE_IMU_ACCEL      90
 #define TILE_IMU_GYRO       91
+#define TILE_ALTITUDE       92
 
 #define TILE_AUDIO_MIC      100
 
-#define TILE_UTIL_DATASPARKFUN  110
+#define TILE_UTIL_PLOTLY    110
 
 // Supporting Structs
 typedef struct point {

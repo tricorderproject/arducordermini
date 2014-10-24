@@ -111,6 +111,8 @@ void setup() {
   // Initialize framebuffer
   Serial.println("Initializing Framebuffer...");  
   Framebuffer.begin();  
+  GFX.displayFlashBitmap4Bit(5, 32, &symbArducorderSplashBitmap, 0);
+  GFX.updateScreen();
 
   // Initialize touch
   Serial.println("Initializing MPR121...");  
@@ -324,7 +326,7 @@ void setup() {
   tileGUI.getTile(TILE_GAS_NH3)->setText("5ppm");  
 
   // TILE: Audio (microphone) (1x1)
-  tileGUI.addTile(TILE_AUDIO_MIC)->Initialize("Microphone", RGB(128, 0, 128), &symbMicrophoneBitmap, &sbMic);
+  tileGUI.addTile(TILE_AUDIO_MIC)->Initialize("Microphone", RGB(102, 29, 89), &symbMicrophoneBitmap, &sbMic);
   tileGUI.getTile(TILE_AUDIO_MIC)->setUnitText("v");
   tileGUI.getTile(TILE_AUDIO_MIC)->setSensorTextFormat(TEXT_FLOAT2DEC);
   tileGUI.getTile(TILE_AUDIO_MIC)->setSensorTextMinMaxRecent(DISP_MAX);
@@ -332,10 +334,17 @@ void setup() {
   // ******************************************
   // THEME: Settings/Utilities
   // ******************************************  
-  // TILE: data.sparkfun.com
+  tileGUI.addTile(TILE_ALTITUDE)->Initialize("Altitude", RGB(0, 128, 0), &symbIMUBitmap, NULL);
+  tileGUI.getTile(TILE_ALTITUDE)->setSize(2, 1);
+  tileGUI.getTile(TILE_ALTITUDE)->setText("0");    
+  tileGUI.getTile(TILE_ALTITUDE)->setUnitText("m");    
+//  tileGUI.getTile(TILE_ALTITUDE)->setSensorTextFormat(TEXT_FLOAT1DEC);
+  
+  
+  // TILE: plotly.com
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_UTIL_DATASPARKFUN)->Initialize("enabled", RGB(128, 0, 0), &symbSparkfunDataBitmap, NULL);
-  tileGUI.getTile(TILE_UTIL_DATASPARKFUN)->setSize(2, 1);
+  tileGUI.addTile(TILE_UTIL_PLOTLY)->Initialize("enabled", RGB(102, 29, 89), &symbPlotlyBitmap, NULL);
+  tileGUI.getTile(TILE_UTIL_PLOTLY)->setSize(2, 1);
 
   // ******************************************  
   // Pack tiles (must be called after adding tiles)
@@ -473,23 +482,34 @@ void updateSensorData() {
   }
   
   // Atmospheric pressure
-  if ( tileGUI.isTileOnScreen(TILE_ATMPRESSURE) ) { 
+  if ( tileGUI.isTileOnScreen(TILE_ATMPRESSURE) || tileGUI.isTileOnScreen(TILE_ALTITUDE) ) { 
     // Measure pressure
     sensors_event_t event;
     bmp.getEvent(&event);
     sbPressure.put(event.pressure);  
     
-    // Measure altitute (NOTE: currently unused)
-/*    
+    // Measure altitute (NOTE: currently unused)    
+    // Determine average pressure over the last 10 measurements (this will make the altitude more accurate)
+    sbPressure.resetRingIdx();
+    int numValid = sbPressure.getSize();
+    float avg = 0.0f;
+    for (int idx=0; idx<numValid; idx++) {
+      if (idx >= (numValid - 20)) {
+        avg += sbPressure.getNext();    // add to average
+      } else {
+        sbPressure.getNext();           // disregard
+      }
+    }
+    avg = avg/20;
+    
     float temperature;
     bmp.getTemperature(&temperature);
     float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
-    Serial.print("Altitude:    "); 
-    Serial.print(bmp.pressureToAltitude(seaLevelPressure,
-                                        event.pressure,
-                                        temperature)); 
-*/
+    float altitude = bmp.pressureToAltitude(seaLevelPressure, avg, temperature); 
     
+    char buffer[10];
+    sprintf(buffer, "%.1fm", altitude);
+    tileGUI.getTile(TILE_ALTITUDE)->setText(buffer);    
   }
      
   

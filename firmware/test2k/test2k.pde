@@ -445,11 +445,21 @@ void loop() {
       }
       
       // Special cases for utility tiles
+      // Utility Tile: WiFi Module
       if (selectedTile == TILE_UTIL_WIFI) {
-        connectToWifi(); 
+        if (plotlyStatus == PLOTLY_UNINITIALIZED) {
+          connectToWifi(); 
+        } else {
+          disconnectWifi(); 
+        }
       }
+      // Utility Tile: Plotly streaming tile
       if (selectedTile == TILE_UTIL_PLOTLY) {
-        connectToPlotly(); 
+        if ((plotlyStatus == PLOTLY_UNINITIALIZED) || (plotlyStatus == PLOTLY_WIFI_CONNECTED)) {        
+          connectToPlotly(); 
+        } else {
+          disconnectPlotly(); 
+        }
       }
     }
   } else if (userInterfaceMode == UI_MODE_GRAPH) {
@@ -717,6 +727,26 @@ void connectToWifi() {
   }  
 }
 
+// Safely disconnect the WiFi module
+void disconnectWifi() {
+  if (plotlyStatus == PLOTLY_STREAMING) {
+    disconnectPlotly();
+  }
+  if (plotlyStatus == PLOTLY_WIFI_CONNECTED) {    
+    drawStatusWindow("WiFi Status", "Disconnecting"); 
+    GFX.updateScreen();
+    
+    // Safely close WiFi (or it may not initialize without a reboot)
+    cc3000.disconnect();
+    
+    plotlyStatus = PLOTLY_UNINITIALIZED;
+    tileGUI.getTile(TILE_UTIL_WIFI)->setTileName("disabled"); 
+    drawStatusWindow("WiFi Status", "Disabled");  
+    GFX.updateScreen();
+    delay(1000);
+  }
+}
+
 // Connect to Plotly Web Graphing Interface
 void connectToPlotly() {  
   // Initialize the CC3000 Wifi and connect to the access point
@@ -766,6 +796,25 @@ void connectToPlotly() {
   // Update plotly and tile status
   plotlyStatus = PLOTLY_STREAMING;
   tileGUI.getTile(TILE_UTIL_PLOTLY)->setTileName("streaming");    
+}
+
+// Safely disconnect plotly streams
+void disconnectPlotly() {
+  if (plotlyStatus == PLOTLY_STREAMING) {
+    drawStatusWindow("Plotly Status", "Disabling streams");  
+    GFX.updateScreen();
+
+    // Disconnect streaming 
+    plotly.closeStream();
+    tileGUI.getTile(TILE_UTIL_PLOTLY)->setTileName("not connected");    
+    
+    // Wifi is still connected
+    plotlyStatus = PLOTLY_WIFI_CONNECTED;
+        
+    drawStatusWindow("Plotly Status", "Disabled");  
+    GFX.updateScreen();
+    delay(1000);
+  }  
 }
 
 

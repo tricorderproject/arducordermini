@@ -90,7 +90,7 @@ Adafruit_CC3000 cc3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_
 PlotlyInterface plotly = PlotlyInterface(&cc3000);
 int plotlyStatus = PLOTLY_UNINITIALIZED;
 int plotlyLastUpdateSec = 0;
-
+int plotlyUpdateFreq = 500;    // in milliseconds
 
 // User interface -- modes
 uint8_t userInterfaceMode;
@@ -502,9 +502,9 @@ void updateSensorData() {
   // Plotly: if enabled, update plotly stream once per second
   long time = millis();
   boolean updatePlotly = false;
-  if ((plotlyLastUpdateSec != (time / 1000)) && (plotlyStatus == PLOTLY_STREAMING)) {
+  if ((plotlyLastUpdateSec != (time / plotlyUpdateFreq)) && (plotlyStatus == PLOTLY_STREAMING)) {
     updatePlotly = true;
-    plotlyLastUpdate = (time / 1000);
+    plotlyLastUpdateSec = (time / plotlyUpdateFreq);
   }
   
   // Atmospheric temperature and pressure

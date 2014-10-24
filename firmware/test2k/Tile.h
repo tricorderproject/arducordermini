@@ -65,6 +65,7 @@ class Tile {
   void setSize(uint8_t x, uint8_t y);
   void setColor(uint16_t col);  
   void setText(char* tileText);
+  void setTileName(char* tileName);
   void setUnitText(char* unitText);
 
   void setBitmap(const BITMAPSTRUCT* tileBitmap);

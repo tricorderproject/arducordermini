@@ -719,7 +719,8 @@ void FramebufferGFX::drawText(char* text, int16_t xOffset, int16_t yOffset, cons
   int numCharacters = strlen(text);
   int x = xOffset;
   for (int i=0; i<numCharacters; i++) {
-    x += drawChar( text[i], x, yOffset, font, col);   
+    x += drawChar( text[i], x, yOffset, font, col);
+    
   }
 }
 
@@ -749,6 +750,11 @@ uint8_t FramebufferGFX::drawChar(uint8_t c, int16_t xOffset, int16_t yOffset, co
   uint8_t pixelsPerByte = font->pixelsPerByte;
   uint8_t sizeX = font->sizesX[c];
   uint8_t sizeY = font->sizesY[c];
+  
+  // Special Case: Space
+  if (c == 32) {
+    return font->spaceWidth;
+  }
   
   // Return if character is not supported in this font
   if (sizeX == 0) {
@@ -812,6 +818,10 @@ int16_t FramebufferGFX::textLength(char* text, const FONTSTRUCT* font) {
   for (int i=0; i<numCharacters; i++) {
     uint8_t charIdx = text[i];
     length += font->sizesX[ charIdx ];
+    // Special case: Space
+    if (charIdx == 32) {
+      length += font->spaceWidth;
+    }
   }
   return length;  
 }

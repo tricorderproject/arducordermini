@@ -2,20 +2,21 @@
 // This firmware is a work in progress, and is currently test/development firmware 
 // used to verify the functionality of the hardware.  
 
+#include <Client.h>
+#include <SPI.h>
 #include <Wire.h>
 #include <SD.h>
 #include <math.h>
-
 #include <I2Cdev.h>
-
 #include <MPU6050.h>
 
+// Graphics
 #include "SSD1351.h"
 #include "FramebufferGFX.h"
 #include "FramebufferGraphs.h"
 
+// Sensors
 #include "Adafruit_MPR121.h"
-
 #include "sensorbuffer.h"
 #include "sensor_HMC5883L.h"
 #include "sensor_microphone.h"
@@ -27,10 +28,16 @@
 #include "SensorSpecHamamatsu.h"
 #include "SensorRadiation.h"
 
+// User Interface
 #include "Tile.h"
 #include "Fonts.h"
 #include "Bitmaps.h"
 #include "TileGUI.h"
+
+// Communications
+#include <Adafruit_CC3000.h>
+#include "PlotlyInterface.h"
+
 
 // Defines
 #define SD_CS  84
@@ -76,6 +83,12 @@ MPU6050 accelgyro(0x69); // <-- use for AD0 low     // MPU9150 Inertial measurem
 SensorMLX90620 thermalImager;                       // MLX90620 16x4 Thermal Imager
 SensorSpecHamamatsu sensorSpectrometer;             // Hamamatsu C12666MA micro spectroemter
 SensorRadiation sensorRadiation(&sbRad);            // Radiation Watch Type 5 High-energy Particle Detector
+
+
+// Plotly Web Interface
+Adafruit_CC3000 cc3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT, SPI_CLOCK_DIV2);  
+PlotlyInterface plotly = PlotlyInterface(&cc3000);
+int plotlyStatus = PLOTLY_UNINITIALIZED;
 
 
 // User interface -- modes
@@ -343,9 +356,9 @@ void setup() {
   
   // TILE: plotly.com
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_UTIL_PLOTLY)->Initialize("enabled", RGB(102, 29, 89), &symbPlotlyBitmap, NULL);
+  tileGUI.addTile(TILE_UTIL_PLOTLY)->Initialize("not connected", RGB(102, 29, 89), &symbPlotlyBitmap, NULL);
   tileGUI.getTile(TILE_UTIL_PLOTLY)->setSize(2, 1);
-
+  
   // ******************************************  
   // Pack tiles (must be called after adding tiles)
   // ******************************************
@@ -423,6 +436,13 @@ void loop() {
         userInterfaceMode = UI_MODE_GRAPH;       
         initSensorGraph();
       }
+      
+      // Special cases for utility tiles
+      if (selectedTile == TILE_UTIL_PLOTLY) {
+        if (plotlyStatus == PLOTLY_UNINITIALIZED) {
+          connectToPlotly();
+        }
+      }
     }
   } else if (userInterfaceMode == UI_MODE_GRAPH) {
     Serial.println ("Graph Display...");    
@@ -468,10 +488,9 @@ void userInterfaceTiles() {
   }  
 }
 
-
 void updateSensorData() {
   // Update sensor data based on tiles that are currently visible on the display
-  
+
   // Atmospheric temperature and pressure
   if (( tileGUI.isTileOnScreen(TILE_ATMTEMP) )
     || ( tileGUI.isTileOnScreen(TILE_ATMHUMIDITY) )) {
@@ -600,6 +619,70 @@ void updateSensorData() {
     sbMic.put ((float)micVal / 1024);    
   }
 
+}
+
+// Draw a status window for blocking updates
+void drawStatusWindow(char* label, char* text) {
+  int mid = (GFX.height/2);
+  GFX.fillRoundRect(13, mid-31, GFX.width-13, mid+31, 5, RGB(0, 0, 0));
+  GFX.drawRoundRect(14, mid-30, GFX.width-14, mid+30, 5, RGB(128, 128, 128));  
+  
+  // Label text on the bottom
+  GFX.drawJustifiedText(label, 14, GFX.width-14, mid-16, &Ubuntu10, JUST_CENTER, RGB(255, 255, 255) );
+  GFX.drawJustifiedText(text, 14, GFX.width-14, mid+10, &Ubuntu10, JUST_CENTER, RGB(255, 255, 255) );    
+  GFX.drawLine(20, mid - 13, GFX.width-21, mid - 13, RGB(128, 128, 128) );
+  
+}
+
+// Connect to Plotly Web Graphing Interface
+void connectToPlotly() {  
+  // Initialize the CC3000 Wifi and connect to the access point
+  drawStatusWindow("Connection Status", "Connecting to WiFi");  
+  GFX.updateScreen();
+  plotly.connectWifi();
+  
+  // Initialize stream plots
+  drawStatusWindow("Connection Status", "Setup Graphs");  
+  GFX.updateScreen();
+  
+  // GRAPH_ATMSTREAM / GRAPHTOKENS_ATM[] = {STKN_ATMTEMP, STKN_HUMIDITY, STKN_PRESSURE}
+  if (!plotly.initializeStreamingGraph(GRAPH_ATMSTREAM, 3, GRAPHTOKENS_ATM)) {
+    Serial.println("ERROR: Unable to initialize graph"); 
+  }
+
+  // GRAPH_MAGSTREAM / GRAPHTOKENS_MAG = {STKN_MAGX, STKN_MAGY, STKN_MAGZ, STKN_MAGLEN}
+  if (!plotly.initializeStreamingGraph(GRAPH_MAGSTREAM, 4, GRAPHTOKENS_MAG)) {
+    Serial.println("ERROR: Unable to initialize graph"); 
+  }
+  
+  // GRAPH_RADSTREAM / GRAPHTOKENS_RAD[] = {STKN_RADCPM}
+  if (!plotly.initializeStreamingGraph(GRAPH_RADSTREAM, 1, GRAPHTOKENS_RAD)) {
+    Serial.println("ERROR: Unable to initialize graph"); 
+  }   
+  
+  // GRAPH_MOTIONSTREAM / GRAPHTOKENS_MOTION[] = {STKN_ACCELX, STKN_ACCELY, STKN_ACCELZ, STKN_GYROX, STKN_GYROY, STKN_GYROZ}
+  if (!plotly.initializeStreamingGraph(GRAPH_MOTIONSTREAM, 6, GRAPHTOKENS_MOTION)) {
+    Serial.println("ERROR: Unable to initialize graph"); 
+  }   
+  
+  // GRAPH_SPECSTREAM / GRAPHTOKENS_SPEC[] = {STKN_SPEC}
+  if (!plotly.initializeStreamingGraph(GRAPH_SPECSTREAM, 1, GRAPHTOKENS_SPEC)) {
+    Serial.println("ERROR: Unable to initialize graph"); 
+  }   
+
+  // Open the plotly stream 
+  drawStatusWindow("Connection Status", "Opening Streams");  
+  GFX.updateScreen();  
+  plotly.openStream();
+  
+  // Notify user of success
+  drawStatusWindow("Connection Status", "Success!");  
+  GFX.updateScreen();
+  delay(1000);
+  
+  // Update plotly and tile status
+  plotlyStatus = PLOTLY_STREAMING;
+  tileGUI.getTile(TILE_UTIL_PLOTLY)->setTileName("streaming");    
 }
 
 

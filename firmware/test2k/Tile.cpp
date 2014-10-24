@@ -38,7 +38,7 @@ void Tile::Initialize(char* tileName, uint16_t col, const BITMAPSTRUCT* tileBitm
   
   // Variables (data)
   category = 0;
-  name = tileName;
+  setTileName(tileName);
   strcpy(text, "");
   strcpy(units, "");
   setSensorTextFormat(TEXT_INT);
@@ -66,6 +66,10 @@ void Tile::setText(char* tileText) {
     strncpy(text, tileText, TILE_MAXTEXTLENGTH-1);
     text[TILE_MAXTEXTLENGTH-1] = '\0';  // Add null manually
   }
+}
+
+void Tile::setTileName(char* tileName) {
+  name = tileName;
 }
 
 void Tile::setUnitText(char* unitText) {

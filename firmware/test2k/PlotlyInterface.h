@@ -30,8 +30,17 @@
 #define PLOTLY_USERNAME  "arducordermini"
 #define PLOTLY_APIKEY    "meo5gmkf9h"
 #define PLOTLY_TIMEZONE  "America/Montreal"
-#define PLOTLY_STREAM_MAXPOINTS    200
+#define PLOTLY_STREAM_MAXPOINTS    1000
 #define PLOTLY_STREAM_FILEMODE     "overwrite"      //"extend"
+
+
+// Plotly stream structure
+typedef struct plotlyStream {
+  const char* streamToken;
+  const char* name;
+  int lastUpdateTime; 
+} PLOTLYSTREAM;
+
 
 // Plotly Stream Tokens
 // GRAPH_ATMSTREAM / GRAPHTOKENS_ATM[] = {STKN_ATMTEMP, STKN_HUMIDITY, STKN_PRESSURE}

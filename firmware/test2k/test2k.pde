@@ -141,6 +141,10 @@ void setup() {
   pinMode(SD_CS, OUTPUT);
   digitalWrite(SD_CS, 1);
  
+  // Disable CC3000 enable line
+  pinMode(ADAFRUIT_CC3000_VBAT, OUTPUT);
+  digitalWrite(ADAFRUIT_CC3000_VBAT, 0);
+ 
   // see if the card is present and can be initialized:
   // Note: I'm not sure why, but SD.begin() is failing, but subsequent functions seem fine. 
   if (!SD.begin(SD_CS)) {
@@ -512,6 +516,7 @@ void updateSensorData() {
   // Plotly: if enabled, update plotly stream once per second
   long time = millis();
   boolean updatePlotly = false;
+  boolean transmitToPlotly = false;
   if ((plotlyLastUpdateSec != (time / plotlyUpdateFreq)) && (plotlyStatus == PLOTLY_STREAMING)) {
     updatePlotly = true;
     plotlyLastUpdateSec = (time / plotlyUpdateFreq);
@@ -524,12 +529,15 @@ void updateSensorData() {
     float temp = sensorHTU21D.readTemperature();
     sbTemp.put( temp );
     sbHumidity.put( humd );    
-    
+
+/*    
     // Plotly
     if (updatePlotly) {
       plotly.plot(time, temp, STKN_ATMTEMP);
       plotly.plot(time, humd, STKN_HUMIDITY);
+      transmitToPlotly = true;
     }
+*/    
   }
   
   // Atmospheric pressure
@@ -562,13 +570,14 @@ void updateSensorData() {
     sprintf(buffer, "%.1fm", altitude);
     tileGUI.getTile(TILE_ALTITUDE)->setText(buffer);    
 
-    
+/*    
     // Plotly
     if (updatePlotly) {
       float pressureKpa = event.pressure / 10.f; 
       plotly.plot(time, pressureKpa, STKN_PRESSURE);
+      transmitToPlotly = true;
     }
-    
+*/    
   }
      
   
@@ -586,6 +595,7 @@ void updateSensorData() {
       plotly.plot(time, sensorHMC5883L.y, STKN_MAGY);
       plotly.plot(time, sensorHMC5883L.z, STKN_MAGZ);
       plotly.plot(time, length, STKN_MAGLEN);  
+      transmitToPlotly = true;
     }
     
   }
@@ -608,11 +618,13 @@ void updateSensorData() {
     float cpm = sensorRadiation.calculateCPM();
     sprintf(buffer, "%.0f", cpm);
     tileGUI.getTile(TILE_RADIATION_CPM)->setText(buffer);
-    
+/*    
     // Plotly
     if (updatePlotly) {
       plotly.plot(time, cpm, STKN_RADCPM);
+      transmitToPlotly = true;      
     }
+*/
   }
   
   if ( tileGUI.isTileOnScreen(TILE_UV) ) { 
@@ -634,17 +646,17 @@ void updateSensorData() {
   // Acceleration/IMU
   if ( tileGUI.isTileOnScreen(TILE_IMU_ACCEL) ) { 
     int16_t unitConvA = 16384;      // +/- 2g
-    float unitConvG = 131/57.3;     // to degrees, then to radians
+    float unitConvG = 131*57.3;     // to degrees, then to radians
     int16_t ax, ay, az;
     int16_t gx, gy, gz;
     // read raw accel/gyro measurements from device 
     accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
     
-    // Convert to g's
+    // Convert to g's.  (Multiply axes by -1 to better orient them with the case and user)
     float axF, ayF, azF;
-    axF = (float)ax/(float)unitConvA;
-    ayF = (float)ay/(float)unitConvA;    
-    azF = (float)az/(float)unitConvA;
+    axF = (float)-ax/(float)unitConvA;
+    ayF = (float)-ay/(float)unitConvA;    
+    azF = (float)-az/(float)unitConvA;
 
     // Convert to radians/sec
     float gxF, gyF, gzF;
@@ -656,9 +668,9 @@ void updateSensorData() {
     sbAccelX.put( axF );
     sbAccelY.put( ayF );
     sbAccelZ.put( azF );
-    sbGyroX.put( (float)gx );
-    sbGyroY.put( (float)gy );
-    sbGyroZ.put( (float)gz );
+    sbGyroX.put( (float)gxF );
+    sbGyroY.put( (float)gyF );
+    sbGyroZ.put( (float)gzF );
     
     // Calculate length of acceleration vector
     float length = sqrt(pow((float)axF, 2) + pow((float)ayF, 2) + pow((float)azF, 2));
@@ -666,16 +678,18 @@ void updateSensorData() {
     // Set text
     sprintf(stringBuffer, "%.2fg", length);
     tileGUI.getTile(TILE_IMU_ACCEL)->setText(stringBuffer);
-    
+ /*   
     // Plotly
     if (updatePlotly) {
       plotly.plot(time, axF, STKN_ACCELX);
       plotly.plot(time, ayF, STKN_ACCELY);
       plotly.plot(time, azF, STKN_ACCELZ);
-      plotly.plot(time, gx, STKN_GYROX);
-      plotly.plot(time, gy, STKN_GYROY);
-      plotly.plot(time, gz, STKN_GYROZ);      
+      plotly.plot(time, gxF, STKN_GYROX);
+      plotly.plot(time, gyF, STKN_GYROY);
+      plotly.plot(time, gzF, STKN_GYROZ);  
+      transmitToPlotly = true;    
     }
+*/    
   }
   
   // Microphone
@@ -686,11 +700,11 @@ void updateSensorData() {
 
 
   // Plotly:  If we have data staged in the plotly stream, then transmit it to Plotly
-  if (updatePlotly) {
+  if (transmitToPlotly) {
     Serial.println ("Updating Plotly...");
     GFX.fillRect(1, 1, 4, 4, RGB(32, 128, 32));
     GFX.updateScreen();
-    plotly.transmitBuffer();  
+    plotly.transmitBuffer();      
   }
   
 }
@@ -757,17 +771,17 @@ void connectToPlotly() {
   // Initialize stream plots
   drawStatusWindow("Connection Status", "Setup Graphs");  
   GFX.updateScreen();
-  
+/*  
   // GRAPH_ATMSTREAM / GRAPHTOKENS_ATM[] = {STKN_ATMTEMP, STKN_HUMIDITY, STKN_PRESSURE}
   if (!plotly.initializeStreamingGraph(GRAPH_ATMSTREAM, 3, GRAPHTOKENS_ATM)) {
     Serial.println("ERROR: Unable to initialize graph"); 
   }
-
+*/
   // GRAPH_MAGSTREAM / GRAPHTOKENS_MAG = {STKN_MAGX, STKN_MAGY, STKN_MAGZ, STKN_MAGLEN}
   if (!plotly.initializeStreamingGraph(GRAPH_MAGSTREAM, 4, GRAPHTOKENS_MAG)) {
     Serial.println("ERROR: Unable to initialize graph"); 
   }
-  
+/*  
   // GRAPH_RADSTREAM / GRAPHTOKENS_RAD[] = {STKN_RADCPM}
   if (!plotly.initializeStreamingGraph(GRAPH_RADSTREAM, 1, GRAPHTOKENS_RAD)) {
     Serial.println("ERROR: Unable to initialize graph"); 
@@ -782,7 +796,7 @@ void connectToPlotly() {
   if (!plotly.initializeStreamingGraph(GRAPH_SPECSTREAM, 1, GRAPHTOKENS_SPEC)) {
     Serial.println("ERROR: Unable to initialize graph"); 
   }   
-
+*/
   // Open the plotly stream 
   drawStatusWindow("Connection Status", "Opening Streams");  
   GFX.updateScreen();  

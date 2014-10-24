@@ -89,6 +89,7 @@ SensorRadiation sensorRadiation(&sbRad);            // Radiation Watch Type 5 Hi
 Adafruit_CC3000 cc3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT, SPI_CLOCK_DIV2);  
 PlotlyInterface plotly = PlotlyInterface(&cc3000);
 int plotlyStatus = PLOTLY_UNINITIALIZED;
+int plotlyLastUpdateSec = 0;
 
 
 // User interface -- modes
@@ -497,7 +498,15 @@ void userInterfaceTiles() {
 
 void updateSensorData() {
   // Update sensor data based on tiles that are currently visible on the display
-
+  
+  // Plotly: if enabled, update plotly stream once per second
+  long time = millis();
+  boolean updatePlotly = false;
+  if ((plotlyLastUpdateSec != (time / 1000)) && (plotlyStatus == PLOTLY_STREAMING)) {
+    updatePlotly = true;
+    plotlyLastUpdate = (time / 1000);
+  }
+  
   // Atmospheric temperature and pressure
   if (( tileGUI.isTileOnScreen(TILE_ATMTEMP) )
     || ( tileGUI.isTileOnScreen(TILE_ATMHUMIDITY) )) {
@@ -505,6 +514,12 @@ void updateSensorData() {
     float temp = sensorHTU21D.readTemperature();
     sbTemp.put( temp );
     sbHumidity.put( humd );    
+    
+    // Plotly
+    if (updatePlotly) {
+      plotly.plot(time, temp, STKN_ATMTEMP);
+      plotly.plot(time, humd, STKN_HUMIDITY);
+    }
   }
   
   // Atmospheric pressure
@@ -536,6 +551,14 @@ void updateSensorData() {
     char buffer[10];
     sprintf(buffer, "%.1fm", altitude);
     tileGUI.getTile(TILE_ALTITUDE)->setText(buffer);    
+
+    
+    // Plotly
+    if (updatePlotly) {
+      float pressureKpa = event.pressure / 10.f; 
+      plotly.plot(time, pressureKpa, STKN_PRESSURE);
+    }
+    
   }
      
   
@@ -546,6 +569,15 @@ void updateSensorData() {
     sbx.put( sensorHMC5883L.x );
     sby.put( sensorHMC5883L.y );
     sbz.put( sensorHMC5883L.z );
+    
+    // Plotly
+    if (updatePlotly) {
+      plotly.plot(time, sensorHMC5883L.x, STKN_MAGX);
+      plotly.plot(time, sensorHMC5883L.y, STKN_MAGY);
+      plotly.plot(time, sensorHMC5883L.z, STKN_MAGZ);
+      plotly.plot(time, length, STKN_MAGLEN);  
+    }
+    
   }
 
   // Thermal Imager
@@ -563,8 +595,14 @@ void updateSensorData() {
   // Radiation Sensor (measurement is interrupt driven, so here we just need to update the text)
   if ( tileGUI.isTileOnScreen(TILE_RADIATION_CPM) ) { 
     char buffer[10];
-    sprintf(buffer, "%.0f", sensorRadiation.calculateCPM());
+    float cpm = sensorRadiation.calculateCPM();
+    sprintf(buffer, "%.0f", cpm);
     tileGUI.getTile(TILE_RADIATION_CPM)->setText(buffer);
+    
+    // Plotly
+    if (updatePlotly) {
+      plotly.plot(time, cpm, STKN_RADCPM);
+    }
   }
   
   if ( tileGUI.isTileOnScreen(TILE_UV) ) { 
@@ -618,6 +656,16 @@ void updateSensorData() {
     // Set text
     sprintf(stringBuffer, "%.2fg", length);
     tileGUI.getTile(TILE_IMU_ACCEL)->setText(stringBuffer);
+    
+    // Plotly
+    if (updatePlotly) {
+      plotly.plot(time, axF, STKN_ACCELX);
+      plotly.plot(time, ayF, STKN_ACCELY);
+      plotly.plot(time, azF, STKN_ACCELZ);
+      plotly.plot(time, gx, STKN_GYROX);
+      plotly.plot(time, gy, STKN_GYROY);
+      plotly.plot(time, gz, STKN_GYROZ);      
+    }
   }
   
   // Microphone
@@ -626,6 +674,15 @@ void updateSensorData() {
     sbMic.put ((float)micVal / 1024);    
   }
 
+
+  // Plotly:  If we have data staged in the plotly stream, then transmit it to Plotly
+  if (updatePlotly) {
+    Serial.println ("Updating Plotly...");
+    GFX.fillRect(1, 1, 4, 4, RGB(32, 128, 32));
+    GFX.updateScreen();
+    plotly.transmitBuffer();  
+  }
+  
 }
 
 // Draw a status window for blocking updates

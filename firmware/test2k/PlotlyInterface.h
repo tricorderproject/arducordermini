@@ -31,7 +31,7 @@
 #define PLOTLY_APIKEY    "meo5gmkf9h"
 #define PLOTLY_TIMEZONE  "America/Montreal"
 #define PLOTLY_STREAM_MAXPOINTS    200
-#define PLOTLY_STREAM_FILEMODE     "extend"
+#define PLOTLY_STREAM_FILEMODE     "overwrite"      //"extend"
 
 // Plotly Stream Tokens
 // GRAPH_ATMSTREAM / GRAPHTOKENS_ATM[] = {STKN_ATMTEMP, STKN_HUMIDITY, STKN_PRESSURE}

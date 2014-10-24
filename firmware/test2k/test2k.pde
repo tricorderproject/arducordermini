@@ -358,6 +358,12 @@ void setup() {
   Serial.println ("Adding tile...");
   tileGUI.addTile(TILE_UTIL_PLOTLY)->Initialize("not connected", RGB(102, 29, 89), &symbPlotlyBitmap, NULL);
   tileGUI.getTile(TILE_UTIL_PLOTLY)->setSize(2, 1);
+
+  // TILE: plotly.com
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_UTIL_WIFI)->Initialize("disabled", RGB(0, 0, 128), &symbWifiBitmap, NULL);
+  tileGUI.getTile(TILE_UTIL_WIFI)->setSize(1, 1);
+
   
   // ******************************************  
   // Pack tiles (must be called after adding tiles)
@@ -438,10 +444,11 @@ void loop() {
       }
       
       // Special cases for utility tiles
+      if (selectedTile == TILE_UTIL_WIFI) {
+        connectToWifi(); 
+      }
       if (selectedTile == TILE_UTIL_PLOTLY) {
-        if (plotlyStatus == PLOTLY_UNINITIALIZED) {
-          connectToPlotly();
-        }
+        connectToPlotly(); 
       }
     }
   } else if (userInterfaceMode == UI_MODE_GRAPH) {
@@ -634,12 +641,31 @@ void drawStatusWindow(char* label, char* text) {
   
 }
 
+
+// Connect to the Wifi network (if not currently connected)
+void connectToWifi() {
+  if (plotlyStatus == PLOTLY_UNINITIALIZED) {
+    drawStatusWindow("Connection Status", "Connecting to WiFi");  
+    GFX.updateScreen();
+    plotly.connectWifi();
+
+    // Connected    
+    drawStatusWindow("Connection Status", "Success!");  
+    GFX.updateScreen();
+    delay(1000);    
+    
+    // Update status
+    tileGUI.getTile(TILE_UTIL_WIFI)->setTileName("connected");            
+    plotlyStatus = PLOTLY_WIFI_CONNECTED;
+  }  
+}
+
 // Connect to Plotly Web Graphing Interface
 void connectToPlotly() {  
   // Initialize the CC3000 Wifi and connect to the access point
-  drawStatusWindow("Connection Status", "Connecting to WiFi");  
-  GFX.updateScreen();
-  plotly.connectWifi();
+  if (plotlyStatus == PLOTLY_UNINITIALIZED) {
+    connectToWifi();
+  }
   
   // Initialize stream plots
   drawStatusWindow("Connection Status", "Setup Graphs");  

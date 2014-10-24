@@ -8,7 +8,7 @@
 #include "Tile.h"
 
 // Defines
-#define MAX_TILES  20
+#define MAX_TILES  30
 #define TILE_MAXGRIDX  2
 #define TILE_MAXGRIDY  2
 
@@ -45,6 +45,7 @@
 #define TILE_AUDIO_MIC      100
 
 #define TILE_UTIL_PLOTLY    110
+#define TILE_UTIL_WIFI      111
 
 // Supporting Structs
 typedef struct point {

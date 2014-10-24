@@ -16,5 +16,6 @@
 
 #include "bitmaps/bitmap_symbSparkfunData.h"
 #include "bitmaps/bitmap_symbPlotly.h"
+#include "bitmaps/bitmap_symbWifi.h"
 
 #include "bitmaps/bitmap_splashArducorder.h"

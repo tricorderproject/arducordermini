@@ -30,10 +30,10 @@
 #define PLOTLY_USERNAME  "arducordermini"
 #define PLOTLY_APIKEY    "meo5gmkf9h"
 #define PLOTLY_TIMEZONE  "America/Montreal"
-#define PLOTLY_STREAM_MAXPOINTS    200
+#define PLOTLY_STREAM_MAXPOINTS    1000
 #define PLOTLY_STREAM_FILEMODE     "overwrite"
-#define PLOTLY_STREAM_TIMEOUT      10000  // in Milliseconds
-
+#define PLOTLY_STREAM_TIMEOUT      10000  // in milliseconds
+#define PLOTLY_UPDATE_FREQ         250    // in milliseconds
 // Plotly stream structure
 typedef struct plotlyStream {
   const char* token;

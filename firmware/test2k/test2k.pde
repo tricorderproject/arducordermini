@@ -89,7 +89,6 @@ SensorRadiation sensorRadiation(&sbRad);            // Radiation Watch Type 5 Hi
 Adafruit_CC3000 cc3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT, SPI_CLOCK_DIV2);  
 PlotlyInterface plotly = PlotlyInterface(&cc3000);
 int plotlyLastUpdateSec = 0;
-int plotlyUpdateFreq = 500;    // in milliseconds
 
 // User interface -- modes
 uint8_t userInterfaceMode;
@@ -537,9 +536,9 @@ void updateSensorData() {
   // Plotly Streaming: if enabled, update plotly streams at regular intervals
   long time = millis();
   boolean updatePlotly = false;
-  if ((plotlyLastUpdateSec != (time / plotlyUpdateFreq)) && (plotly.plotlyStatus == PLOTLY_STREAMING)) {
+  if ((plotlyLastUpdateSec != (time / PLOTLY_UPDATE_FREQ)) && (plotly.plotlyStatus == PLOTLY_STREAMING)) {
     updatePlotly = true;
-    plotlyLastUpdateSec = (time / plotlyUpdateFreq);
+    plotlyLastUpdateSec = (time / PLOTLY_UPDATE_FREQ);
   }
   
   // Atmospheric temperature and humidity
@@ -592,7 +591,9 @@ void updateSensorData() {
     if (updatePlotly || plotly.needsUpdateOrTimeout(time, &graphAtmospheric)) {
       float pressureKpa = event.pressure / 10.f; 
       safePlotStream(time, pressureKpa, &streamPRESSURE);
-      graphAtmospheric.lastUpdateTime = time;        // Updated below in TILE_ATMPRESSURE      
+      if (!tileGUI.isTileOnScreen(TILE_ALTITUDE)) {    // Two tiles use the atmospheric pressure measurement -- if we're on the altitude measurement tile, don't say we've updated the whole atmospheric graph
+        graphAtmospheric.lastUpdateTime = time;        // Updated below in TILE_ATMPRESSURE      
+      }
     }
   }
      

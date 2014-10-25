@@ -236,10 +236,6 @@ void SSD1351::begin(void) {
     writeCommand(SSD1351_CMD_PRECHARGE2);
     writeData(0x01);
     
-    // Enable OLED high voltage supply
-    Serial.println (" * Enabling boost regulator");
-    enableBoostRegulator();
-    
     // Clear framebuffer
     for (int i=0; i<(width*height); i++) {
       framebuffer[i] = 0;
@@ -247,6 +243,10 @@ void SSD1351::begin(void) {
     
     // Update screen
     updateScreen();   
+
+    // Enable OLED high voltage supply
+    Serial.println (" * Enabling boost regulator");
+    enableBoostRegulator();    
    
     Serial.println (" * Turning display on");    
     writeCommand(SSD1351_CMD_DISPLAYON);		//--turn on oled panel    

@@ -11,72 +11,72 @@
 // Stream Tokens
 PLOTLYSTREAM streamATMTEMP = {
          "od2ntylgww", 	 // streamToken
-         "AtmTemp" 	 // name
+         "AtmTemp (C)" 	 // name
 };
 
 PLOTLYSTREAM streamHUMIDITY = {
          "sqm4a13zam", 	 // streamToken
-         "AtmHumidity"   // name
+         "AtmHumidity (%)"   // name
 };
 
 PLOTLYSTREAM streamPRESSURE = {
          "e4ksyqpxco", 	 // streamToken
-         "AtmPressure"	 // name
+         "AtmPressure (kPa)"	 // name
 };
 
 PLOTLYSTREAM streamMAGX = {
          "az7j8to4gc", 	 // streamToken
-         "MagneticX" 	 // name
+         "MagneticX (uT)" 	 // name
 };
 
 PLOTLYSTREAM streamMAGY = {
          "fltbm456ks", 	 // streamToken
-         "MagneticY" 	 // name
+         "MagneticY (uT)" 	 // name
 };
 
 PLOTLYSTREAM streamMAGZ = {
          "3yxuxsvwfo", 	 // streamToken
-         "MagneticZ" 	 // name
+         "MagneticZ (uT)" 	 // name
 };
 
 PLOTLYSTREAM streamMAGLEN = {
          "on8hylf9gp", 	 // streamToken
-         "MagneticLength"  // name
+         "MagneticLength (uT)"  // name
 };
 
 PLOTLYSTREAM streamRADCPM = {
          "zqa6zrzyu4", 	 // streamToken
-         "RadiationCPM"  // name
+         "Radiation(cpm)"  // name
 };
 
 PLOTLYSTREAM streamACCELX = {
          "5snk03wu6b", 	 // streamToken
-         "AccelX"        // name
+         "AccelX (g)"        // name
 };
 
 PLOTLYSTREAM streamACCELY = {
          "lj2rzknk3k", 	 // streamToken
-         "AccelY"        // name
+         "AccelY (g)"        // name
 };
 
 PLOTLYSTREAM streamACCELZ = {
          "1fo3rccdy6", 	 // streamToken
-         "AccelZ"        // name
+         "AccelZ (g)"        // name
 };
 
 PLOTLYSTREAM streamGYROX = {
          "c8fv9pnjpl", 	 // streamToken
-         "GyroX"         // name
+         "GyroX (rad/sec)"         // name
 };
 
 PLOTLYSTREAM streamGYROY = {
          "o1k8qt6b33", 	 // streamToken
-         "GyroY"         // name
+         "GyroY (rad/sec)"         // name
 };
 
 PLOTLYSTREAM streamGYROZ = {
          "rplqna6020", 	 // streamToken
-         "GyroZ"         // name
+         "GyroZ (rad/sec)"         // name
 };
 
 PLOTLYSTREAM streamSPEC = {

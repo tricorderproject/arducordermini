@@ -30,69 +30,60 @@
 #define PLOTLY_USERNAME  "arducordermini"
 #define PLOTLY_APIKEY    "meo5gmkf9h"
 #define PLOTLY_TIMEZONE  "America/Montreal"
-#define PLOTLY_STREAM_MAXPOINTS    1000
-#define PLOTLY_STREAM_FILEMODE     "overwrite"      //"extend"
-
+#define PLOTLY_STREAM_MAXPOINTS    200
+#define PLOTLY_STREAM_FILEMODE     "overwrite"
+#define PLOTLY_STREAM_TIMEOUT      10000  // in Milliseconds
 
 // Plotly stream structure
 typedef struct plotlyStream {
-  const char* streamToken;
+  const char* token;
   const char* name;
-  int lastUpdateTime; 
 } PLOTLYSTREAM;
 
+#define MAX_STREAMS_PER_GRAPH  6
+typedef struct plotlyGraph {
+  const char* name;  
+  int numStreams;
+  PLOTLYSTREAM* streams[MAX_STREAMS_PER_GRAPH];
+  long lastUpdateTime;
+} PLOTLYGRAPH;
 
-// Plotly Stream Tokens
-// GRAPH_ATMSTREAM / GRAPHTOKENS_ATM[] = {STKN_ATMTEMP, STKN_HUMIDITY, STKN_PRESSURE}
-#define STKN_ATMTEMP     "od2ntylgww" 
-#define STKN_HUMIDITY    "sqm4a13zam" 
-#define STKN_PRESSURE    "e4ksyqpxco" 
-const char* const GRAPHTOKENS_ATM[] = {STKN_ATMTEMP, STKN_HUMIDITY, STKN_PRESSURE};
+// Plotly stream tokens
+extern PLOTLYSTREAM streamATMTEMP;
+extern PLOTLYSTREAM streamHUMIDITY;
+extern PLOTLYSTREAM streamPRESSURE;
+extern PLOTLYSTREAM streamMAGX;
+extern PLOTLYSTREAM streamMAGY;
+extern PLOTLYSTREAM streamMAGZ;
+extern PLOTLYSTREAM streamMAGLEN;
+extern PLOTLYSTREAM streamRADCPM;
+extern PLOTLYSTREAM streamACCELX;
+extern PLOTLYSTREAM streamACCELY;
+extern PLOTLYSTREAM streamACCELZ;
+extern PLOTLYSTREAM streamGYROX;
+extern PLOTLYSTREAM streamGYROY;
+extern PLOTLYSTREAM streamGYROZ;
+extern PLOTLYSTREAM streamSPEC;
+extern PLOTLYSTREAM streamTHERM;
 
-// GRAPH_MAGSTREAM / GRAPHTOKENS_MAG = {STKN_MAGX, STKN_MAGY, STKN_MAGZ, STKN_MAGLEN}
-#define STKN_MAGX        "az7j8to4gc" 
-#define STKN_MAGY        "fltbm456ks" 
-#define STKN_MAGZ        "3yxuxsvwfo" 
-#define STKN_MAGLEN      "on8hylf9gp" 
-const char* const GRAPHTOKENS_MAG[] = {STKN_MAGX, STKN_MAGY, STKN_MAGZ, STKN_MAGLEN};
+// Plotly Graphs
+extern PLOTLYGRAPH graphAtmospheric;
+extern PLOTLYGRAPH graphMagnetic;
+extern PLOTLYGRAPH graphRad;
+extern PLOTLYGRAPH graphMotion;
+extern PLOTLYGRAPH graphSpectrometer;
 
-// GRAPH_RADSTREAM / GRAPHTOKENS_RAD[] = {STKN_RADCPM}
-#define STKN_RADCPM      "zqa6zrzyu4" 
-const char* const GRAPHTOKENS_RAD[] = {STKN_RADCPM};
-
-// GRAPH_MOTIONSTREAM / GRAPHTOKENS_MOTION[] = {STKN_ACCELX, STKN_ACCELY, STKN_ACCELZ, STKN_GYROX, STKN_GYROY, STKN_GYROZ}
-#define STKN_ACCELX      "5snk03wu6b"
-#define STKN_ACCELY      "lj2rzknk3k"
-#define STKN_ACCELZ      "1fo3rccdy6"
-#define STKN_GYROX       "c8fv9pnjpl"
-#define STKN_GYROY       "o1k8qt6b33"
-#define STKN_GYROZ       "rplqna6020"
-const char* const GRAPHTOKENS_MOTION[] = {STKN_ACCELX, STKN_ACCELY, STKN_ACCELZ, STKN_GYROX, STKN_GYROY, STKN_GYROZ};
-
-// GRAPH_SPECSTREAM / GRAPHTOKENS_SPEC[] = {STKN_SPEC}
-#define STKN_SPEC        "f0dw3z6jnn"
-const char* const GRAPHTOKENS_SPEC[] = {STKN_SPEC};
-
-#define STKN_THERM       "bx8zl5zbk1"
-const char* const GRAPHTOKENS_THERM[] = {STKN_THERM};
-
-// Plotly streaming graph names
-#define GRAPH_ATMSTREAM      "AtmosphericStreaming"
-#define GRAPH_MAGSTREAM      "MagneticFieldsStreaming"
-#define GRAPH_RADSTREAM      "RadiationStreaming"
-#define GRAPH_MOTIONSTREAM   "MotionStreaming"
-#define GRAPH_SPECSTREAM     "SpectrometerStreaming"
 
 // Transmit buffer
 #define PLOTLY_TRANSMITBUF_SIZE  512
 #define PLOTLY_DATABUF_SIZE      80
 #define PLOTLY_NUMBUF_SIZE       20
 
-
 // Plotly status indicators
 #define PLOTLY_UNINITIALIZED     0
 #define PLOTLY_WIFI_CONNECTED    10
 #define PLOTLY_STREAMING         20
+
 
 class PlotlyInterface {
   // Variables  
@@ -100,6 +91,8 @@ class PlotlyInterface {
   Adafruit_CC3000 *cc3000;
   Adafruit_CC3000_Client client;
   uint32_t ip;
+  
+  int plotlyStatus;
   
   // Buffer
   char sendBuffer[PLOTLY_TRANSMITBUF_SIZE];
@@ -121,26 +114,26 @@ class PlotlyInterface {
   void connectWifi();
   
   // Data methods
-//  void plot(unsigned long x, int y, char *token);
-  boolean plot(unsigned long x, float y, char *token);
-  
-  boolean bufferedPlot(unsigned long x, float y, char *token);
+  boolean plotStream(unsigned long x, float y, PLOTLYSTREAM* stream);
   void transmitBuffer();
     
   // Low-level communication 
   public: 
-    bool initializeStreamingGraph(char* plotlyFilename, int nTraces, const char* const streamTokens[]); 
+    bool initializeStreamingGraph(PLOTLYGRAPH* graph); 
+    boolean needsUpdateOrTimeout(long time, PLOTLYGRAPH* graph);
     
     void openStream();
     void closeStream();
     void reconnectStream();
+
 
   private:
 
     int len_(int i);
     int len_(unsigned long i);
     int len_(char *i);
-
+    int len_(const char *i);
+  
     void print_(int d);
     void print_(unsigned long d);
     void print_(float d);

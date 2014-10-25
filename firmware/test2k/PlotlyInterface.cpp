@@ -8,11 +8,133 @@
 
 #include "PlotlyInterface.h"
 
+// Stream Tokens
+PLOTLYSTREAM streamATMTEMP = {
+         "od2ntylgww", 	 // streamToken
+         "AtmTemp" 	 // name
+};
+
+PLOTLYSTREAM streamHUMIDITY = {
+         "sqm4a13zam", 	 // streamToken
+         "AtmHumidity"   // name
+};
+
+PLOTLYSTREAM streamPRESSURE = {
+         "e4ksyqpxco", 	 // streamToken
+         "AtmPressure"	 // name
+};
+
+PLOTLYSTREAM streamMAGX = {
+         "az7j8to4gc", 	 // streamToken
+         "MagneticX" 	 // name
+};
+
+PLOTLYSTREAM streamMAGY = {
+         "fltbm456ks", 	 // streamToken
+         "MagneticY" 	 // name
+};
+
+PLOTLYSTREAM streamMAGZ = {
+         "3yxuxsvwfo", 	 // streamToken
+         "MagneticZ" 	 // name
+};
+
+PLOTLYSTREAM streamMAGLEN = {
+         "on8hylf9gp", 	 // streamToken
+         "MagneticLength"  // name
+};
+
+PLOTLYSTREAM streamRADCPM = {
+         "zqa6zrzyu4", 	 // streamToken
+         "RadiationCPM"  // name
+};
+
+PLOTLYSTREAM streamACCELX = {
+         "5snk03wu6b", 	 // streamToken
+         "AccelX"        // name
+};
+
+PLOTLYSTREAM streamACCELY = {
+         "lj2rzknk3k", 	 // streamToken
+         "AccelY"        // name
+};
+
+PLOTLYSTREAM streamACCELZ = {
+         "1fo3rccdy6", 	 // streamToken
+         "AccelZ"        // name
+};
+
+PLOTLYSTREAM streamGYROX = {
+         "c8fv9pnjpl", 	 // streamToken
+         "GyroX"         // name
+};
+
+PLOTLYSTREAM streamGYROY = {
+         "o1k8qt6b33", 	 // streamToken
+         "GyroY"         // name
+};
+
+PLOTLYSTREAM streamGYROZ = {
+         "rplqna6020", 	 // streamToken
+         "GyroZ"         // name
+};
+
+PLOTLYSTREAM streamSPEC = {
+         "f0dw3z6jnn", 	 // streamToken
+         "Spectrometer"  // name
+};
+
+PLOTLYSTREAM streamTHERM = {
+         "bx8zl5zbk1", 	 // streamToken
+         "Thermal"       // name
+};
+
+
+// Graphs
+// Note: initial lastUpdateTimes are staggered here to prevent all the sensors from updating at once
+PLOTLYGRAPH graphAtmospheric = {
+         "AtmosphericStreaming", 	 // name
+         3, 	                 // number of streams
+         {&streamATMTEMP, &streamHUMIDITY, &streamPRESSURE, 0, 0, 0},     // streams
+         1000 	         // lastUpdateTime         
+};
+
+PLOTLYGRAPH graphMagnetic = {
+         "MagneticFieldsStreaming", 	 // name
+         4, 	                 // number of streams
+         {&streamMAGX, &streamMAGY, &streamMAGZ, &streamMAGLEN, 0, 0},     // streams
+         2000 	         // lastUpdateTime         
+};
+
+PLOTLYGRAPH graphRad = {
+         "RadiationStreaming", 	 // name
+         1, 	                 // number of streams
+         {&streamRADCPM, 0, 0, 0, 0, 0},     // streams
+         3000 	         // lastUpdateTime         
+};
+
+PLOTLYGRAPH graphMotion = {
+         "MotionStreaming", 	 // name
+         6, 	                 // number of streams
+         {&streamACCELX, &streamACCELY, &streamACCELZ, &streamGYROX, &streamGYROY, &streamGYROZ},     // streams
+         4000 	         // lastUpdateTime         
+};
+
+PLOTLYGRAPH graphSpectrometer = {
+         "SpectrometerStreaming", 	 // name
+         1, 	                         // number of streams
+         {&streamSPEC, 0, 0, 0, 0, 0},    // streams
+         5000 	         // lastUpdateTime         
+};
+
+// Plotly Interface
 PlotlyInterface::PlotlyInterface(Adafruit_CC3000 *cc3000Ptr) {
   // Logging level
   logLevel = 2;  // 0 = Debugging, 1 = Informational, 2 = Status, 3 = Errors, 4 = Quiet (// Serial Off)
   dryRun = false;
   worldReadable = true;
+  
+  plotlyStatus = PLOTLY_UNINITIALIZED;
   
   // The user may pass in a CC3000 pointer, or specify a null pointer for this interface to create a CC3000 object
   if (cc3000Ptr == NULL) {
@@ -64,7 +186,7 @@ void PlotlyInterface::connectWifi() {
 }
 
 // Buffered plot -- this is much faster than sending plot points one at a time
-boolean PlotlyInterface::plot(unsigned long x, float y, char *token) {  
+boolean PlotlyInterface::plotStream(unsigned long x, float y, PLOTLYSTREAM* stream) {  
   // First, create the JSON string defining the data
   dataBuffer[0] = '\0';
   strcat(dataBuffer, "{\"x\": ");        // X value
@@ -74,13 +196,12 @@ boolean PlotlyInterface::plot(unsigned long x, float y, char *token) {
   sprintf(numBuffer, "%.3f", y);        
   strcat(dataBuffer, numBuffer);
   strcat(dataBuffer, ", \"streamtoken\": \"");    // Stream token
-  strcat(dataBuffer, token);
+  strcat(dataBuffer, stream->token);
   strcat(dataBuffer, "\"}");
   
   // Add the JSON string to the larger transmit buffer
   int length = strlen(dataBuffer);
-  if (length + strlen(sendBuffer) > (PLOTLY_TRANSMITBUF_SIZE - 10)) {    // 10 for a little wiggle room
-  
+  if (length + strlen(sendBuffer) > (PLOTLY_TRANSMITBUF_SIZE - 10)) {    // 10 for a little wiggle room  
     return false;
   }
   sprintf(numBuffer, "%X", length+1);    // length in *HEX*
@@ -98,22 +219,42 @@ boolean PlotlyInterface::plot(unsigned long x, float y, char *token) {
   return true;
 }
 
+// Returns true if the stream should be updated to prevent a plotly timeout
+boolean PlotlyInterface::needsUpdateOrTimeout(long time, PLOTLYGRAPH* graph) {
+  // If we're not currently streaming, return false
+  if (plotlyStatus != PLOTLY_STREAMING) {
+    return false;
+  }  
+  
+  // If the timeout has passed, return true
+  if ((time - graph->lastUpdateTime) > PLOTLY_STREAM_TIMEOUT) {
+    return true;
+  }
+  
+  // Otherwise false
+  return false;
+}
 
 // Send plot buffer to Plotly server
 void PlotlyInterface::transmitBuffer() {
+  if (strlen(sendBuffer) == 0) {
+    if(logLevel < 2) Serial.println ("Send Buffer Empty...");
+    return;
+  }
+  
   reconnectStream();
-  Serial.println ("Sending Buffer:");
+  if(logLevel < 2) Serial.println ("Sending Buffer...");
   print_(sendBuffer);
   
   // Clear buffer
-  Serial.println ("Clearing buffer");  
+  if(logLevel < 2) Serial.println ("Clearing buffer...");  
   sendBuffer[0] = '\0';
   
 }
 
 
 // Low-level communication
-bool PlotlyInterface::initializeStreamingGraph(char* plotlyFilename, int nTraces, const char* const streamTokens[]) {  
+bool PlotlyInterface::initializeStreamingGraph(PLOTLYGRAPH* graph) { // (char* plotlyFilename, int nTraces, const PLOTLYSTREAM* const graphStreams[]) {  
     //
     //  Validate a stream with a REST post to plotly
     //
@@ -140,12 +281,20 @@ bool PlotlyInterface::initializeStreamingGraph(char* plotlyFilename, int nTraces
     print_(F("Host: 107.21.214.199\r\n"));
     print_(F("User-Agent: Arduino/0.5.1\r\n"));
     print_(F("Content-Length: "));
-    int contentLength = 126 + len_(PLOTLY_USERNAME) + len_(PLOTLY_STREAM_FILEMODE) + nTraces*(87+len_(PLOTLY_STREAM_MAXPOINTS)) + (nTraces-1)*2 + len_(plotlyFilename);
+    int contentLength = 126 + len_(PLOTLY_USERNAME) + len_(PLOTLY_STREAM_FILEMODE) + graph->numStreams*(87+len_(PLOTLY_STREAM_MAXPOINTS)) + (graph->numStreams-1)*2 + len_(graph->name);
     if(worldReadable){
         contentLength += 4;
     } else {
         contentLength += 5;
     }
+    
+    // Length of stream names
+    for(int i=0; i<graph->numStreams; i++){
+       contentLength += strlen("\"name\": \"");
+       contentLength += strlen(graph->streams[i]->name);
+       contentLength += 3;      // trailing quote and comma delimiter
+    }    
+    
     print_(contentLength);
     // contentLength =
     //   44  // first part of querystring below
@@ -175,22 +324,26 @@ bool PlotlyInterface::initializeStreamingGraph(char* plotlyFilename, int nTraces
     print_(PLOTLY_APIKEY);
     print_(F("&args=["));
     // print a trace for each token supplied
-    for(int i=0; i<nTraces; i++){
+    for(int i=0; i<graph->numStreams; i++){
         print_(F("{\"y\": [], \"x\": [], \"type\": \"scatter\", "));
         
+        print_(F("\"name\": \""));
+        print_(F(graph->streams[i]->name));
+        print_(F("\", "));
+        
         print_(F("\"stream\": {\"token\": \""));
-        print_(streamTokens[i]);
+        print_(graph->streams[i]->token);
         print_(F("\", \"maxpoints\": "));
         print_(PLOTLY_STREAM_MAXPOINTS);
         print_(F("}}"));
-        if(nTraces > 1 && i != nTraces-1){
+        if(graph->numStreams > 1 && i != graph->numStreams-1){
             print_(F(", "));
         }
     }
     print_(F("]&kwargs={\"fileopt\": \""));
     print_(PLOTLY_STREAM_FILEMODE);
     print_(F("\", \"filename\": \""));
-    print_(plotlyFilename);
+    print_(graph->name);
     print_(F("\", \"worldReadable\": "));
     if(worldReadable){
         print_("true");
@@ -388,6 +541,10 @@ int PlotlyInterface::len_(unsigned long i){
   else return 1;
 }
 int PlotlyInterface::len_(char *i){
+  return strlen(i);
+}
+
+int PlotlyInterface::len_(const char *i){
   return strlen(i);
 }
 

@@ -88,7 +88,6 @@ SensorRadiation sensorRadiation(&sbRad);            // Radiation Watch Type 5 Hi
 // Plotly Web Interface
 Adafruit_CC3000 cc3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT, SPI_CLOCK_DIV2);  
 PlotlyInterface plotly = PlotlyInterface(&cc3000);
-int plotlyStatus = PLOTLY_UNINITIALIZED;
 int plotlyLastUpdateSec = 0;
 int plotlyUpdateFreq = 500;    // in milliseconds
 
@@ -451,7 +450,7 @@ void loop() {
       // Special cases for utility tiles
       // Utility Tile: WiFi Module
       if (selectedTile == TILE_UTIL_WIFI) {
-        if (plotlyStatus == PLOTLY_UNINITIALIZED) {
+        if (plotly.plotlyStatus == PLOTLY_UNINITIALIZED) {
           connectToWifi(); 
         } else {
           disconnectWifi(); 
@@ -459,7 +458,7 @@ void loop() {
       }
       // Utility Tile: Plotly streaming tile
       if (selectedTile == TILE_UTIL_PLOTLY) {
-        if ((plotlyStatus == PLOTLY_UNINITIALIZED) || (plotlyStatus == PLOTLY_WIFI_CONNECTED)) {        
+        if ((plotly.plotlyStatus == PLOTLY_UNINITIALIZED) || (plotly.plotlyStatus == PLOTLY_WIFI_CONNECTED)) {        
           connectToPlotly(); 
         } else {
           disconnectPlotly(); 
@@ -510,38 +509,57 @@ void userInterfaceTiles() {
   }  
 }
 
+// Safe Plot Stream -- if the transmit buffer is full, transmit the buffer, then retry
+boolean safePlotStream(unsigned long x, float y, PLOTLYSTREAM* stream) {  
+  if (!plotly.plotStream(x, y, stream)) {
+    // plot() returned with failure, signifying a full buffer.  transmit buffer, and try again
+    transmitPlotlyBuffer();
+    return plotly.plotStream(x, y, stream);
+  }
+  return true;
+}
+
+// Transmit the Plotly graphing buffer to Plotly
+void transmitPlotlyBuffer() {
+    // Place small "WiFi Active" marker on screen
+    Serial.println ("Updating Plotly...");
+    GFX.fillRect(1, 1, 4, 4, RGB(32, 128, 32));
+    GFX.updateScreen();
+
+    // Transmit buffer
+    plotly.transmitBuffer();  
+}
+
+
 void updateSensorData() {
   // Update sensor data based on tiles that are currently visible on the display
   
-  // Plotly: if enabled, update plotly stream once per second
+  // Plotly Streaming: if enabled, update plotly streams at regular intervals
   long time = millis();
   boolean updatePlotly = false;
-  boolean transmitToPlotly = false;
-  if ((plotlyLastUpdateSec != (time / plotlyUpdateFreq)) && (plotlyStatus == PLOTLY_STREAMING)) {
+  if ((plotlyLastUpdateSec != (time / plotlyUpdateFreq)) && (plotly.plotlyStatus == PLOTLY_STREAMING)) {
     updatePlotly = true;
     plotlyLastUpdateSec = (time / plotlyUpdateFreq);
   }
   
-  // Atmospheric temperature and pressure
-  if (( tileGUI.isTileOnScreen(TILE_ATMTEMP) )
-    || ( tileGUI.isTileOnScreen(TILE_ATMHUMIDITY) )) {
+  // Atmospheric temperature and humidity
+  if (tileGUI.isTileOnScreen(TILE_ATMTEMP) || tileGUI.isTileOnScreen(TILE_ATMHUMIDITY) || plotly.needsUpdateOrTimeout(time, &graphAtmospheric)) {
     float humd = sensorHTU21D.readHumidity();
     float temp = sensorHTU21D.readTemperature();
     sbTemp.put( temp );
     sbHumidity.put( humd );    
-
-/*    
+    
     // Plotly
-    if (updatePlotly) {
-      plotly.plot(time, temp, STKN_ATMTEMP);
-      plotly.plot(time, humd, STKN_HUMIDITY);
-      transmitToPlotly = true;
+    if (updatePlotly || plotly.needsUpdateOrTimeout(time, &graphAtmospheric)) {
+      safePlotStream(time, temp, &streamATMTEMP);
+      safePlotStream(time, humd, &streamHUMIDITY);
+      //graphAtmospheric.lastUpdateTime = time;        // Updated below in TILE_ATMPRESSURE
     }
-*/    
+    
   }
   
   // Atmospheric pressure
-  if ( tileGUI.isTileOnScreen(TILE_ATMPRESSURE) || tileGUI.isTileOnScreen(TILE_ALTITUDE) ) { 
+  if (tileGUI.isTileOnScreen(TILE_ATMPRESSURE) || tileGUI.isTileOnScreen(TILE_ALTITUDE) || plotly.needsUpdateOrTimeout(time, &graphAtmospheric)) { 
     // Measure pressure
     sensors_event_t event;
     bmp.getEvent(&event);
@@ -570,19 +588,17 @@ void updateSensorData() {
     sprintf(buffer, "%.1fm", altitude);
     tileGUI.getTile(TILE_ALTITUDE)->setText(buffer);    
 
-/*    
     // Plotly
-    if (updatePlotly) {
+    if (updatePlotly || plotly.needsUpdateOrTimeout(time, &graphAtmospheric)) {
       float pressureKpa = event.pressure / 10.f; 
-      plotly.plot(time, pressureKpa, STKN_PRESSURE);
-      transmitToPlotly = true;
+      safePlotStream(time, pressureKpa, &streamPRESSURE);
+      graphAtmospheric.lastUpdateTime = time;        // Updated below in TILE_ATMPRESSURE      
     }
-*/    
   }
      
   
   // Magnetometer
-  if ( tileGUI.isTileOnScreen(TILE_MAGFIELD) ) { 
+  if (tileGUI.isTileOnScreen(TILE_MAGFIELD) || plotly.needsUpdateOrTimeout(time, &graphMagnetic)) { 
     float length = sensorHMC5883L.read_HMC5883L();
     sb.put( length );
     sbx.put( sensorHMC5883L.x );
@@ -590,12 +606,12 @@ void updateSensorData() {
     sbz.put( sensorHMC5883L.z );
     
     // Plotly
-    if (updatePlotly) {
-      plotly.plot(time, sensorHMC5883L.x, STKN_MAGX);
-      plotly.plot(time, sensorHMC5883L.y, STKN_MAGY);
-      plotly.plot(time, sensorHMC5883L.z, STKN_MAGZ);
-      plotly.plot(time, length, STKN_MAGLEN);  
-      transmitToPlotly = true;
+    if (updatePlotly || plotly.needsUpdateOrTimeout(time, &graphMagnetic)) {
+      safePlotStream(time, sensorHMC5883L.x, &streamMAGX);
+      safePlotStream(time, sensorHMC5883L.y, &streamMAGY);
+      safePlotStream(time, sensorHMC5883L.z, &streamMAGZ);
+      safePlotStream(time, length, &streamMAGLEN);  
+      graphMagnetic.lastUpdateTime = time;
     }
     
   }
@@ -613,18 +629,18 @@ void updateSensorData() {
   }
   
   // Radiation Sensor (measurement is interrupt driven, so here we just need to update the text)
-  if ( tileGUI.isTileOnScreen(TILE_RADIATION_CPM) ) { 
+  if (tileGUI.isTileOnScreen(TILE_RADIATION_CPM) || plotly.needsUpdateOrTimeout(time, &graphRad)) { 
     char buffer[10];
     float cpm = sensorRadiation.calculateCPM();
     sprintf(buffer, "%.0f", cpm);
     tileGUI.getTile(TILE_RADIATION_CPM)->setText(buffer);
-/*    
+    
     // Plotly
-    if (updatePlotly) {
-      plotly.plot(time, cpm, STKN_RADCPM);
-      transmitToPlotly = true;      
+    if (updatePlotly || plotly.needsUpdateOrTimeout(time, &graphRad)) {
+      safePlotStream(time, cpm, &streamRADCPM);
+      graphRad.lastUpdateTime = time;
     }
-*/
+
   }
   
   if ( tileGUI.isTileOnScreen(TILE_UV) ) { 
@@ -644,7 +660,7 @@ void updateSensorData() {
   
   
   // Acceleration/IMU
-  if ( tileGUI.isTileOnScreen(TILE_IMU_ACCEL) ) { 
+  if ((tileGUI.isTileOnScreen(TILE_IMU_ACCEL) ) || (plotly.needsUpdateOrTimeout(time, &graphMotion))) { 
     int16_t unitConvA = 16384;      // +/- 2g
     float unitConvG = 131*57.3;     // to degrees, then to radians
     int16_t ax, ay, az;
@@ -678,18 +694,17 @@ void updateSensorData() {
     // Set text
     sprintf(stringBuffer, "%.2fg", length);
     tileGUI.getTile(TILE_IMU_ACCEL)->setText(stringBuffer);
- /*   
+   
     // Plotly
-    if (updatePlotly) {
-      plotly.plot(time, axF, STKN_ACCELX);
-      plotly.plot(time, ayF, STKN_ACCELY);
-      plotly.plot(time, azF, STKN_ACCELZ);
-      plotly.plot(time, gxF, STKN_GYROX);
-      plotly.plot(time, gyF, STKN_GYROY);
-      plotly.plot(time, gzF, STKN_GYROZ);  
-      transmitToPlotly = true;    
+    if (updatePlotly || plotly.needsUpdateOrTimeout(time, &graphMotion)) {
+      safePlotStream(time, axF, &streamACCELX);
+      safePlotStream(time, ayF, &streamACCELY);
+      safePlotStream(time, azF, &streamACCELZ);
+      safePlotStream(time, gxF, &streamGYROX);
+      safePlotStream(time, gyF, &streamGYROY);
+      safePlotStream(time, gzF, &streamGYROZ); 
+      graphMotion.lastUpdateTime = time;      
     }
-*/    
   }
   
   // Microphone
@@ -700,7 +715,7 @@ void updateSensorData() {
 
 
   // Plotly:  If we have data staged in the plotly stream, then transmit it to Plotly
-  if (transmitToPlotly) {
+  if (updatePlotly) {
     Serial.println ("Updating Plotly...");
     GFX.fillRect(1, 1, 4, 4, RGB(32, 128, 32));
     GFX.updateScreen();
@@ -725,7 +740,7 @@ void drawStatusWindow(char* label, char* text) {
 
 // Connect to the Wifi network (if not currently connected)
 void connectToWifi() {
-  if (plotlyStatus == PLOTLY_UNINITIALIZED) {
+  if (plotly.plotlyStatus == PLOTLY_UNINITIALIZED) {
     drawStatusWindow("Connection Status", "Connecting to WiFi");  
     GFX.updateScreen();
     plotly.connectWifi();
@@ -737,23 +752,23 @@ void connectToWifi() {
     
     // Update status
     tileGUI.getTile(TILE_UTIL_WIFI)->setTileName("connected");            
-    plotlyStatus = PLOTLY_WIFI_CONNECTED;
+    plotly.plotlyStatus = PLOTLY_WIFI_CONNECTED;
   }  
 }
 
 // Safely disconnect the WiFi module
 void disconnectWifi() {
-  if (plotlyStatus == PLOTLY_STREAMING) {
+  if (plotly.plotlyStatus == PLOTLY_STREAMING) {
     disconnectPlotly();
   }
-  if (plotlyStatus == PLOTLY_WIFI_CONNECTED) {    
+  if (plotly.plotlyStatus == PLOTLY_WIFI_CONNECTED) {    
     drawStatusWindow("WiFi Status", "Disconnecting"); 
     GFX.updateScreen();
     
     // Safely close WiFi (or it may not initialize without a reboot)
     cc3000.disconnect();
     
-    plotlyStatus = PLOTLY_UNINITIALIZED;
+    plotly.plotlyStatus = PLOTLY_UNINITIALIZED;
     tileGUI.getTile(TILE_UTIL_WIFI)->setTileName("disabled"); 
     drawStatusWindow("WiFi Status", "Disabled");  
     GFX.updateScreen();
@@ -764,39 +779,48 @@ void disconnectWifi() {
 // Connect to Plotly Web Graphing Interface
 void connectToPlotly() {  
   // Initialize the CC3000 Wifi and connect to the access point
-  if (plotlyStatus == PLOTLY_UNINITIALIZED) {
+  if (plotly.plotlyStatus == PLOTLY_UNINITIALIZED) {
     connectToWifi();
   }
   
   // Initialize stream plots
   drawStatusWindow("Connection Status", "Setup Graphs");  
   GFX.updateScreen();
-/*  
+
+  // Initialize stream plots
   // GRAPH_ATMSTREAM / GRAPHTOKENS_ATM[] = {STKN_ATMTEMP, STKN_HUMIDITY, STKN_PRESSURE}
-  if (!plotly.initializeStreamingGraph(GRAPH_ATMSTREAM, 3, GRAPHTOKENS_ATM)) {
+  if (!plotly.initializeStreamingGraph(&graphAtmospheric)) {
     Serial.println("ERROR: Unable to initialize graph"); 
   }
-*/
+  graphAtmospheric.lastUpdateTime = millis();      // initial timeout baseline
+
   // GRAPH_MAGSTREAM / GRAPHTOKENS_MAG = {STKN_MAGX, STKN_MAGY, STKN_MAGZ, STKN_MAGLEN}
-  if (!plotly.initializeStreamingGraph(GRAPH_MAGSTREAM, 4, GRAPHTOKENS_MAG)) {
+  if (!plotly.initializeStreamingGraph(&graphMagnetic)) {
     Serial.println("ERROR: Unable to initialize graph"); 
   }
-/*  
+  graphMagnetic.lastUpdateTime = millis();      // initial timeout baseline
+  
   // GRAPH_RADSTREAM / GRAPHTOKENS_RAD[] = {STKN_RADCPM}
-  if (!plotly.initializeStreamingGraph(GRAPH_RADSTREAM, 1, GRAPHTOKENS_RAD)) {
+  if (!plotly.initializeStreamingGraph(&graphRad)) {
     Serial.println("ERROR: Unable to initialize graph"); 
   }   
+  graphRad.lastUpdateTime = millis();      // initial timeout baseline
   
   // GRAPH_MOTIONSTREAM / GRAPHTOKENS_MOTION[] = {STKN_ACCELX, STKN_ACCELY, STKN_ACCELZ, STKN_GYROX, STKN_GYROY, STKN_GYROZ}
-  if (!plotly.initializeStreamingGraph(GRAPH_MOTIONSTREAM, 6, GRAPHTOKENS_MOTION)) {
+  if (!plotly.initializeStreamingGraph(&graphMotion)) {
     Serial.println("ERROR: Unable to initialize graph"); 
   }   
+  graphMotion.lastUpdateTime = millis();      // initial timeout baseline
   
+  /*
   // GRAPH_SPECSTREAM / GRAPHTOKENS_SPEC[] = {STKN_SPEC}
-  if (!plotly.initializeStreamingGraph(GRAPH_SPECSTREAM, 1, GRAPHTOKENS_SPEC)) {
+  if (!plotly.initializeStreamingGraph(&graphSpectrometer)) {
     Serial.println("ERROR: Unable to initialize graph"); 
-  }   
-*/
+  } 
+  graphSpectrometer.lastUpdateTime = millis();      // initial timeout value  
+  */
+  
+
   // Open the plotly stream 
   drawStatusWindow("Connection Status", "Opening Streams");  
   GFX.updateScreen();  
@@ -808,13 +832,13 @@ void connectToPlotly() {
   delay(1000);
   
   // Update plotly and tile status
-  plotlyStatus = PLOTLY_STREAMING;
+  plotly.plotlyStatus = PLOTLY_STREAMING;
   tileGUI.getTile(TILE_UTIL_PLOTLY)->setTileName("streaming");    
 }
 
 // Safely disconnect plotly streams
 void disconnectPlotly() {
-  if (plotlyStatus == PLOTLY_STREAMING) {
+  if (plotly.plotlyStatus == PLOTLY_STREAMING) {
     drawStatusWindow("Plotly Status", "Disabling streams");  
     GFX.updateScreen();
 
@@ -823,7 +847,7 @@ void disconnectPlotly() {
     tileGUI.getTile(TILE_UTIL_PLOTLY)->setTileName("not connected");    
     
     // Wifi is still connected
-    plotlyStatus = PLOTLY_WIFI_CONNECTED;
+    plotly.plotlyStatus = PLOTLY_WIFI_CONNECTED;
         
     drawStatusWindow("Plotly Status", "Disabled");  
     GFX.updateScreen();

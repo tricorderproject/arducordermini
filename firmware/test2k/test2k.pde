@@ -65,9 +65,11 @@ SensorBuffer sbGyroX(100);                       // Sensor buffer test
 SensorBuffer sbGyroY(100);                       // Sensor buffer test
 SensorBuffer sbGyroZ(100);                       // Sensor buffer test
 SensorBuffer sbRad(100);
+SensorBuffer sbRadPWM(100);
 
 SensorBuffer sbSpectMeasurement(100);            // Sensor buffer test
 FramebufferGraphs SpectrometerGraph(&GFX);  
+FramebufferGraphs RadiationPWMGraph(&GFX);  
 
 // Sensor Variables
 SensorHMC5883L sensorHMC5883L;                      // Magnetometer
@@ -89,6 +91,7 @@ SensorRadiation sensorRadiation(&sbRad);            // Radiation Watch Type 5 Hi
 Adafruit_CC3000 cc3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT, SPI_CLOCK_DIV2);  
 PlotlyInterface plotly = PlotlyInterface(&cc3000);
 int plotlyLastUpdateSec = 0;
+int plotlyFilenameIncrement = 1;      // Incrementing index appended to plotly saves
 
 // User interface -- modes
 uint8_t userInterfaceMode;
@@ -105,6 +108,7 @@ uint8_t userInterfaceMode;
 #define GRAPH_RADIATION      7
 #define GRAPH_SPECTROMETER   8
 #define GRAPH_THERMAL        9
+#define GRAPH_RADIATIONPWM   10
 
 uint16_t showGraph = GRAPH_MAGXYZ;
 
@@ -348,21 +352,37 @@ void setup() {
   tileGUI.getTile(TILE_AUDIO_MIC)->setSensorTextMinMaxRecent(DISP_MAX);
 
   // ******************************************
-  // THEME: Settings/Utilities
+  // THEME: Derived Measurements
   // ******************************************  
+ // TILE: Altitude (Pressure-derived) (2x1)
   tileGUI.addTile(TILE_ALTITUDE)->Initialize("Altitude", RGB(0, 128, 0), &symbIMUBitmap, NULL);
   tileGUI.getTile(TILE_ALTITUDE)->setSize(2, 1);
   tileGUI.getTile(TILE_ALTITUDE)->setText("0");    
   tileGUI.getTile(TILE_ALTITUDE)->setUnitText("m");    
 //  tileGUI.getTile(TILE_ALTITUDE)->setSensorTextFormat(TEXT_FLOAT1DEC);
   
+  // TILE: Radiation Pulse Width measurements (2x1)
+  // NOTE: Spectrum (1D data) tile
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_RADIATION_PWM)->Initialize("Radiation PulseWidth", RGB(0, 0, 128), NULL, NULL);
+  tileGUI.getTile(TILE_RADIATION_PWM)->setSize(2, 1);
+  tileGUI.getTile(TILE_RADIATION_PWM)->setText("");   
   
-  // TILE: plotly.com
+  RadiationPWMGraph.clearSeries();
+  RadiationPWMGraph.addSeries( &sbRadPWM, RGB(128, 128, 255) );
+  tileGUI.getTile(TILE_RADIATION_PWM)->setLiveGraph(&RadiationPWMGraph);   
+  
+    
+  // ******************************************
+  // THEME: Settings/Utilities
+  // ******************************************  
+ 
+  // TILE: plotly.com streaming (2x1)
   Serial.println ("Adding tile...");
   tileGUI.addTile(TILE_UTIL_PLOTLY)->Initialize("not connected", RGB(102, 29, 89), &symbPlotlyBitmap, NULL);
   tileGUI.getTile(TILE_UTIL_PLOTLY)->setSize(2, 1);
 
-  // TILE: plotly.com
+  // TILE: WiFi enable/disable
   Serial.println ("Adding tile...");
   tileGUI.addTile(TILE_UTIL_WIFI)->Initialize("disabled", RGB(0, 0, 128), &symbWifiBitmap, NULL);
   tileGUI.getTile(TILE_UTIL_WIFI)->setSize(1, 1);
@@ -422,6 +442,9 @@ void loop() {
         case TILE_RADIATION_CPM:
           showGraph = GRAPH_RADIATION;
           break;
+        case TILE_RADIATION_PWM:
+          showGraph = GRAPH_RADIATIONPWM;
+          break;
         case TILE_SPECTROMETER:
           showGraph = GRAPH_SPECTROMETER;
           break;
@@ -463,6 +486,7 @@ void loop() {
           disconnectPlotly(); 
         }
       }
+      
     }
   } else if (userInterfaceMode == UI_MODE_GRAPH) {
     Serial.println ("Graph Display...");    
@@ -475,6 +499,40 @@ void loop() {
     if (touchWheel.isButtonPressed(BUTTON_TOUCH_BACK)) {
       userInterfaceMode = UI_MODE_TILE; 
     }    
+    
+    // If the OK button has been pressed, upload graph to Plotly
+    // Special cases for transmit tiles
+    if (touchWheel.isButtonPressed(BUTTON_TOUCH_SELECT)) {
+      if (plotly.plotlyStatus == PLOTLY_WIFI_CONNECTED) {
+
+        switch(selectedTile) {
+          case TILE_SPECTROMETER:
+            Serial.println ("Updating Plotly...");
+            GFX.fillRect(1, 1, 4, 4, RGB(32, 128, 32));
+            drawStatusWindow("Connection Status", "Uploading to Plotly");  
+            GFX.updateScreen();
+            
+            sprintf(plotly.dataBuffer, "Spectrometer Save %d", plotlyFilenameIncrement);
+            plotly.plotStaticGraph(plotly.dataBuffer, SPEC_CHANNELS, sensorSpectrometer.data, 340.0f, 1.71875f, false);
+            plotlyFilenameIncrement += 1;
+            break;
+
+          case TILE_RADIATION_PWM:
+            Serial.println ("Updating Plotly...");
+            GFX.fillRect(1, 1, 4, 4, RGB(32, 128, 32));
+            drawStatusWindow("Connection Status", "Uploading to Plotly");  
+            GFX.updateScreen();
+            
+            sprintf(plotly.dataBuffer, "Radiation Pulse Width Histogram Save %d", plotlyFilenameIncrement);
+            plotly.plotStaticGraph(plotly.dataBuffer, RAD_SPEC_BINS, sensorRadiation.spectralBins, 0.0f, 4.0f, true);
+            plotlyFilenameIncrement += 1;
+            break;
+            
+        }  
+        
+      }
+    }
+
   }
 
 }
@@ -626,7 +684,7 @@ void updateSensorData() {
   // Spectrometer
   if ( tileGUI.isTileOnScreen(TILE_SPECTROMETER) ) {   
     sensorSpectrometer.takeMeasurement();
-    sensorSpectrometer.populateSensorBuffer(&sbSpectMeasurement, SPEC_DATA);
+    sensorSpectrometer.populateSensorBuffer(&sbSpectMeasurement, SPEC_DATA);    
   }
   
   // Radiation Sensor (measurement is interrupt driven, so here we just need to update the text)
@@ -641,7 +699,17 @@ void updateSensorData() {
       safePlotStream(time, cpm, &streamRADCPM);
       graphRad.lastUpdateTime = time;
     }
-
+  }
+  
+  // Radiation Sensor (PWM Histogram)
+  if (tileGUI.isTileOnScreen(TILE_RADIATION_PWM)) {
+    // Step 1: Copy radiation spectralBins pulse width measurements into a sensor buffer
+    sbRadPWM.setAll(0.0f);
+    int radBins = min(sbRadPWM.size, RAD_SPEC_BINS);
+    for (int i=0; i<radBins; i++) {
+      sbRadPWM.put( sensorRadiation.spectralBins[i] );
+    }
+    
   }
   
   if ( tileGUI.isTileOnScreen(TILE_UV) ) { 
@@ -1008,6 +1076,9 @@ void initSensorGraph() {
     case GRAPH_RADIATION:
       initRadiationGraph();
       break;
+    case GRAPH_RADIATIONPWM:
+      initRadiationPWMGraph();
+      break;
     case GRAPH_SPECTROMETER:
       initSpectrometerGraph();
       break;    
@@ -1185,6 +1256,23 @@ void doRadiationGraph() {
   
   GFX.updateScreen();  
 }
+
+/*
+ * Radiation (PWM Spectrum)
+ */ 
+void initRadiationPWMGraph() {
+  Graph.clearSeries();
+  Graph.addSeries( &sbRadPWM, RGB(128, 128, 128) );
+  Graph.setLabelMode(LABELMODE_MINMAX);  
+}
+
+void doRadiationPWMGraph() {
+  GFX.fillRect(0, 0, GFX.width, GFX.height, RGB(0, 0, 0));
+  Graph.renderGraph(10, 10, 100, 100);
+  
+  GFX.updateScreen();  
+}
+
 
 /*
  * Spectrometer

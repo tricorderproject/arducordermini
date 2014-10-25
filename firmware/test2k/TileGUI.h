@@ -29,6 +29,7 @@
 #define TILE_LIGHTNING_DIS  31
 
 #define TILE_RADIATION_CPM  40
+#define TILE_RADIATION_PWM  41
 
 #define TILE_THERMAL_CAM    50
 

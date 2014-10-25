@@ -235,6 +235,151 @@ boolean PlotlyInterface::needsUpdateOrTimeout(long time, PLOTLYGRAPH* graph) {
   return false;
 }
 
+
+// Plot a static (ie. non-streaming) graph
+void PlotlyInterface::plotStaticGraph(char* filename, uint16_t size, uint16_t* data, float xStart, float xStep, boolean isBarGraph) {
+  
+  // Clear send buffer
+  sendBuffer[0] = '\0';
+  
+  // Step 1: Send Request:  
+  // Step 1a: Connect
+  uint32_t ip = cc3000->IP2U32(107,21,214,199);
+  // Try looking up the website's IP address
+  client = cc3000->connectTCP(ip, 80);
+  while ( !client.connected() ) {
+    if(logLevel < 4){
+      Serial.println(F("... Couldn\'t connect to plotly's REST servers... trying again!"));
+    }
+    delay(5000);
+    client = cc3000->connectTCP(ip, 80);
+  }
+  
+  // Step 1b: POST
+  print_(F("POST /clientresp HTTP/1.1\r\n"));
+  print_(F("Host: 107.21.214.199\r\n"));
+  print_(F("User-Agent: Arduino/0.5.1\r\n"));
+  print_(F("Content-Length: "));
+   
+  // Here we perform the send cycle twice -- the first is a dry run to measure the size, and the second actually transmits the message.  
+  int contentLength = 0;   
+  for (int cycle=0; cycle<2; cycle++) {  
+    if (cycle == 1) {
+      print_(contentLength);
+      print_("\r\n\r\n");          // Terminate headers with new lines      
+    }
+    
+    // Step 2: Header
+    strcat(sendBuffer, "un=");
+    strcat(sendBuffer, PLOTLY_USERNAME);
+    strcat(sendBuffer, "&key=");
+    strcat(sendBuffer, PLOTLY_APIKEY);
+    strcat(sendBuffer, "&origin=plot&platform=arduino&");
+    strcat(sendBuffer, "args=[");
+
+    // Measure or transmit
+    if (cycle == 0) {      
+      contentLength += strlen(sendBuffer);  // measure
+    } else {
+      print_(sendBuffer);      // transmit
+    }
+    sendBuffer[0] = '\0';      // clear
+  
+    // Step 3: Data  
+    strcat(sendBuffer, "[");
+    
+    // x axis
+    for (int x=0; x<size; x++) {
+      sprintf(numBuffer, "%.3f", xStart + (x * xStep));              
+      strcat(sendBuffer, numBuffer);
+      if (x < (size-1)) strcat(sendBuffer, ", ");
+
+      if (strlen(sendBuffer) > (PLOTLY_TRANSMITBUF_SIZE - 10)) {    // 10 for a little wiggle room 
+        // Measure or transmit
+        if (cycle == 0) {      
+          contentLength += strlen(sendBuffer);  // measure
+        } else {
+          print_(sendBuffer);      // transmit
+        }
+        sendBuffer[0] = '\0';      // clear
+      }            
+    }
+
+    // Measure or transmit
+    if (cycle == 0) {      
+      contentLength += strlen(sendBuffer);  // measure
+    } else {
+      print_(sendBuffer);      // transmit
+    }
+    sendBuffer[0] = '\0';      // clear
+    
+    strcat(sendBuffer, "], [");
+    
+    // y axis
+    for (int y=0; y<size; y++) {
+      sprintf(numBuffer, "%d", data[y]);        
+      strcat(sendBuffer, numBuffer);
+      if (y < (size-1)) strcat(sendBuffer, ", ");
+      
+      if (strlen(sendBuffer) > (PLOTLY_TRANSMITBUF_SIZE - 10)) {    // 10 for a little wiggle room 
+        // Measure or transmit
+        if (cycle == 0) {      
+          contentLength += strlen(sendBuffer);  // measure
+        } else {
+          print_(sendBuffer);      // transmit
+        }
+        sendBuffer[0] = '\0';      // clear
+      }            
+    }
+
+    // Measure or transmit
+    if (cycle == 0) {      
+      contentLength += strlen(sendBuffer);  // measure
+    } else {
+      print_(sendBuffer);      // transmit
+    }
+    sendBuffer[0] = '\0';      // clear
+    
+    strcat(sendBuffer, "]");
+  
+    // Step 4: Footer  
+    strcat(sendBuffer, "]&");
+    strcat(sendBuffer, "kwargs={\"filename\": \"");
+    strcat(sendBuffer, filename);
+    strcat(sendBuffer, "\", \"fileopt\": \"overwrite\", ");
+    if (isBarGraph) {
+      strcat(sendBuffer, "\"style\": {\"type\": \"bar\"}, \"traces\": [0], ");
+    }
+    strcat(sendBuffer, "\"layout\": { \"title\": \"");
+    strcat(sendBuffer, filename);      // filename is used as title here
+    strcat(sendBuffer, "\"}, \"world_readable\": true}");  
+  
+    // Measure or transmit
+    if (cycle == 0) {      
+      contentLength += strlen(sendBuffer);  // measure
+    } else {
+      print_(sendBuffer);      // transmit
+    }
+    sendBuffer[0] = '\0';      // clear
+  }
+  
+  // Complete request
+  print_("\r\n");
+  
+  // Step 5: Read response
+  // Note: For simplicity we don't currently interpret the response
+  if(logLevel < 2) Serial.println ("Response: ");  
+  while(client.connected()){
+    if(client.available()){
+      char c = client.read();
+      if(logLevel < 2) Serial.print(c);
+    }
+  }   
+  
+  client.close();
+  
+}
+
 // Send plot buffer to Plotly server
 void PlotlyInterface::transmitBuffer() {
   if (strlen(sendBuffer) == 0) {

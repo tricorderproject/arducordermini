@@ -115,7 +115,9 @@ class PlotlyInterface {
   
   // Data methods
   boolean plotStream(unsigned long x, float y, PLOTLYSTREAM* stream);
+  void plotStaticGraph(char* filename, uint16_t size, uint16_t* data, float xStart, float xStep, boolean isBarGraph);
   void transmitBuffer();
+    
     
   // Low-level communication 
   public: 

@@ -237,7 +237,7 @@ boolean PlotlyInterface::needsUpdateOrTimeout(long time, PLOTLYGRAPH* graph) {
 
 
 // Plot a static (ie. non-streaming) graph
-void PlotlyInterface::plotStaticGraph(char* filename, uint16_t size, uint16_t* data, float xStart, float xStep, boolean isBarGraph) {
+void PlotlyInterface::plotStaticGraph(char* filename, char* yAxisLabel, uint16_t size, uint16_t* data, char* xAxisLabel, float xStart, float xStep, boolean isBarGraph) {
   
   // Clear send buffer
   sendBuffer[0] = '\0';
@@ -352,8 +352,12 @@ void PlotlyInterface::plotStaticGraph(char* filename, uint16_t size, uint16_t* d
     }
     strcat(sendBuffer, "\"layout\": { \"title\": \"");
     strcat(sendBuffer, filename);      // filename is used as title here
-    strcat(sendBuffer, "\"}, \"world_readable\": true}");  
-  
+    strcat(sendBuffer, "\", \"xaxis\": {\"name\": \"");
+    strcat(sendBuffer, xAxisLabel);
+    strcat(sendBuffer, "\"}, \"yaxis\": {\"name\": \"");
+    strcat(sendBuffer, yAxisLabel);
+    strcat(sendBuffer, "\"}}, \"world_readable\": true}");  
+
     // Measure or transmit
     if (cycle == 0) {      
       contentLength += strlen(sendBuffer);  // measure

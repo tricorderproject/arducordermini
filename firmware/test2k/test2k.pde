@@ -513,7 +513,7 @@ void loop() {
             GFX.updateScreen();
             
             sprintf(plotly.dataBuffer, "Spectrometer Save %d", plotlyFilenameIncrement);
-            plotly.plotStaticGraph(plotly.dataBuffer, SPEC_CHANNELS, sensorSpectrometer.data, 340.0f, 1.71875f, false);
+            plotly.plotStaticGraph(plotly.dataBuffer, "Intensity", SPEC_CHANNELS, sensorSpectrometer.data, "Wavelength (nm)", 340.0f, 1.71875f, false);
             plotlyFilenameIncrement += 1;
             break;
 
@@ -524,7 +524,7 @@ void loop() {
             GFX.updateScreen();
             
             sprintf(plotly.dataBuffer, "Radiation Pulse Width Histogram Save %d", plotlyFilenameIncrement);
-            plotly.plotStaticGraph(plotly.dataBuffer, RAD_SPEC_BINS, sensorRadiation.spectralBins, 0.0f, 4.0f, true);
+            plotly.plotStaticGraph(plotly.dataBuffer, "Counts", RAD_SPEC_BINS, sensorRadiation.spectralBins, "Detection Pulse Width (usec)", 0.0f, 4.0f, true);
             plotlyFilenameIncrement += 1;
             break;
             

@@ -67,8 +67,10 @@ SensorBuffer sbGyroZ(100);                       // Sensor buffer test
 SensorBuffer sbRad(100);
 SensorBuffer sbRadPWM(100);
 
+SensorBuffer sbSpectBaseline(100);            // Sensor buffer test
 SensorBuffer sbSpectMeasurement(100);            // Sensor buffer test
 FramebufferGraphs SpectrometerGraph(&GFX);  
+FramebufferGraphs SpectrometerBaselineGraph(&GFX);  
 FramebufferGraphs RadiationPWMGraph(&GFX);  
 
 // Sensor Variables
@@ -371,6 +373,33 @@ void setup() {
   RadiationPWMGraph.clearSeries();
   RadiationPWMGraph.addSeries( &sbRadPWM, RGB(128, 128, 255) );
   tileGUI.getTile(TILE_RADIATION_PWM)->setLiveGraph(&RadiationPWMGraph);   
+
+
+
+  // ******************************************
+  // THEME: Advanced Spectrometer Tiles
+  // ******************************************  
+  // TILE: Spectrometer Baseline (2x1)
+  // NOTE: Spectrum (1D data) tile
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_SPECTROMETER_BASELINE)->Initialize("Spect Baseline", RGB(0, 0, 128), NULL, NULL);
+  tileGUI.getTile(TILE_SPECTROMETER_BASELINE)->setSize(2, 1);
+  tileGUI.getTile(TILE_SPECTROMETER_BASELINE)->setText("");   
+  
+  SpectrometerBaselineGraph.clearSeries();
+  SpectrometerBaselineGraph.addSeries( &sbSpectMeasurement, RGB(128, 128, 255) );
+  SpectrometerBaselineGraph.addSeries( &sbSpectBaseline, RGB(255, 128, 255) );  
+  tileGUI.getTile(TILE_SPECTROMETER_BASELINE)->setLiveGraph(&SpectrometerBaselineGraph);   
+
+  // Chlorophyll Index (1x1)
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_SPECTROMETER_CHLNDI)->Initialize("ChlNDI", RGB(0, 128, 0), NULL, NULL);
+  tileGUI.getTile(TILE_SPECTROMETER_CHLNDI)->setText("nb"); 
+  
+  // Photochemical Reflective Index (1x1)
+  Serial.println ("Adding tile...");
+  tileGUI.addTile(TILE_SPECTROMETER_PRI)->Initialize("PhRefI", RGB(0, 128, 0), NULL, NULL);
+  tileGUI.getTile(TILE_SPECTROMETER_PRI)->setText("nb"); 
   
     
   // ******************************************
@@ -486,6 +515,14 @@ void loop() {
           disconnectPlotly(); 
         }
       }
+      // Spectrometer Baseline tile 
+      if (selectedTile == TILE_SPECTROMETER_BASELINE) {
+        drawStatusWindow("Spectrometer", "Baseline Measurement");  
+        GFX.updateScreen();
+        delay(1000);           
+        sensorSpectrometer.takeBaseline();            
+      }
+  
       
     }
   } else if (userInterfaceMode == UI_MODE_GRAPH) {
@@ -517,6 +554,14 @@ void loop() {
             plotlyFilenameIncrement += 1;
             break;
 
+          case TILE_SPECTROMETER_BASELINE:
+            drawStatusWindow("Spectrometer", "Baseline Measurement");  
+            GFX.updateScreen();
+            delay(1000);           
+            sensorSpectrometer.takeBaseline();            
+            
+            break;
+
           case TILE_RADIATION_PWM:
             Serial.println ("Updating Plotly...");
             GFX.fillRect(1, 1, 4, 4, RGB(32, 128, 32));
@@ -528,11 +573,9 @@ void loop() {
             plotlyFilenameIncrement += 1;
             break;
             
-        }  
-        
+        }          
       }
     }
-
   }
 
 }
@@ -685,6 +728,35 @@ void updateSensorData() {
   if ( tileGUI.isTileOnScreen(TILE_SPECTROMETER) ) {   
     sensorSpectrometer.takeMeasurement();
     sensorSpectrometer.populateSensorBuffer(&sbSpectMeasurement, SPEC_DATA);    
+  }
+
+  // Spectrometer Baseline
+  if ( tileGUI.isTileOnScreen(TILE_SPECTROMETER_BASELINE) ) {   
+    sensorSpectrometer.takeMeasurement();
+    sensorSpectrometer.populateSensorBuffer(&sbSpectMeasurement, SPEC_DATA);    
+    sensorSpectrometer.populateSensorBuffer(&sbSpectBaseline, SPEC_BASELINE);    
+  }
+  
+  // Spectrometer: Chlorophyll Index
+  if ( tileGUI.isTileOnScreen(TILE_SPECTROMETER_CHLNDI) ) {   
+    if (sensorSpectrometer.hasBaseline) {
+      Serial.println ("ChlNDI");
+      char buffer[10];
+      float ChlNDI = sensorSpectrometer.calculateReflectanceIndex(CHL_NDI_R1, CHL_NDI_R2);
+      sprintf(buffer, "%.2f", ChlNDI);
+      tileGUI.getTile(TILE_SPECTROMETER_CHLNDI)->setText(buffer);           
+    }  
+  }
+
+  // Spectrometer: Photochemical Reflective Index
+  if ( tileGUI.isTileOnScreen(TILE_SPECTROMETER_PRI) ) {   
+    if (sensorSpectrometer.hasBaseline) {
+      Serial.println ("PRI");
+      char buffer[10];
+      float PRI = sensorSpectrometer.calculateReflectanceIndex(PRI_R1, PRI_R2);
+      sprintf(buffer, "%.2f", PRI);
+      tileGUI.getTile(TILE_SPECTROMETER_PRI)->setText(buffer);
+    }  
   }
   
   // Radiation Sensor (measurement is interrupt driven, so here we just need to update the text)

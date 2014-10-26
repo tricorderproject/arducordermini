@@ -38,6 +38,9 @@
 #define TILE_UV             70
 
 #define TILE_SPECTROMETER   80
+#define TILE_SPECTROMETER_BASELINE   81
+#define TILE_SPECTROMETER_CHLNDI     82
+#define TILE_SPECTROMETER_PRI        83
 
 #define TILE_IMU_ACCEL      90
 #define TILE_IMU_GYRO       91

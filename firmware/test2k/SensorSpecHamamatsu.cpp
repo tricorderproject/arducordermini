@@ -24,6 +24,7 @@ SensorSpecHamamatsu::SensorSpecHamamatsu() {
   peakChannel = 0;
   baselineOverexposed = false;
   dataOverexposed = 0;
+  hasBaseline = false;
 }
 
 // Destructor
@@ -98,6 +99,7 @@ void SensorSpecHamamatsu::takeMeasurement() {
 void SensorSpecHamamatsu::takeBaseline() {
   readSpectrometer(&baseline[0]);  
   baselineOverexposed = postProcessing(&baseline[0]);
+  hasBaseline = true;
 }
 
 boolean SensorSpecHamamatsu::postProcessing(uint16_t* data) {  
@@ -172,6 +174,60 @@ int SensorSpecHamamatsu::spectralChannelToWavelength(int32_t channelNum) {
   uint32_t wavelength = (uint32_t)SPEC_MINWAVELENGTH + (channelNum * (uint32_t)SPEC_WAVELENGTH_DELTA);
   return wavelength / 100;    
 }
+    
+int SensorSpecHamamatsu::wavelengthToSpectralChannel(int32_t wavelength) {
+  // Wavelength should be an integer, in nanometers -- decimals not supported
+  uint32_t wavelength_ = ((uint32_t)wavelength * 100) - (uint32_t)SPEC_MINWAVELENGTH;  
+  uint32_t channelNum = (wavelength_ / (uint32_t)SPEC_WAVELENGTH_DELTA) + 1;
+  
+  // Bound checking
+  if (channelNum < 0) channelNum = 0;
+  if (channelNum >= SPEC_CHANNELS) channelNum = SPEC_CHANNELS-1; 
+  return channelNum;
+}  
+
+// Returned as a normalized reflectance proportion (0-1, where 0 is 0% reflectance, and 1 is 100% reflectance)
+// Both baseline[] and data[] must be populated with valid data for this to be valid
+float SensorSpecHamamatsu::getReflectanceAtWavelength(int32_t wavelength) {  
+//  return getBaselineExpProportion(wavelength);
+    float val = getBaselineExpProportion(wavelength);
+    Serial.print(val, 2); Serial.print("ref   ");
+    Serial.println("");
+    return val;
+}
+
+// Returned as a normalized absorbance proportion (0-1, where 0 is 0% reflectance, and 1 is 100% reflectance)
+// Both baseline[] and data[] must be populated with valid data for this to be valid
+float SensorSpecHamamatsu::getAbsorbanceAtWavelength(int32_t wavelength) {
+  return 1 - getBaselineExpProportion(wavelength);
+}
+
+// Helper function for reflectance and absorbance calculations
+float SensorSpecHamamatsu::getBaselineExpProportion(int32_t wavelength) {
+  int channelNum = wavelengthToSpectralChannel(wavelength);
+  float baselineVal = (float)baseline[channelNum];
+  float expVal = (float)data[channelNum];
+  int i = channelNum;
+    Serial.print(i, DEC); Serial.print(": "); 
+    Serial.print(wavelength, DEC); Serial.print("nm   ");    
+    Serial.print(baseline[i], DEC); Serial.print("b   ");    
+    Serial.print(data[i], DEC); Serial.print("e   ");
+    
+  if (baselineVal == 0) return 0;          // prevent divide by zero 
+  return (expVal / baselineVal);
+}
+
+
+// Analysis methods
+float SensorSpecHamamatsu::calculateReflectanceIndex(int32_t wavelength_1, int32_t wavelength_2) {
+  // Calculates reflectance difference indices of the form R_1 - R_2 / (R_1 + R_2) 
+  // E.g. for chlorophyll, R1 is 750nm, and R2 is 705nm.
+  float r1 = getReflectanceAtWavelength(wavelength_1);
+  float r2 = getReflectanceAtWavelength(wavelength_2);       
+  
+  return (r1 - r2) / (r1 + r2);
+}
+
     
 // Low-level communication 
 uint16_t SensorSpecHamamatsu::readAD7940() {
@@ -308,12 +364,16 @@ void SensorSpecHamamatsu::readSpectrometer(uint16_t* data) {
     
 // Debug 
 void SensorSpecHamamatsu::debugPrint() {
-  Serial.println ("Spectral Channel, Baseline, Data");
+  Serial.println ("Spectral Channel, Baseline, Data");  
   for (int i=0; i<SPEC_CHANNELS; i++) {
+    int wavelength = spectralChannelToWavelength(i);
     Serial.print(i, DEC); Serial.print(": "); 
-    Serial.print(spectralChannelToWavelength(i), DEC); Serial.print(" ");    
-    Serial.print(baseline[i], DEC); Serial.print(" ");    
-    Serial.print(data[i], DEC); Serial.print(" ");
+    Serial.print(wavelength, DEC); Serial.print("nm   ");    
+    Serial.print(baseline[i], DEC); Serial.print("b   ");    
+    Serial.print(data[i], DEC); Serial.print("e   ");
+    Serial.print(getReflectanceAtWavelength(wavelength), 2); Serial.print("ref   ");
+    Serial.print(getAbsorbanceAtWavelength(wavelength), 2); Serial.print("abs   ");
+        
     Serial.println("");    
   }
   

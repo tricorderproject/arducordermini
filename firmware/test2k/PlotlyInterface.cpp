@@ -130,7 +130,7 @@ PLOTLYGRAPH graphSpectrometer = {
 // Plotly Interface
 PlotlyInterface::PlotlyInterface(Adafruit_CC3000 *cc3000Ptr) {
   // Logging level
-  logLevel = 2;  // 0 = Debugging, 1 = Informational, 2 = Status, 3 = Errors, 4 = Quiet (// Serial Off)
+  logLevel = 0;  // 0 = Debugging, 1 = Informational, 2 = Status, 3 = Errors, 4 = Quiet (// Serial Off)
   dryRun = false;
   worldReadable = true;
   
@@ -350,11 +350,11 @@ void PlotlyInterface::plotStaticGraph(char* filename, char* yAxisLabel, uint16_t
     if (isBarGraph) {
       strcat(sendBuffer, "\"style\": {\"type\": \"bar\"}, \"traces\": [0], ");
     }
-    strcat(sendBuffer, "\"layout\": { \"title\": \"");
+    strcat(sendBuffer, "\"layout\": {\"title\": \"");
     strcat(sendBuffer, filename);      // filename is used as title here
-    strcat(sendBuffer, "\", \"xaxis\": {\"name\": \"");
+    strcat(sendBuffer, "\", \"xaxis\": {\"title\": \"");
     strcat(sendBuffer, xAxisLabel);
-    strcat(sendBuffer, "\"}, \"yaxis\": {\"name\": \"");
+    strcat(sendBuffer, "\"}, \"yaxis\": {\"title\": \"");
     strcat(sendBuffer, yAxisLabel);
     strcat(sendBuffer, "\"}}, \"world_readable\": true}");  
 

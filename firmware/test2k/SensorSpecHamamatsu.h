@@ -34,13 +34,23 @@
 #define SPEC_BASELINE    20
 #define SPEC_DELTA       30
 
+// Reflectance Difference Indicies
+// Chlorophyll non-destructive index
+#define CHL_NDI_R1      750
+#define CHL_NDI_R2      705
+// Photochemical reflectance index
+#define PRI_R1      531
+#define PRI_R2      570
+
 class SensorSpecHamamatsu {
   // Variables  
   public:
   uint16_t data[SPEC_CHANNELS];
   uint16_t baseline[SPEC_CHANNELS];
+  uint16_t average[SPEC_CHANNELS];
   uint16_t intTime;      // Integration (sampling) time    
   uint8_t gain;          // High/low gain
+  int averages;
 
   // Statistics
   uint16_t peakChannel;  // Value of highest data channel
@@ -48,7 +58,7 @@ class SensorSpecHamamatsu {
   // Flags
   boolean dataOverexposed;
   boolean baselineOverexposed;
-
+  boolean hasBaseline;
 
 
   // Constructor/Destructor
@@ -66,7 +76,15 @@ class SensorSpecHamamatsu {
   boolean postProcessing(uint16_t* data);
   void populateSensorBuffer(SensorBuffer* sb, uint8_t mode);
   int spectralChannelToWavelength(int32_t channelNum); 
-    
+  int wavelengthToSpectralChannel(int32_t wavelength);
+  
+  float getReflectanceAtWavelength(int32_t wavelength);
+  float getAbsorbanceAtWavelength(int32_t wavelength);
+  float getBaselineExpProportion(int32_t wavelength);
+ 
+  // Analysis methods
+  float calculateReflectanceIndex(int32_t wavelength_1, int32_t wavelength_2);        
+  
   // Low-level communication 
   uint16_t readAD7940();
   void readSpectrometer(uint16_t* data);    

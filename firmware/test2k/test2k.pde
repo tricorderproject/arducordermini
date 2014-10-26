@@ -393,12 +393,12 @@ void setup() {
 
   // Chlorophyll Index (1x1)
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_SPECTROMETER_CHLNDI)->Initialize("ChlNDI", RGB(0, 128, 0), NULL, NULL);
+  tileGUI.addTile(TILE_SPECTROMETER_CHLNDI)->Initialize("ChlNDI", RGB(0, 128, 0), &symbLeafBitmap, NULL);
   tileGUI.getTile(TILE_SPECTROMETER_CHLNDI)->setText("nb"); 
   
   // Photochemical Reflective Index (1x1)
   Serial.println ("Adding tile...");
-  tileGUI.addTile(TILE_SPECTROMETER_PRI)->Initialize("PhRefI", RGB(0, 128, 0), NULL, NULL);
+  tileGUI.addTile(TILE_SPECTROMETER_PRI)->Initialize("PhRefI", RGB(0, 128, 0), &symbLeafBitmap, NULL);
   tileGUI.getTile(TILE_SPECTROMETER_PRI)->setText("nb"); 
   
     
@@ -519,8 +519,11 @@ void loop() {
       if (selectedTile == TILE_SPECTROMETER_BASELINE) {
         drawStatusWindow("Spectrometer", "Baseline Measurement");  
         GFX.updateScreen();
-        delay(1000);           
-        sensorSpectrometer.takeBaseline();            
+        // Take the baseline -- here we use the averaging for stability
+        sensorSpectrometer.takeBaselineAveraging();            
+        sensorSpectrometer.takeMeasurementAveraging();            
+        sensorSpectrometer.takeMeasurementAveraging();            
+        sensorSpectrometer.takeMeasurementAveraging();            
       }
   
       
@@ -552,14 +555,6 @@ void loop() {
             sprintf(plotly.dataBuffer, "Spectrometer Save %d", plotlyFilenameIncrement);
             plotly.plotStaticGraph(plotly.dataBuffer, "Intensity", SPEC_CHANNELS, sensorSpectrometer.data, "Wavelength (nm)", 340.0f, 1.71875f, false);
             plotlyFilenameIncrement += 1;
-            break;
-
-          case TILE_SPECTROMETER_BASELINE:
-            drawStatusWindow("Spectrometer", "Baseline Measurement");  
-            GFX.updateScreen();
-            delay(1000);           
-            sensorSpectrometer.takeBaseline();            
-            
             break;
 
           case TILE_RADIATION_PWM:
@@ -732,7 +727,7 @@ void updateSensorData() {
 
   // Spectrometer Baseline
   if ( tileGUI.isTileOnScreen(TILE_SPECTROMETER_BASELINE) ) {   
-    sensorSpectrometer.takeMeasurement();
+    sensorSpectrometer.takeMeasurementAveraging();            
     sensorSpectrometer.populateSensorBuffer(&sbSpectMeasurement, SPEC_DATA);    
     sensorSpectrometer.populateSensorBuffer(&sbSpectBaseline, SPEC_BASELINE);    
   }

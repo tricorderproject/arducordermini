@@ -34,6 +34,10 @@
 #define SPEC_BASELINE    20
 #define SPEC_DELTA       30
 
+// Averaging Queue
+#define QUEUE_EMPTY      0
+#define QUEUE_BASELINE   10
+
 // Reflectance Difference Indicies
 // Chlorophyll non-destructive index
 #define CHL_NDI_R1      750
@@ -50,7 +54,7 @@ class SensorSpecHamamatsu {
   uint16_t average[SPEC_CHANNELS];
   uint16_t intTime;      // Integration (sampling) time    
   uint8_t gain;          // High/low gain
-  int averages;
+  int numAverages;       // number of averages (to increase stability)
 
   // Statistics
   uint16_t peakChannel;  // Value of highest data channel
@@ -59,7 +63,7 @@ class SensorSpecHamamatsu {
   boolean dataOverexposed;
   boolean baselineOverexposed;
   boolean hasBaseline;
-
+  uint8_t averageQueue;
 
   // Constructor/Destructor
   SensorSpecHamamatsu();
@@ -73,6 +77,11 @@ class SensorSpecHamamatsu {
   // Data methods
   void takeMeasurement();
   void takeBaseline();
+  
+  void takeMeasurementAveraging();
+  void takeBaselineAveraging();
+  boolean takeAverageMeasurement();
+  
   boolean postProcessing(uint16_t* data);
   void populateSensorBuffer(SensorBuffer* sb, uint8_t mode);
   int spectralChannelToWavelength(int32_t channelNum); 
@@ -87,7 +96,7 @@ class SensorSpecHamamatsu {
   
   // Low-level communication 
   uint16_t readAD7940();
-  void readSpectrometer(uint16_t* data);    
+  void readSpectrometer(uint16_t* data, boolean accumulateMode);    
     
   // Debug 
   void debugPrint();

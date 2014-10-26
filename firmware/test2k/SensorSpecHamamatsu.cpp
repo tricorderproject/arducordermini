@@ -19,12 +19,15 @@ SensorSpecHamamatsu::SensorSpecHamamatsu() {
   for (int i=0; i<SPEC_CHANNELS; i++) {
     baseline[i] = 0;
     data[i] = 0; 
+    average[i] = 0;
   }  
   
   peakChannel = 0;
   baselineOverexposed = false;
   dataOverexposed = 0;
   hasBaseline = false;
+  numAverages = 0;
+  averageQueue = QUEUE_EMPTY;
 }
 
 // Destructor
@@ -82,7 +85,7 @@ void SensorSpecHamamatsu::setGain(uint8_t highLow) {
 // Data methods
 void SensorSpecHamamatsu::takeMeasurement() {
   Serial.println ("Starting measurement...");
-  readSpectrometer(&data[0]);
+  readSpectrometer(&data[0], false);
   Serial.println ("Measurement complete...");
   dataOverexposed = postProcessing(&data[0]);
   
@@ -97,9 +100,75 @@ void SensorSpecHamamatsu::takeMeasurement() {
 }
 
 void SensorSpecHamamatsu::takeBaseline() {
-  readSpectrometer(&baseline[0]);  
+  readSpectrometer(&baseline[0], false);  
   baselineOverexposed = postProcessing(&baseline[0]);
   hasBaseline = true;
+}
+
+
+// These averaging functions perform similar to above, but are meant for a constant stream of data -- when takeMeasurementAveraging()
+// is called frequently, and takeMeasurementBaseline() is called infrequently.  The data isn't guaranteed to be in the appropriate
+// buffer until at most 4 subsequent function calls, but it's averaged and more stable. 
+void SensorSpecHamamatsu::takeBaselineAveraging() {
+  averageQueue = QUEUE_BASELINE;
+  takeMeasurementAveraging(); 
+}
+
+void SensorSpecHamamatsu::takeMeasurementAveraging() {
+  
+  boolean isAvgReady = takeAverageMeasurement();
+  if (isAvgReady) {
+    if (averageQueue == QUEUE_BASELINE) {
+      // Store measurement in baseline (higher priority but infrequent condition)
+      for (int i=0; i<SPEC_CHANNELS; i++) {
+        baseline[i] = average[i];
+      }
+      baselineOverexposed = postProcessing(&baseline[0]);
+      hasBaseline = true;    
+      averageQueue = QUEUE_EMPTY;  
+    } else {
+      // Store measurement in experimental data (normal condition)
+      for (int i=0; i<SPEC_CHANNELS; i++) {
+        data[i] = average[i];
+      }      
+      dataOverexposed = postProcessing(&data[0]);
+  
+      // Find peak channel value
+      uint16_t maxValue = 0;
+      for (int i=0; i<SPEC_CHANNELS; i++) {
+        if (data[i] > maxValue) {
+          peakChannel = i;
+          maxValue = data[i];
+        }
+      }      
+      averageQueue = QUEUE_EMPTY;
+    }
+  }
+    
+}
+
+// Limited-blocking averaging function
+boolean SensorSpecHamamatsu::takeAverageMeasurement() {
+  // Check to see if this is the first measurement
+  if (numAverages == 0) {
+    for (int i=0; i<SPEC_CHANNELS; i++) {
+      average[i] = 0; 
+    }    
+  }
+  
+  // Collect a measurement, and add it to the average
+  readSpectrometer(&average[0], true);
+  numAverages += 1;
+  
+  // If the average has accumulated 4 measurements, average them, and return true to signify the average measurement is ready
+  if (numAverages == 4) {
+    for (int i=0; i<SPEC_CHANNELS; i++) {
+      average[i] = average[i] >> 2; 
+    }
+    numAverages = 0;
+    return true;
+  }
+  return false;
 }
 
 boolean SensorSpecHamamatsu::postProcessing(uint16_t* data) {  
@@ -207,12 +276,13 @@ float SensorSpecHamamatsu::getBaselineExpProportion(int32_t wavelength) {
   int channelNum = wavelengthToSpectralChannel(wavelength);
   float baselineVal = (float)baseline[channelNum];
   float expVal = (float)data[channelNum];
+  
   int i = channelNum;
     Serial.print(i, DEC); Serial.print(": "); 
     Serial.print(wavelength, DEC); Serial.print("nm   ");    
     Serial.print(baseline[i], DEC); Serial.print("b   ");    
     Serial.print(data[i], DEC); Serial.print("e   ");
-    
+
   if (baselineVal == 0) return 0;          // prevent divide by zero 
   return (expVal / baselineVal);
 }
@@ -259,7 +329,7 @@ uint16_t SensorSpecHamamatsu::readAD7940() {
 }
 
 
-void SensorSpecHamamatsu::readSpectrometer(uint16_t* data) {
+void SensorSpecHamamatsu::readSpectrometer(uint16_t* data, boolean accumulateMode) {
   int delay_time = 35;     // delay per half clock (in microseconds).  This ultimately conrols the integration time. 
   int idx = 0;
   int read_time = 35;      // Amount of time that the readAD7940() procedure takes (in microseconds)
@@ -334,7 +404,11 @@ void SensorSpecHamamatsu::readSpectrometer(uint16_t* data) {
     digitalWrite(SPEC_CLK, LOW);
     
     // Analog value is valid on low transition
-    data[idx] = readAD7940();
+    if (accumulateMode == false) {
+      data[idx] = readAD7940();
+    } else {
+      data[idx] += readAD7940();
+    }
     idx += 1;
     if (delay_time > read_time) delayMicroseconds(delay_time-read_time);     // Read takes about 135uSec    
     

@@ -13,6 +13,7 @@
 #include "bitmaps/bitmap_symbPolarization.h"
 #include "bitmaps/bitmap_symbMicrophone.h"
 #include "bitmaps/bitmap_symbIMU.h"
+#include "bitmaps/bitmap_symbLeaf.h"
 
 #include "bitmaps/bitmap_symbSparkfunData.h"
 #include "bitmaps/bitmap_symbPlotly.h"

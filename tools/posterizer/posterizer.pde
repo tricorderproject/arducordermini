@@ -24,9 +24,9 @@
 // SETUP VARIABLES (These must be set to your image, output filename, and variable name before running)
 // NOTE: Image dimensions must be evenly divisible by 2. 
 //String filenameIn = "earthatnight1.jpg"; 
-String filenameIn = "..\\..\\firmware\\interfacenotes\\symbols\\symbol_wifi.png";
+String filenameIn = "..\\..\\firmware\\interfacenotes\\symbols\\symbol_leaf.png";
 String filenameOut = "out.h";
-String variableName = "symbWifi";
+String variableName = "symbLeaf";
 
 // ====================================================================
 

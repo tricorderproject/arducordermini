@@ -105,7 +105,7 @@ class Adafruit_CC3000_Client : public Client {
   size_t fastrprint(const __FlashStringHelper *ifsh);
   size_t fastrprintln(const __FlashStringHelper *ifsh);
 
-  size_t write(const void *buf, uint16_t len, uint32_t flags = 0);
+  int16_t write(const void *buf, uint16_t len, uint32_t flags = 0);
   int read(void *buf, uint16_t len, uint32_t flags = 0);
   int read(void);
   int32_t close(void);

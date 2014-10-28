@@ -153,18 +153,23 @@ extern "C" {
   the linker file, since for example on MSP430 FRAM devices the buffers are
   allocated in the FRAM section that is allocated manually and not by IDE.
 */
-  
+
+//##
+/*
 #ifndef CC3000_TINY_DRIVER
   
 	#define CC3000_RX_BUFFER_SIZE   (CC3000_MINIMAL_RX_SIZE)
 	#define CC3000_TX_BUFFER_SIZE   (CC3000_MINIMAL_TX_SIZE)
-  
+
 //if defined TINY DRIVER we use smaller RX and TX buffer in order to minimize RAM consumption
 #else
 	#define CC3000_RX_BUFFER_SIZE   (TINY_CC3000_MAXIMAL_RX_SIZE)
 	#define CC3000_TX_BUFFER_SIZE   (TINY_CC3000_MAXIMAL_TX_SIZE)
 
 #endif  
+*/
+#define CC3000_RX_BUFFER_SIZE   (CC3000_MAXIMAL_RX_SIZE)
+#define CC3000_TX_BUFFER_SIZE   (CC3000_MAXIMAL_TX_SIZE)
 
 //*****************************************************************************
 //                  Compound Types

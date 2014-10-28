@@ -1491,9 +1491,33 @@ uint8_t Adafruit_CC3000_Client::connected(void) {
   else return true;  
 }
 
+/*
+// Previous:
 size_t Adafruit_CC3000_Client::write(const void *buf, uint16_t len, uint32_t flags)
 {
   return send(_socket, buf, len, flags);
+}
+*/
+
+// New: 
+int16_t Adafruit_CC3000_Client::write(const void *buf, uint16_t len, uint32_t flags)
+{
+    int16_t r; 
+
+	if(tSLInformation.usNumberOfFreeBuffers < 5){
+       while (tSLInformation.usNumberOfFreeBuffers < 5) {
+            delay(1);
+        }
+    } 
+
+    r = send(_socket, buf, len, flags);
+
+    if(tSLInformation.usNumberOfFreeBuffers < 5){
+       while (tSLInformation.usNumberOfFreeBuffers < 5) {
+            delay(1);
+        }
+    }
+    return r;
 }
 
 size_t Adafruit_CC3000_Client::write(const uint8_t *buf, size_t len)

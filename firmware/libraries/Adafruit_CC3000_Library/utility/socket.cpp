@@ -59,7 +59,8 @@
 #include "netapp.h"
 #include "debug.h"
 
-
+//## Non-blocking sends, to help prevent crashes
+#define SEND_NON_BLOCKING 1
 
 //Enable this flag if and only if you must comply with BSD socket 
 //close() function

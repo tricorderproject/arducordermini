@@ -1,0 +1,31 @@
+Partlist
+
+Exported from sensorboard_atm_rev1.sch at 27/10/2014 11:52:27 PM
+
+EAGLE Version 6.5.0 Copyright (c) 1988-2013 CadSoft
+
+Assembly variant: 
+
+Part     Value             Device            Package          Library               Sheet
+
+C1       0.1uF             CAP0603           0603             notes_mark5a          1
+C2       0.1uF             CAP0603           0603             notes_mark5a          1
+CN1      CON-MOLEX-2MMMALE CON-MOLEX-2MMMALE MOLEX-0877591650 notes-arducorder-mini 1
+R1       541               RESISTOR0603      0603             notes_mark5a          1
+R2       18                RESISTOR0603      0603             notes_mark5a          1
+R3       86                RESISTOR0603      0603             notes_mark5a          1
+R4       56k               RESISTOR0603      0603             notes_mark5a          1
+R5       56k               RESISTOR0603      0603             notes_mark5a          1
+R6       56k               RESISTOR0603      0603             notes_mark5a          1
+R7       1k                RESISTOR0603      0603             notes_mark5a          1
+R8       1k                RESISTOR0603      0603             notes_mark5a          1
+R9       1k                RESISTOR0603      0603             notes_mark5a          1
+R10      100k              RESISTOR0603      0603             notes_mark5a          1
+R11      100k              RESISTOR0603      0603             notes_mark5a          1
+R12      100k              RESISTOR0603      0603             notes_mark5a          1
+U1       BMP180            BMP180            BMP180           notes_mark5a          1
+U2       HTU21D            HTU21D            HTU21D           notes_mark5a          1
+U3       MICS-6814         MICS-6814         MICS-6814        notes_mark5a          1
+U4       MOSFET-IRLML6401  MOSFET-IRLML6401  SOT23-3L         arducorder-mini       1
+U5       MOSFET-IRLML6401  MOSFET-IRLML6401  SOT23-3L         arducorder-mini       1
+U6       MOSFET-IRLML6401  MOSFET-IRLML6401  SOT23-3L         arducorder-mini       1

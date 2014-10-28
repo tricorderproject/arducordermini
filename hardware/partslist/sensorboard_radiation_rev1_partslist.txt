@@ -1,0 +1,39 @@
+Partlist
+
+Exported from sensorboard_radiation_rev1.sch at 27/10/2014 11:53:37 PM
+
+EAGLE Version 6.5.0 Copyright (c) 1988-2013 CadSoft
+
+Assembly variant: 
+
+Part     Value                Device                    Package              Library               Sheet
+
+C1       0.1uF                CAP0603                   0603                 arm                   1
+C2       0.1uF                CAP0603                   0603                 arm                   1
+C3       0.1uF                CAP0603                   0603                 arm                   1
+C4       10uF                 CAP0603                   0603                 arm                   1
+C5       1uF                  CAP0603                   0603                 notes_mark5a          1
+C6       0.1uF                CAP0603                   0603                 arm                   1
+C7       1uF                  CAP0603                   0603                 notes_mark5a          1
+C8       100pF                CAP0603                   0603                 notes_mark5a          1
+CN1      1X06                 1X06                      1X06                 arm                   1
+CN2      PHT-106-01-L-S       1X06                      1X06                 arm1a                 1
+R1       51k                  RESISTOR0603              0603                 arm                   1
+R2       51k                  RESISTOR0603              0603                 arm                   1
+R3       5.1K                 RESISTOR0603              0603                 arm                   1
+R4       1M                   RESISTOR0603              0603                 arm                   1
+R5       51k                  RESISTOR0603              0603                 arm                   1
+R6       51k                  RESISTOR0603              0603                 arm                   1
+R7                            RESISTOR0603              0603                 arm                   1
+R8       51k                  RESISTOR0603              0603                 notes_mark5a          1
+R9       51k                  RESISTOR0603              0603                 notes_mark5a          1
+R10      1k                   RESISTOR0603              0603                 notes_mark5a          1
+R11      1M                   RESISTOR0603              0603                 notes_mark5a          1
+R12      10k                  RESISTOR0603              0603                 arm                   1
+R13      10k                  RESISTOR0603              0603                 arm                   1
+R14      10k                  RESISTOR0603              0603                 arm                   1
+SJ1                           SOLDERJUMPER_2WAYPASTE1&2 SJ_3_PASTE1&2        SparkFun-Passives     1
+SPK1     KNOWLES-MINI-SPEAKER KNOWLES-MINI-SPEAKER      KNOWLES-MINI-SPEAKER notes-arducorder-mini 1
+TP1      PTR1PAD1-13          PTR1PAD1-13               P1-13                testpad               1
+U1       AD8606R              AD8607R                   SO8                  analog-devices        1
+U2       OPA344               OPA344                    SOT23-5              SparkFun-AnalogIC     1

@@ -1,0 +1,23 @@
+Partlist
+
+Exported from sensorboard_mag_rev0.sch at 27/10/2014 11:53:09 PM
+
+EAGLE Version 6.5.0 Copyright (c) 1988-2013 CadSoft
+
+Assembly variant: 
+
+Part     Value             Device                    Package          Library               Sheet
+
+C3       2.2nF 50V         CAP0603                   0603             notes_mark5           1
+C4       0.1uF             CAP0603                   0603             notes_mark5           1
+C5       0.1uF             CAP0603                   0603             notes_mark5           1
+C6       10nF              CAP0603                   0603             notes_mark5           1
+C7       4.7uF             CAP0603                   0603             notes_mark5           1
+C8       0.22uF            CAP0603                   0603             notes_mark5           1
+C9       0.1uF             CAP0603                   0603             notes_mark5           1
+CN1      CON-MOLEX-2MMMALE CON-MOLEX-2MMMALE         MOLEX-0877591650 notes-arducorder-mini 1
+R5       4.7k              RESISTOR0603              0603             notes_mark5a          1
+R6       4.7k              RESISTOR0603              0603             notes_mark5a          1
+SJ1                        SOLDERJUMPER_2WAYPASTE2&3 SJ_3_PASTE2&3    SparkFun-Passives     1
+U$2      HMC5883LSMD       HMC5883LSMD               16LPCC           SparkFun-Sensors      1
+U$10     MPU-9150          MPU-9150                  LGA-24-(4X4MM)   notes_mark5           1

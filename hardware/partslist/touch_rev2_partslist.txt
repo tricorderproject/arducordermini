@@ -1,0 +1,27 @@
+Partlist
+
+Exported from touch_rev2.sch at 27/10/2014 11:53:52 PM
+
+EAGLE Version 6.5.0 Copyright (c) 1988-2013 CadSoft
+
+Assembly variant: 
+
+Part     Value                   Device                    Package                  Library               Sheet
+
+C1       0.1uF                   CAP0603                   0603                     notes_mark5a          1
+C2       0.1uF                   CAP0603                   0603                     notes_mark5a          1
+C3       7pF                     CAP0603                   0603                     notes_mark5a          1
+C4       7pF                     CAP0603                   0603                     notes_mark5a          1
+D1       0605-LED                0605-LED                  0603-LED                 notes_mark5a1         1
+D2       0605-LED                0605-LED                  0603-LED                 notes_mark5a1         1
+R1       75k (1%)                RESISTOR0603              0603                     notes_mark5a1         1
+R2       220                     RESISTOR0603              0603                     notes_mark5a1         1
+R3       220                     RESISTOR0603              0603                     notes_mark5a1         1
+SJ1                              SOLDERJUMPER_2WAYPASTE1&2 SJ_3_PASTE1&2            SparkFun-Passives     1
+SW1      SWITCH                  SWITCH                    KMT071                   notes-arducorder-mini 1
+SW2      SWITCH                  SWITCH                    KMT071                   notes-arducorder-mini 1
+U$1      CON-HIROSE-DF12MALE     CON-HIROSE-DF12MALE       DF12B(3.0)-10DS-0.5V(86) arducorder-mini       1
+U1       MPR121-TOUCH-CONTROLLER MPR121-TOUCH-CONTROLLER   QFN-3X3-20               notes-arducorder-mini 1
+U2       M41T82ZM6F              M41T82ZM6F                8-SOIC                   notes_mark5a          1
+U3       CAPACITIVE-WHEEL-8      CAPACITIVE-WHEEL-8        CAPACITIVE-WHEEL-8       notes-arducorder-mini 1
+X1       32.768kHz               CRYSTAL                   CRYSTAL-9HT10            notes_mark5a          1

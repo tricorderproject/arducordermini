@@ -1,0 +1,91 @@
+Partlist
+
+Exported from motherboard_rev1.sch at 27/10/2014 11:52:06 PM
+
+EAGLE Version 6.5.0 Copyright (c) 1988-2013 CadSoft
+
+Assembly variant: 
+
+Part     Value                         Device                        Package                  Library                    Sheet
+
+C1       4.7uF                         CAP0603                       0603                     notes_mark5a               1
+C2       120pF/16V                     CAP0603                       0603                     notes_mark5a1              1
+C3       0.1uF                         CAP0603                       0603                     notes_mark5a               1
+C4       0.1uF                         CAP0603                       0603                     notes_mark5a               1
+C5       18pF                          CAP0603                       0603                     notes_mark5a               1
+C6       18pF                          CAP0603                       0603                     notes_mark5a               1
+C7       10uF                          CAP_POL1206                   EIA3216                  SparkFun-Passives          1
+C8       0.1uF                         CAP0603                       0603                     notes_mark5a               1
+C9       0.1uF                         CAP0603                       0603                     notes_mark5a               1
+C10      0.1uF                         CAP0603                       0603                     notes_mark5a               1
+C11      0.1uF                         CAP0603                       0603                     notes_mark5a               1
+C12      0.1uF                         CAP0603                       0603                     notes_mark5a               1
+C13      0.1uF                         CAP0603                       0603                     notes_mark5a               1
+C14      4.7uF/16V                     CAP0603                       0603                     notes_mark5a               1
+C15      4.7uF/25V                     CAP0603                       0603                     notes_mark5a               1
+C16      1uF                           CAP0603                       0603                     notes_mark5a               1
+C17      1uF                           CAP0603                       0603                     notes_mark5a               1
+C18      1uF                           CAP0603                       0603                     notes_mark5a               1
+C19      0.1uF/16V                     CAP0603                       0603                     notes_mark5a               1
+C20      0.1uF                         CAP0603                       0603                     notes_mark5a               1
+C21      0.1uF                         CAP0603                       0603                     notes_mark5a               1
+C22      0.1uF                         CAP0603                       0603                     notes_mark5a               1
+C27      4.7uF                         CAP0603                       0603                     notes_mark5a               1
+C28      4.7uF                         CAP0603                       0603                     notes_mark5a               1
+C30      1uF                           CAP0603                       0603                     notes_mark5a               1
+C31      0.8pF                         CAP0402                       C0402                    notes_mark5a               1
+C35      4.7uF                         CAP0603                       0603                     notes_mark5a               1
+C48      4.7uF                         CAP0603                       0603                     notes_mark5a               1
+CN1      UG-2828GDEDF11-1.5OLED        UG-2828GDEDF11-1.5OLED        XF2M-3015-1A-1.5LCD      notes-arducorder-mini      1
+CN2      1X05                          1X05                          1X05                     notes_mark5a               1
+CN3      PHF-106-01-L-S                1X06                          1X06                     arm1a                      1
+CN4      FEMALE                        CON-HIROSE-DF12FEMALE         DF12B(3.0)-10DP-0.5V(86) notes-arducorder-mini      1
+CN5                                    M02-JST-2MM-SMT               JST-2-SMD                SparkFun-Connectors        1
+CN6      CON-MOLEX-2MMFEMALE           CON-MOLEX-2MMFEMALE           MOLEX-0791091007         notes-arducorder-mini      1
+CN7      CON-MOLEX-2MMFEMALE_RA        CON-MOLEX-2MMFEMALE_RA        MOLEX-87368-1624         notes-arducorder-mini      1
+CN8      CON-MOLEX-2MMFEMALE_RA        CON-MOLEX-2MMFEMALE_RA        MOLEX-87368-1624         notes-arducorder-mini      1
+CN9      CON-MOLEX-2MMFEMALE_RA        CON-MOLEX-2MMFEMALE_RA        MOLEX-87368-1624         notes-arducorder-mini      1
+D1       0605-LED                      0605-LED                      0603-LED                 notes_mark5a               1
+D2       UPS115UE3/TR7                 DIODE-SCHOTTKY                DO-214BA                 notes_mark5a               1
+D3       UPS115UE3/TR7                 DIODE-SCHOTTKY                DO-214BA                 notes_mark5a               1
+D4       0605-LED                      0605-LED                      0603-LED                 notes_mark5a               1
+D5       0605-LED                      0605-LED                      0603-LED                 notes_mark5a               1
+D8       PMEG2010AEH                   DIODE-SCHOTTKYSOD123F         SOD123F                  notes-arducorder-mini      1
+D9       PMEG2010AEH                   DIODE-SCHOTTKYSOD123F         SOD123F                  notes-arducorder-mini      1
+D10      PMEG2010AEH                   DIODE-SCHOTTKYSOD123F         SOD123F                  notes-arducorder-mini      1
+L1       NR4018T100M                   INDUCTORNR4018T100M           NR4018T100M              notes-arducorder-mini      1
+L3       INDUCTOR-SMD-VLF4012A         INDUCTOR-SMD-VLF4012A         VLF4012A                 notes_mark5a               1
+L6       3.3nH                         INDUCTOR0402                  C0402                    SparkFun-Passives          1
+R1       330                           RESISTOR0603                  0603                     notes_mark5a               1
+R2       330                           RESISTOR0603                  0603                     notes_mark5a               1
+R3       100                           RESISTOR0603                  0603                     notes_mark5a               1
+R4       1k                            RESISTOR0603                  0603                     notes_mark5a               1
+R5       1k                            RESISTOR0603                  0603                     notes_mark5a               1
+R6       4.7k                          RESISTOR0603                  0603                     notes_mark5a               1
+R7       10k                           RESISTOR0603                  0603                     notes_mark5a               1
+R8       100k                          RESISTOR0603                  0603                     notes_mark5a1              1
+R9       10.5k                         RESISTOR0603                  0603                     notes_mark5a1              1
+R10      100k                          RESISTOR0603                  0603                     notes_mark5a               1
+R11      10k                           RESISTOR0603                  0603                     notes_mark5a               1
+R12      2k                            RESISTOR0603                  0603                     notes_mark5a               1
+R13      470                           RESISTOR0603                  0603                     notes_mark5a               1
+R14      100k                          RESISTOR0603                  0603                     notes_mark5a1              1
+R15      620k                          RESISTOR0603                  0603                     notes_mark5a1              1
+R16      4.7k                          RESISTOR0603                  0603                     notes_mark5a               1
+R17      4.7k                          RESISTOR0603                  0603                     notes_mark5a               1
+R18      51                            RESISTOR0603                  0603                     notes_mark5a1              1
+R19      100k                          RESISTOR0603                  0603                     notes_mark5a1              1
+R36      100k                          RESISTOR0603                  0603                     notes_mark5a               1
+SJ1                                    SOLDERJUMPERTRACE             SJ_2S-TRACE              SparkFun-Passives          1
+U$2      TI-TPS63001-3.3V-BUCKBOOST    TI-TPS63001-3.3V-BUCKBOOST    TPS63001                 notes_mark5a               1
+U$3      PIC32MX795F512L-80I/PF        PIC32MX795F512L-80I/PF        SQFP-S-14X14-100         notes_mark5                1
+U$5      SWITCH_SPDT                   SWITCH_SPDT                   KPS-1290                 SparkFun-Electromechanical 1
+U$6      ANTENNA-2500AT44M0400E        ANTENNA-2500AT44M0400E        ANT-2500AT44M0400E       notes_mark5a               1
+U$7      CON-HIROSE-DM3B-MICROSD       CON-HIROSE-DM3B-MICROSD       CON-HIROSE-DM3B-MICROSD  arm1a                      1
+U$8      USB-MICROB                    USB-MICROB                    FCI-10104110-0001LF      notes_mark5a               1
+U$9      FT232RQ                       FT232RQ                       QFN-32                   SparkFun-DigitalIC         1
+U$12     CC3000                        CC3000                        CC3000                   notes_mark5a               1
+U$15     BUFFER-NL17SZ125              BUFFER-NL17SZ125              TSOP-5                   notes-arducorder-mini      1
+U$24     FAN5331-BOOST                 FAN5331-BOOST                 TSOP-5                   notes-arducorder-mini      1
+U1       MCP73831                      MCP73831                      SOT23-5                  SparkFun-PowerIC           1
+X1       CRYSTAL-ABM7-8.000MHZ-D-2-Y-T CRYSTAL-ABM7-8.000MHZ-D-2-Y-T CYRSTAL-6.0X3.5MM        notes_mark5a               1

@@ -107,6 +107,29 @@ inline void FramebufferGFX::drawPixel(uint16_t x, uint16_t y, uint16_t color) {
   display->framebuffer[ display->fbXY(x, y) ] = color;
 }
 
+// ALPHA_EXPAND converts 0000000000000000rrrrrggggggbbbbb into 00000gggggg00000rrrrr000000bbbbb
+// where r = bit assigned to red value, g = bit assigned to green, b = bit assigned to blue
+// This is useful because it makes space for a parallel fixed-point multiply
+#define ALPHA_EXPAND(x)     ((((uint32_t)(x)) | (((uint32_t)(x)) << 16)) & 0x07e0f81f)
+
+// Draw a pixel with alpha blending
+// This only works with RGB565 colors!
+// alpha = 0 represents fully transparent, alpha = 32 represents fully opaque
+inline void FramebufferGFX::drawPixel(uint16_t x, uint16_t y, uint16_t color, uint8_t alpha) {
+    uint32_t pos = display->fbXY(x, y);
+    uint32_t dest = display->framebuffer[pos];
+    dest = ALPHA_EXPAND(dest);
+    uint32_t src = ALPHA_EXPAND(color);
+    // This implements the linear interpolation formula: result = dest * (1.0 - alpha) + src * alpha
+    // This can be factorized into: result = dest + (src - dest) * alpha
+    // alpha is in Q1.5 format, so 0.0 is represented by 0, and 1.0 is represented by 32
+    uint32_t result = (src - dest) * alpha; // parallel fixed-point multiply of all components
+    result >>= 5;
+    result += dest;
+    result &= 0x07e0f81f; // mask out fractional parts
+    display->framebuffer[pos] = (uint16_t)((result >> 16) | result); // contract result
+}
+
 // Lines
 void FramebufferGFX::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color) {
   // Adafruit: Bresenham's algorithm - thx wikpedia  
@@ -563,12 +586,56 @@ void FramebufferGFX::displayFlashBitmap4Bit(int x, int y, const BITMAPSTRUCT* bi
         
 //        uint32_t pos = display->fbXY(x + col, y + row);      
 //        display->framebuffer[pos] = RGB(r, g, b);
-        if (((x + bx > 0) && (x + bx < display->width)) && ((y + by > 0) && (y + by < display->height))) {          
+        if (((x + bx >= 0) && (x + bx <= display->width)) && ((y + by > 0) && (y + by < display->height))) {          
           if (pixel1Idx != transparentIdx) drawPixel(x + bx, y + by, pixel1);
           if (pixel2Idx != transparentIdx) drawPixel(x + bx + 1, y + by, pixel2);        
         }    
         idx += 1;
       }
+    }
+}
+
+
+/*
+ *  HUFFMAN ENCODED BITMAP FUNCTIONS
+ */ 
+// These functions read a Huffman-encoded bitmap stored in flash as a static structure exported into a header file
+void FramebufferGFX::displayFlashBitmapHuffman(int x, int y, const BITMAPHUFFMANSTRUCT *bitmap) {
+    unsigned int idx = 0;
+    uint32_t packed_data = bitmap->data[idx];
+    unsigned int packed_bit_offset = 0;
+    unsigned int bpc = bitmap->bpc; // bits per codeword
+    unsigned int bpc_mask = (1 << bpc) - 1;
+    const uint32_t *root = bitmap->tree;
+    uint32_t codeword;
+    for (uint16_t by = 0; by < bitmap->height; by++) {
+        for (uint16_t bx = 0; bx < bitmap->width; bx++) {
+            // traverse huffman tree beginning from root
+            const uint32_t *current_tree = root;
+            uint32_t c;
+            while (1) {
+                // extract next codeword from data word
+                if (packed_bit_offset >= 32) {
+                    // current data word exhausted, need to get next data word with packed codewords
+                    packed_data = bitmap->data[++idx];
+                    packed_bit_offset = 0;
+                }
+                codeword = packed_data & bpc_mask;
+                packed_data >>= bpc;
+                packed_bit_offset += bpc;
+
+                c = current_tree[codeword];
+                if ((c >> 31) == 0) {
+                    current_tree = root + c; // not a leaf node; keep traversing
+                } else {
+                    break; // is a leaf node; c is a color
+                }
+            }
+
+            if (((x + bx >= 0) && (x + bx < display->width)) && ((y + by >= 0) && (y + by < display->height))) {
+                drawPixel(x + bx, y + by, c & 0xffff, (c >> 16) & 0x7f);
+            }
+        }
     }
 }
 

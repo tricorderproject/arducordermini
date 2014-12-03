@@ -4,6 +4,7 @@
 #include <wprogram.h>
 #include "SSD1351.h"
 #include "BitmapStructure.h"
+#include "BitmapHuffmanStructure.h"
 #include "FontStructure.h"
 
 #include <SD.h>
@@ -43,6 +44,7 @@ class FramebufferGFX {
   
   // Low-level graphics primitives
   void drawPixel(uint16_t x, uint16_t y, uint16_t color);
+  void drawPixel(uint16_t x, uint16_t y, uint16_t color, uint8_t alpha);
 
   void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
   void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
@@ -66,6 +68,7 @@ class FramebufferGFX {
   
   // Bitmap functions (flash)
   void displayFlashBitmap4Bit(int x, int y, const BITMAPSTRUCT* bitmap, int8_t transparentIdx);
+  void displayFlashBitmapHuffman(int x, int y, const BITMAPHUFFMANSTRUCT *bitmap);
   
   // Bitmap functions (SD card)
   uint16_t read16(File f);
